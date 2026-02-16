@@ -1,26 +1,76 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  /* Warm & Intimate palette */
+  --color-warm-50: #FAF7F4;
+  --color-warm-100: #F7F3EF;
+  --color-warm-200: #E6DDD4;
+  --color-warm-300: #D4C8BB;
+  --color-warm-400: #B8A898;
+  --color-warm-500: #7A6E65;
+  --color-warm-600: #5C524A;
+  --color-warm-700: #4A3F37;
+  --color-warm-800: #3D3029;
+  --color-warm-900: #2A1F18;
+
+  --color-gold-300: #D4BC8E;
+  --color-gold-400: #C9A96E;
+  --color-gold-500: #B08D57;
+  --color-gold-600: #8B6F4E;
+
+  --color-accent: #8B6F4E;
+  --color-accent-hover: #7A5F40;
+
+  --color-background: var(--color-warm-100);
+  --color-foreground: var(--color-warm-800);
+  --color-surface: #FFFFFF;
+  --color-muted: var(--color-warm-500);
+  --color-border: var(--color-warm-200);
+
+  /* Typography */
+  --font-heading: "Lora", serif;
+  --font-body: "Source Sans 3", sans-serif;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
-
+/* Base styles */
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--color-background);
+  color: var(--color-foreground);
+  font-family: var(--font-body);
+}
+
+/* RTL support */
+[dir="rtl"] {
+  text-align: right;
+}
+
+/* Focus styles for accessibility */
+:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* Skip to main content link */
+.skip-link {
+  position: absolute;
+  top: -100%;
+  left: 0;
+  z-index: 100;
+  padding: 0.75rem 1.5rem;
+  background: var(--color-accent);
+  color: white;
+  font-weight: 600;
+  border-radius: 0 0 8px 0;
+  transition: top 0.2s;
+}
+
+.skip-link:focus {
+  top: 0;
+}
+
+[dir="rtl"] .skip-link {
+  left: auto;
+  right: 0;
+  border-radius: 0 0 0 8px;
 }

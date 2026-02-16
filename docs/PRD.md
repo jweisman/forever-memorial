@@ -6,21 +6,22 @@ The לעולם / Forever memorial website is a place for users to post memorial 
 ## Users & Roles
 The website supports three types of users:
 * _Guests_ can:
- * search for memorial pages
- * view memorial pages
+  * search for memorial pages
+  * view memorial pages
 * _Registered Users_ can:
- * create new memorial pages (users can own many pages) 
- * edit pages they own, 
- * submit memories on memorial pages owned by another user for review by the page owner
+  * create new memorial pages (users can own many pages) 
+  * edit pages they own, 
+  * submit memories on memorial pages owned by another user for review by the page owner
 * _Site Admin_ can:
- * administer the site 
- * edit memorial pages owned by any user
+  * administer the site 
+  * edit memorial pages owned by any user
 
 ### Authentication
 Users can register and login with Google or with a magic link via email. (Passwords not supported in v1)
 
 ### Profile Management
-* A user can edit their profile information or delete their account from their dashboard. When an account is deleted the memorial pages it owns are also deleted (with the appropriate warning message)
+* A user can edit their profile information or delete their account from their dashboard. 
+* When an account is deleted the memorial pages it owns are also deleted (with the appropriate warning message)
 
 ## Landing Page
 The Landing Page page is where guests arrive when visiting the site. It describes the site's purpose and functionality and offers users to register for a new account (or log in). 
@@ -45,9 +46,9 @@ Memories submitted by other users can be reviewed by the owner of the memorial p
 * Accept
 * Ignore (removed from list but not deleted). An option to view ignored memories should be available in the review memory list.
 * Return to submitter 
- * User received an email with the message from the page owner, and an link to edit the memory
- * User edits and resubmits from the provided link
- * Review cycle starts again (appears in list for page owner to review)
+  * User received an email with the message from the page owner, and an link to edit the memory
+  * User edits and resubmits from the provided link
+  * Review cycle starts again (appears in list for page owner to review)
 
 Users receive an email message when their submitted memories are accepted or are returned.
 
@@ -97,9 +98,9 @@ Users receive notifications:
 * Support search engine indexing
 * Memorial page URLs should be friendly and sharable (i.e. slug with ID and name)
 * Technology stack:
- * Next.js and TS for website (NextAuth for authentication)
- * Postgres for DB (AWS RDS for production)
- * ASW S3 for image storage (including presigned direct uploads and signed URLs for display); image optimization/thumbnail handling will be done in a future version. 
- * AWS SES for email sending
+  * Next.js and TS for website (NextAuth for authentication)
+  * Postgres for DB (AWS RDS for production)
+  * ASW S3 for image storage (including presigned direct uploads and signed URLs for display); image optimization/thumbnail handling will be done in a future version. 
+  * AWS SES for email sending
 * Memorial pages load in < 2 seconds
 * Site should be built to be cloud deployed (sensitive data in environment, etc.)
