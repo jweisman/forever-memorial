@@ -1,0 +1,93 @@
+import { NextResponse } from "next/server";
+import crypto from "crypto";
+import { auth } from "@/lib/auth";
+import { prisma } from "@/lib/prisma";
+import {
+  isAllowedImageType,
+  getExtFromFileName,
+  generateUploadUrl,
+  buildImageS3Key,
+} from "@/lib/s3-helpers";
+
+export async function POST(
+  request: Request,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  const { id } = await params;
+  const session = await auth();
+  if (!session?.user?.id) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  const memorial = await prisma.memorial.findUnique({
+    where: { id },
+    select: { ownerId: true },
+  });
+
+  if (!memorial) {
+    return NextResponse.json({ error: "Not found" }, { status: 404 });
+  }
+
+  if (memorial.ownerId !== session.user.id) {
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  }
+
+  const body = await request.json();
+  const { fileName, contentType, albumId } = body;
+
+  if (!contentType || !isAllowedImageType(contentType)) {
+    return NextResponse.json(
+      { error: "Only JPEG, PNG, WebP, and GIF images are allowed" },
+      { status: 400 }
+    );
+  }
+
+  // Check 100-image limit
+  const imageCount = await prisma.image.count({
+    where: { album: { memorialId: id } },
+  });
+  if (imageCount >= 100) {
+    return NextResponse.json(
+      { error: "This memorial has reached the 100-image limit" },
+      { status: 400 }
+    );
+  }
+
+  // Resolve album: use provided albumId or find/create default "Photos" album
+  let resolvedAlbumId = albumId;
+  if (!resolvedAlbumId) {
+    let defaultAlbum = await prisma.album.findFirst({
+      where: { memorialId: id, name: "Photos" },
+    });
+    if (!defaultAlbum) {
+      defaultAlbum = await prisma.album.create({
+        data: { memorialId: id, name: "Photos" },
+      });
+    }
+    resolvedAlbumId = defaultAlbum.id;
+  } else {
+    // Verify album belongs to this memorial
+    const album = await prisma.album.findUnique({
+      where: { id: resolvedAlbumId },
+      select: { memorialId: true },
+    });
+    if (!album || album.memorialId !== id) {
+      return NextResponse.json(
+        { error: "Album not found" },
+        { status: 404 }
+      );
+    }
+  }
+
+  const imageId = crypto.randomUUID();
+  const ext = getExtFromFileName(fileName || "image.jpg");
+  const s3Key = buildImageS3Key(id, imageId, ext);
+  const uploadUrl = await generateUploadUrl(s3Key, contentType);
+
+  return NextResponse.json({
+    uploadUrl,
+    s3Key,
+    imageId,
+    albumId: resolvedAlbumId,
+  });
+}

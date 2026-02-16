@@ -4,9 +4,11 @@ import Link from "next/link";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { parseIdFromSlug } from "@/lib/slug";
+import { generateViewUrl } from "@/lib/s3-helpers";
 import Card from "@/components/ui/Card";
 import Button from "@/components/ui/Button";
 import CollapsibleText from "@/components/ui/CollapsibleText";
+import GalleryView from "@/components/memorial/GalleryView";
 
 type Props = {
   params: Promise<{ slug: string }>;
@@ -18,12 +20,41 @@ async function getMemorial(slug: string) {
     where: { id },
     include: {
       eulogies: { orderBy: { order: "asc" } },
+      albums: {
+        orderBy: { order: "asc" },
+        include: {
+          images: { orderBy: { order: "asc" } },
+        },
+      },
       owner: { select: { id: true, name: true } },
     },
   });
 
   if (!memorial || memorial.disabled) return null;
-  return memorial;
+
+  // Resolve presigned URLs
+  let memorialPictureUrl: string | null = null;
+  if (memorial.memorialPicture) {
+    memorialPictureUrl = await generateViewUrl(memorial.memorialPicture);
+  }
+
+  const albumsWithUrls = await Promise.all(
+    memorial.albums.map(async (album) => ({
+      ...album,
+      images: await Promise.all(
+        album.images.map(async (img) => ({
+          ...img,
+          url: await generateViewUrl(img.s3Key),
+        }))
+      ),
+    }))
+  );
+
+  return {
+    ...memorial,
+    memorialPictureUrl,
+    albums: albumsWithUrls,
+  };
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
@@ -44,6 +75,9 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       title,
       description,
       type: "profile",
+      ...(memorial.memorialPictureUrl && {
+        images: [{ url: memorial.memorialPictureUrl }],
+      }),
     },
   };
 }
@@ -85,6 +119,19 @@ export default async function MemorialPage({ params }: Props) {
   const session = await auth();
   const isOwner = session?.user?.id === memorial.ownerId;
 
+  // Prepare gallery data — only albums with images
+  const galleryAlbums = memorial.albums
+    .filter((a) => a.images.length > 0)
+    .map((a) => ({
+      id: a.id,
+      name: a.name,
+      images: a.images.map((img) => ({
+        id: img.id,
+        url: img.url,
+        caption: img.caption,
+      })),
+    }));
+
   const jsonLd = {
     "@context": "https://schema.org",
     "@type": "Person",
@@ -111,22 +158,30 @@ export default async function MemorialPage({ params }: Props) {
       <article className="mx-auto max-w-3xl px-4 py-12 sm:px-6 lg:px-8">
         {/* Header */}
         <header className="text-center">
-          {/* Memorial picture placeholder */}
-          <div className="mx-auto mb-6 flex size-28 items-center justify-center rounded-full bg-warm-200">
-            <svg
-              className="size-14 text-warm-400"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-              aria-hidden="true"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={1.5}
-                d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z"
+          {/* Memorial picture */}
+          <div className="mx-auto mb-6 flex size-28 items-center justify-center overflow-hidden rounded-full bg-warm-200">
+            {memorial.memorialPictureUrl ? (
+              <img
+                src={memorial.memorialPictureUrl}
+                alt={memorial.name}
+                className="size-full object-cover"
               />
-            </svg>
+            ) : (
+              <svg
+                className="size-14 text-warm-400"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+                aria-hidden="true"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={1.5}
+                  d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z"
+                />
+              </svg>
+            )}
           </div>
 
           <h1 className="font-heading text-3xl font-semibold text-warm-800 sm:text-4xl">
@@ -226,6 +281,18 @@ export default async function MemorialPage({ params }: Props) {
                 {memorial.lifeStory}
               </p>
             </Card>
+          )}
+
+          {/* Photo Gallery */}
+          {galleryAlbums.length > 0 && (
+            <section>
+              <h2 className="font-heading text-xl font-semibold text-warm-800">
+                Photos
+              </h2>
+              <div className="mt-6">
+                <GalleryView albums={galleryAlbums} />
+              </div>
+            </section>
           )}
 
           {/* Eulogies */}

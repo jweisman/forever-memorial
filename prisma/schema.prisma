@@ -109,6 +109,7 @@ model Album {
   id         String   @id @default(cuid())
   memorialId String
   name       String
+  order      Int      @default(0)
   createdAt  DateTime @default(now())
 
   memorial Memorial @relation(fields: [memorialId], references: [id], onDelete: Cascade)

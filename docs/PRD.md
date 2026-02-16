@@ -68,7 +68,12 @@ The memorial page provides the main functionality on the site. It has two modes-
 Text area to describe life story 
 
 ### Image gallery
-Images organized in albums, with a default album automatically created. Apply sensible restrictions on image size (5MB?) and number of images (100?)
+* Images organized in albums, with a default album automatically created. Albums can be reordered by dragging.
+* Uploading images should be as simple as possible, including a drag and drop area. 
+* Apply sensible restrictions on image size (5MB?) and number of images (100?). 
+* Apply sensible limitations on the number of images shown with scrolling.
+* When viewed, images in albums should take two rows with vertical scrolling
+* Support drag to change order of images inside an album
 
 ### Eulogies
 Multiple eulogies, each with the text, whom it was delivered by and their relation to the deceased

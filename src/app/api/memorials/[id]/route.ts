@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { buildSlug } from "@/lib/slug";
+import { generateViewUrl } from "@/lib/s3-helpers";
 
 export async function GET(
   _request: Request,
@@ -21,7 +22,16 @@ export async function GET(
     return NextResponse.json({ error: "Not found" }, { status: 404 });
   }
 
-  return NextResponse.json(memorial);
+  // Resolve memorial picture S3 key to presigned URL
+  let memorialPictureUrl: string | null = null;
+  if (memorial.memorialPicture) {
+    memorialPictureUrl = await generateViewUrl(memorial.memorialPicture);
+  }
+
+  return NextResponse.json({
+    ...memorial,
+    memorialPicture: memorialPictureUrl,
+  });
 }
 
 export async function PATCH(

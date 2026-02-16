@@ -1,0 +1,92 @@
+"use client";
+
+import { useState } from "react";
+import Lightbox from "./Lightbox";
+import ScrollableRow from "./ScrollableRow";
+
+type ImageWithUrl = {
+  id: string;
+  url: string;
+  caption: string | null;
+};
+
+type AlbumWithImages = {
+  id: string;
+  name: string;
+  images: ImageWithUrl[];
+};
+
+type GalleryViewProps = {
+  albums: AlbumWithImages[];
+};
+
+export default function GalleryView({ albums }: GalleryViewProps) {
+  const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
+
+  // Flatten all images for lightbox navigation
+  const allImages = albums.flatMap((album) => album.images);
+  const nonEmptyAlbums = albums.filter((album) => album.images.length > 0);
+  const singleAlbum = nonEmptyAlbums.length === 1;
+
+  if (allImages.length === 0) return null;
+
+  // Calculate global index for an image
+  function getGlobalIndex(albumIndex: number, imageIndex: number): number {
+    let offset = 0;
+    for (let i = 0; i < albumIndex; i++) {
+      offset += nonEmptyAlbums[i].images.length;
+    }
+    return offset + imageIndex;
+  }
+
+  return (
+    <div>
+      <div className="space-y-8">
+        {nonEmptyAlbums.map((album, albumIdx) => (
+          <div key={album.id}>
+            {!singleAlbum && (
+              <h3 className="mb-3 font-heading text-base font-semibold text-warm-700">
+                {album.name}
+              </h3>
+            )}
+            <ScrollableRow>
+              {album.images.map((image, imgIdx) => (
+                <button
+                  key={image.id}
+                  onClick={() =>
+                    setLightboxIndex(getGlobalIndex(albumIdx, imgIdx))
+                  }
+                  className="group relative size-36 shrink-0 overflow-hidden rounded-lg bg-warm-100"
+                >
+                  <img
+                    src={image.url}
+                    alt={image.caption || "Gallery image"}
+                    className="size-full object-cover transition-transform group-hover:scale-105"
+                    loading="lazy"
+                    draggable={false}
+                  />
+                  {image.caption && (
+                    <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/60 to-transparent p-2 opacity-0 transition-opacity group-hover:opacity-100">
+                      <p className="truncate text-xs text-white">
+                        {image.caption}
+                      </p>
+                    </div>
+                  )}
+                </button>
+              ))}
+            </ScrollableRow>
+          </div>
+        ))}
+      </div>
+
+      {lightboxIndex !== null && (
+        <Lightbox
+          images={allImages}
+          currentIndex={lightboxIndex}
+          onClose={() => setLightboxIndex(null)}
+          onNavigate={setLightboxIndex}
+        />
+      )}
+    </div>
+  );
+}

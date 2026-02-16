@@ -8,6 +8,8 @@ import Card from "@/components/ui/Card";
 import Button from "@/components/ui/Button";
 import SectionHeading from "@/components/ui/SectionHeading";
 import EulogyForm from "@/components/memorial/EulogyForm";
+import MemorialPictureUploader from "@/components/memorial/MemorialPictureUploader";
+import AlbumSection from "@/components/memorial/AlbumSection";
 import { use } from "react";
 
 type Eulogy = {
@@ -16,6 +18,21 @@ type Eulogy = {
   deliveredBy: string;
   relation: string | null;
   order: number;
+};
+
+type ImageRecord = {
+  id: string;
+  s3Key: string;
+  albumId: string;
+  caption: string | null;
+  order: number;
+  url: string;
+};
+
+type Album = {
+  id: string;
+  name: string;
+  images: ImageRecord[];
 };
 
 type Memorial = {
@@ -28,6 +45,7 @@ type Memorial = {
   funeralInfo: string | null;
   survivedBy: string | null;
   lifeStory: string | null;
+  memorialPicture: string | null;
   ownerId: string;
   eulogies: Eulogy[];
 };
@@ -65,10 +83,22 @@ export default function MemorialEditPage({
   const [survivedBy, setSurvivedBy] = useState("");
   const [lifeStory, setLifeStory] = useState("");
 
+  // Memorial picture
+  const [memorialPictureUrl, setMemorialPictureUrl] = useState<string | null>(
+    null
+  );
+
   // Eulogy state
   const [eulogies, setEulogies] = useState<Eulogy[]>([]);
   const [showEulogyForm, setShowEulogyForm] = useState(false);
   const [editingEulogyId, setEditingEulogyId] = useState<string | null>(null);
+
+  // Gallery state
+  const [albums, setAlbums] = useState<Album[]>([]);
+  const [newAlbumName, setNewAlbumName] = useState("");
+  const [totalImageCount, setTotalImageCount] = useState(0);
+  const [albumDragIndex, setAlbumDragIndex] = useState<number | null>(null);
+  const [albumDropIndex, setAlbumDropIndex] = useState<number | null>(null);
 
   const fetchMemorial = useCallback(async () => {
     const res = await fetch(`/api/memorials/${memorialId}`);
@@ -86,13 +116,38 @@ export default function MemorialEditPage({
     setFuneralInfo(data.funeralInfo ?? "");
     setSurvivedBy(data.survivedBy ?? "");
     setLifeStory(data.lifeStory ?? "");
+    setMemorialPictureUrl(data.memorialPicture);
     setEulogies(data.eulogies);
     setLoading(false);
   }, [memorialId]);
 
+  const fetchAlbums = useCallback(async () => {
+    const res = await fetch(`/api/memorials/${memorialId}/albums`);
+    if (!res.ok) return;
+    let data: Album[] = await res.json();
+
+    // Ensure default "Photos" album exists
+    if (data.length === 0) {
+      const createRes = await fetch(`/api/memorials/${memorialId}/albums`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name: "Photos" }),
+      });
+      if (createRes.ok) {
+        const newAlbum = await createRes.json();
+        data = [{ ...newAlbum, images: [] }];
+      }
+    }
+
+    setAlbums(data);
+    const total = data.reduce((sum, a) => sum + a.images.length, 0);
+    setTotalImageCount(total);
+  }, [memorialId]);
+
   useEffect(() => {
     fetchMemorial();
-  }, [fetchMemorial]);
+    fetchAlbums();
+  }, [fetchMemorial, fetchAlbums]);
 
   // Check ownership
   if (!loading && memorial && session?.user?.id !== memorial.ownerId) {
@@ -220,6 +275,57 @@ export default function MemorialEditPage({
     });
   }
 
+  async function handleCreateAlbum() {
+    if (!newAlbumName.trim()) return;
+    const res = await fetch(`/api/memorials/${memorialId}/albums`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ name: newAlbumName.trim() }),
+    });
+    if (res.ok) {
+      setNewAlbumName("");
+      fetchAlbums();
+    }
+  }
+
+  function handleAlbumDragStart(e: React.DragEvent, index: number) {
+    setAlbumDragIndex(index);
+    e.dataTransfer.effectAllowed = "move";
+    e.dataTransfer.setData("type", "album");
+  }
+
+  function handleAlbumDragOver(e: React.DragEvent, index: number) {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = "move";
+    setAlbumDropIndex(index);
+  }
+
+  async function handleAlbumDragEnd() {
+    if (
+      albumDragIndex === null ||
+      albumDropIndex === null ||
+      albumDragIndex === albumDropIndex
+    ) {
+      setAlbumDragIndex(null);
+      setAlbumDropIndex(null);
+      return;
+    }
+
+    const reordered = [...albums];
+    const [moved] = reordered.splice(albumDragIndex, 1);
+    reordered.splice(albumDropIndex, 0, moved);
+    setAlbums(reordered);
+
+    setAlbumDragIndex(null);
+    setAlbumDropIndex(null);
+
+    await fetch(`/api/memorials/${memorialId}/albums/reorder`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ albumIds: reordered.map((a) => a.id) }),
+    });
+  }
+
   if (loading) {
     return (
       <div className="mx-auto max-w-3xl px-4 py-12 text-center">
@@ -260,6 +366,16 @@ export default function MemorialEditPage({
           <h2 className="font-heading text-lg font-semibold text-warm-800">
             General Information
           </h2>
+
+          {/* Memorial Picture */}
+          <div className="mt-4 flex justify-center">
+            <MemorialPictureUploader
+              memorialId={memorialId}
+              currentPictureUrl={memorialPictureUrl}
+              onUpdate={(url) => setMemorialPictureUrl(url)}
+            />
+          </div>
+
           <form onSubmit={handleSave} className="mt-4 space-y-4">
             <div>
               <label
@@ -504,6 +620,68 @@ export default function MemorialEditPage({
                 )}
               </div>
             ))}
+          </div>
+        </Card>
+
+        {/* Photo Gallery */}
+        <Card>
+          <div className="flex items-center justify-between">
+            <h2 className="font-heading text-lg font-semibold text-warm-800">
+              Photo Gallery
+            </h2>
+            <p className="text-sm text-warm-400">
+              {totalImageCount} / 100 images
+            </p>
+          </div>
+
+          {albums.length > 1 && (
+            <p className="mt-2 text-xs text-warm-400">
+              Drag albums to reorder
+            </p>
+          )}
+
+          {/* Albums */}
+          <div className="mt-4 space-y-6">
+            {albums.map((album, index) => (
+              <AlbumSection
+                key={album.id}
+                album={album}
+                images={album.images}
+                memorialId={memorialId}
+                totalImageCount={totalImageCount}
+                onImagesChange={fetchAlbums}
+                albumDraggable={albums.length > 1}
+                onAlbumDragStart={(e) => handleAlbumDragStart(e, index)}
+                onAlbumDragOver={(e) => handleAlbumDragOver(e, index)}
+                onAlbumDragEnd={handleAlbumDragEnd}
+                isAlbumDragTarget={albumDropIndex === index}
+              />
+            ))}
+          </div>
+
+          {/* Create album */}
+          <div className="mt-6 flex items-center gap-2">
+            <input
+              type="text"
+              value={newAlbumName}
+              onChange={(e) => setNewAlbumName(e.target.value)}
+              placeholder="New album name..."
+              className="rounded-lg border border-border bg-surface px-3 py-2 text-sm text-warm-800 placeholder-warm-400 focus:border-accent focus:outline-none"
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  e.preventDefault();
+                  handleCreateAlbum();
+                }
+              }}
+            />
+            <Button
+              variant="secondary"
+              size="sm"
+              onClick={handleCreateAlbum}
+              disabled={!newAlbumName.trim()}
+            >
+              Create Album
+            </Button>
           </div>
         </Card>
       </div>

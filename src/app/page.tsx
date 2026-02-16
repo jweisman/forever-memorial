@@ -3,6 +3,7 @@ import SearchBar from "@/components/ui/SearchBar";
 import SectionHeading from "@/components/ui/SectionHeading";
 import MemorialCard from "@/components/ui/MemorialCard";
 import { prisma } from "@/lib/prisma";
+import { generateViewUrl } from "@/lib/s3-helpers";
 
 function formatDateRange(
   birthday: Date | null,
@@ -17,7 +18,7 @@ function formatDateRange(
 }
 
 export default async function Home() {
-  const recentMemorials = await prisma.memorial.findMany({
+  const rawMemorials = await prisma.memorial.findMany({
     where: { disabled: false },
     orderBy: { createdAt: "desc" },
     take: 6,
@@ -31,6 +32,15 @@ export default async function Home() {
       memorialPicture: true,
     },
   });
+
+  const recentMemorials = await Promise.all(
+    rawMemorials.map(async (m) => ({
+      ...m,
+      pictureUrl: m.memorialPicture
+        ? await generateViewUrl(m.memorialPicture)
+        : null,
+    }))
+  );
 
   return (
     <>
@@ -147,6 +157,7 @@ export default async function Home() {
                   name={memorial.name}
                   dates={formatDateRange(memorial.birthday, memorial.dateOfDeath)}
                   placeOfDeath={memorial.placeOfDeath ?? undefined}
+                  imageUrl={memorial.pictureUrl ?? undefined}
                   href={`/memorial/${memorial.slug}`}
                 />
               ))
