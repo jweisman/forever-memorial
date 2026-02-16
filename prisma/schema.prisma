@@ -1,0 +1,176 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum Role {
+  USER
+  ADMIN
+}
+
+enum MemoryStatus {
+  PENDING
+  ACCEPTED
+  IGNORED
+  RETURNED
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  name      String?
+  avatar    String?
+  role      Role     @default(USER)
+  disabled  Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  memorials         Memorial[]
+  submittedMemories Memory[]
+  accounts          Account[]
+  sessions          Session[]
+
+  @@map("users")
+}
+
+// NextAuth models
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+  @@map("accounts")
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("sessions")
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+  @@map("verification_tokens")
+}
+
+model Memorial {
+  id              String    @id @default(cuid())
+  slug            String    @unique
+  ownerId         String
+  name            String
+  memorialPicture String?
+  birthday        DateTime?
+  dateOfDeath     DateTime
+  placeOfDeath    String?
+  funeralInfo     String?
+  survivedBy      String?
+  lifeStory       String?
+  disabled        Boolean   @default(false)
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  owner    User      @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  albums   Album[]
+  eulogies Eulogy[]
+  memories Memory[]
+
+  @@index([name])
+  @@map("memorials")
+}
+
+model Album {
+  id         String   @id @default(cuid())
+  memorialId String
+  name       String
+  createdAt  DateTime @default(now())
+
+  memorial Memorial @relation(fields: [memorialId], references: [id], onDelete: Cascade)
+  images   Image[]
+
+  @@map("albums")
+}
+
+model Image {
+  id        String   @id @default(cuid())
+  albumId   String
+  s3Key     String
+  caption   String?
+  order     Int      @default(0)
+  createdAt DateTime @default(now())
+
+  album Album @relation(fields: [albumId], references: [id], onDelete: Cascade)
+
+  @@map("images")
+}
+
+model Eulogy {
+  id          String   @id @default(cuid())
+  memorialId  String
+  text        String
+  deliveredBy String
+  relation    String?
+  order       Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  memorial Memorial @relation(fields: [memorialId], references: [id], onDelete: Cascade)
+
+  @@map("eulogies")
+}
+
+model Memory {
+  id            String       @id @default(cuid())
+  memorialId    String
+  submitterId   String
+  name          String
+  withholdName  Boolean      @default(false)
+  relation      String?
+  text          String
+  status        MemoryStatus @default(PENDING)
+  returnMessage String?
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+
+  memorial  Memorial      @relation(fields: [memorialId], references: [id], onDelete: Cascade)
+  submitter User          @relation(fields: [submitterId], references: [id], onDelete: Cascade)
+  images    MemoryImage[]
+
+  @@map("memories")
+}
+
+model MemoryImage {
+  id        String   @id @default(cuid())
+  memoryId  String
+  s3Key     String
+  caption   String?
+  createdAt DateTime @default(now())
+
+  memory Memory @relation(fields: [memoryId], references: [id], onDelete: Cascade)
+
+  @@map("memory_images")
+}

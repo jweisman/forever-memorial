@@ -23,7 +23,7 @@ Users can register and login with Google or with a magic link via email. (Passwo
 * A user can edit their profile information or delete their account from their dashboard. When an account is deleted the memorial pages it owns are also deleted (with the appropriate warning message)
 
 ## Landing Page
-The Landing Page page is where guests arrive when visiting the site. It describes the site's purpose and functionality and offers users to register for a new accounbt (or log in). 
+The Landing Page page is where guests arrive when visiting the site. It describes the site's purpose and functionality and offers users to register for a new account (or log in). 
 
 ### Search
 The search feature is available on the landing page and persistent across memorial pages. Searching can be done by the name of the deceased, and supports suggestions by partial search. Names in the suggestions are returned as "Name (place of death)".
@@ -69,17 +69,17 @@ Text area to describe life story
 ### Image gallery
 Images organized in albums, with a default album automatically created. Apply sensible restrictions on image size (5MB?) and number of images (100?)
 
-### Euologies
+### Eulogies
 Multiple eulogies, each with the text, whom it was delivered by and their relation to the deceased
 
 ### Memories
 Multiple memories, submitted and approved by a page owner. Memories include:
-* Name of user who submitted the memory (with an option to ask the name to be witheld when displayed)
+* Name of user who submitted the memory (with an option to ask the name to be withheld when displayed)
 * How they knew the deceased
 * Text 
 * Pictures
 
-Memories are listed in the order they are submitted. Memories can be edited by the owner of the memorial page at any time when the page is in edit mode, but not by the memory submitter unles returned by the memorial page owner.
+Memories are listed in the order they are submitted. Memories can be edited by the owner of the memorial page at any time when the page is in edit mode, but not by the memory submitter unless returned by the memorial page owner.
 
 ## Privacy & Moderation
 * All pages are public and searchable in V1. 
@@ -96,7 +96,7 @@ Users receive notifications:
 * Data model should not be country specific, i.e. it should support addresses/locations, etc. from multiple countries (e.g. US, England, Israel)
 * Support search engine indexing
 * Memorial page URLs should be friendly and sharable (i.e. slug with ID and name)
-* Technolgy stack:
+* Technology stack:
  * Next.js and TS for website (NextAuth for authentication)
  * Postgres for DB (AWS RDS for production)
  * ASW S3 for image storage (including presigned direct uploads and signed URLs for display); image optimization/thumbnail handling will be done in a future version. 
