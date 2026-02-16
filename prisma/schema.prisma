@@ -21,9 +21,11 @@ enum MemoryStatus {
 
 model User {
   id        String   @id @default(cuid())
-  email     String   @unique
-  name      String?
-  avatar    String?
+  email         String    @unique
+  emailVerified DateTime?
+  name          String?
+  image         String?
+  avatar        String?
   role      Role     @default(USER)
   disabled  Boolean  @default(false)
   createdAt DateTime @default(now())

@@ -1,5 +1,6 @@
 import Link from "next/link";
 import SearchBar from "@/components/ui/SearchBar";
+import HeaderAuth from "@/components/HeaderAuth";
 
 export default function Header() {
   return (
@@ -28,12 +29,7 @@ export default function Header() {
             aria-label="Search memorials"
           />
 
-          <Link
-            href="#"
-            className="text-sm font-medium text-warm-600 transition-colors hover:text-accent"
-          >
-            Sign in
-          </Link>
+          <HeaderAuth />
 
           <button
             className="rounded-md px-2 py-1 text-sm font-medium text-warm-500 transition-colors hover:bg-warm-50 hover:text-warm-700"

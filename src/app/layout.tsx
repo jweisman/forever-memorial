@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 import { Lora, Source_Sans_3 } from "next/font/google";
+import { auth } from "@/lib/auth";
+import SessionProvider from "@/components/SessionProvider";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import "./globals.css";
@@ -22,24 +24,28 @@ export const metadata: Metadata = {
     "A platform for sharing stories, images, and memories of loved ones who have passed away.",
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const session = await auth();
+
   return (
     <html lang="en" dir="ltr">
       <body
         className={`${lora.variable} ${sourceSans.variable} flex min-h-screen flex-col`}
       >
-        <a href="#main-content" className="skip-link">
-          Skip to main content
-        </a>
-        <Header />
-        <main id="main-content" className="flex-1">
-          {children}
-        </main>
-        <Footer />
+        <SessionProvider session={session}>
+          <a href="#main-content" className="skip-link">
+            Skip to main content
+          </a>
+          <Header />
+          <main id="main-content" className="flex-1">
+            {children}
+          </main>
+          <Footer />
+        </SessionProvider>
       </body>
     </html>
   );
