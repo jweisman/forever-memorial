@@ -1,11 +1,35 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useSession } from "next-auth/react";
 import { signOut } from "next-auth/react";
+import Link from "next/link";
 import Card from "@/components/ui/Card";
 import Button from "@/components/ui/Button";
 import SectionHeading from "@/components/ui/SectionHeading";
+
+type Memorial = {
+  id: string;
+  slug: string;
+  name: string;
+  birthday: string | null;
+  dateOfDeath: string;
+  placeOfDeath: string | null;
+  memorialPicture: string | null;
+  createdAt: string;
+};
+
+function formatDateRange(
+  birthday: string | null,
+  dateOfDeath: string
+): string {
+  const deathYear = new Date(dateOfDeath).getFullYear();
+  if (birthday) {
+    const birthYear = new Date(birthday).getFullYear();
+    return `${birthYear} – ${deathYear}`;
+  }
+  return `d. ${deathYear}`;
+}
 
 export default function DashboardPage() {
   const { data: session, update } = useSession();
@@ -14,6 +38,24 @@ export default function DashboardPage() {
   const [saved, setSaved] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [deleting, setDeleting] = useState(false);
+
+  // Memorials state
+  const [memorials, setMemorials] = useState<Memorial[]>([]);
+  const [loadingMemorials, setLoadingMemorials] = useState(true);
+  const [deletingMemorialId, setDeletingMemorialId] = useState<string | null>(
+    null
+  );
+
+  useEffect(() => {
+    async function fetchMemorials() {
+      const res = await fetch("/api/memorials");
+      if (res.ok) {
+        setMemorials(await res.json());
+      }
+      setLoadingMemorials(false);
+    }
+    fetchMemorials();
+  }, []);
 
   async function handleProfileSave(e: React.FormEvent) {
     e.preventDefault();
@@ -39,6 +81,16 @@ export default function DashboardPage() {
       await signOut({ callbackUrl: "/" });
     }
     setDeleting(false);
+  }
+
+  async function handleDeleteMemorial(memorialId: string) {
+    const res = await fetch(`/api/memorials/${memorialId}`, {
+      method: "DELETE",
+    });
+    if (res.ok) {
+      setMemorials((prev) => prev.filter((m) => m.id !== memorialId));
+      setDeletingMemorialId(null);
+    }
   }
 
   if (!session?.user) return null;
@@ -94,17 +146,82 @@ export default function DashboardPage() {
 
         {/* My Memorials */}
         <Card>
-          <h2 className="font-heading text-lg font-semibold text-warm-800">
-            My Memorials
-          </h2>
-          <p className="mt-2 text-sm text-muted">
-            You haven&apos;t created any memorial pages yet.
-          </p>
-          <div className="mt-4">
-            <Button href="#" variant="primary" size="sm">
+          <div className="flex items-center justify-between">
+            <h2 className="font-heading text-lg font-semibold text-warm-800">
+              My Memorials
+            </h2>
+            <Button href="/dashboard/create" variant="primary" size="sm">
               Create a Memorial
             </Button>
           </div>
+
+          {loadingMemorials ? (
+            <p className="mt-4 text-sm text-muted">Loading...</p>
+          ) : memorials.length === 0 ? (
+            <p className="mt-4 text-sm text-muted">
+              You haven&apos;t created any memorial pages yet.
+            </p>
+          ) : (
+            <div className="mt-4 space-y-3">
+              {memorials.map((memorial) => (
+                <div
+                  key={memorial.id}
+                  className="flex items-center justify-between rounded-lg border border-border p-4"
+                >
+                  <Link
+                    href={`/memorial/${memorial.slug}`}
+                    className="min-w-0 flex-1"
+                  >
+                    <h3 className="truncate font-heading text-base font-semibold text-warm-800 hover:text-accent">
+                      {memorial.name}
+                    </h3>
+                    <p className="text-sm text-muted">
+                      {formatDateRange(memorial.birthday, memorial.dateOfDeath)}
+                      {memorial.placeOfDeath &&
+                        ` · ${memorial.placeOfDeath}`}
+                    </p>
+                  </Link>
+                  <div className="ml-4 flex shrink-0 gap-2">
+                    <Button
+                      href={`/memorial/${memorial.slug}/edit`}
+                      variant="ghost"
+                      size="sm"
+                    >
+                      Edit
+                    </Button>
+                    {deletingMemorialId === memorial.id ? (
+                      <div className="flex gap-1">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="text-red-600 hover:text-red-700"
+                          onClick={() => handleDeleteMemorial(memorial.id)}
+                        >
+                          Confirm
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => setDeletingMemorialId(null)}
+                        >
+                          Cancel
+                        </Button>
+                      </div>
+                    ) : (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="text-red-600 hover:text-red-700"
+                        onClick={() => setDeletingMemorialId(memorial.id)}
+                      >
+                        Delete
+                      </Button>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
         </Card>
 
         {/* Pending Reviews */}

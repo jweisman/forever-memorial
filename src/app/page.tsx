@@ -2,26 +2,36 @@ import Button from "@/components/ui/Button";
 import SearchBar from "@/components/ui/SearchBar";
 import SectionHeading from "@/components/ui/SectionHeading";
 import MemorialCard from "@/components/ui/MemorialCard";
+import { prisma } from "@/lib/prisma";
 
-const SAMPLE_MEMORIALS = [
-  {
-    name: "Ruth Goldberg",
-    dates: "1935 – 2024",
-    placeOfDeath: "Jerusalem, Israel",
-  },
-  {
-    name: "James O'Brien",
-    dates: "1948 – 2025",
-    placeOfDeath: "London, England",
-  },
-  {
-    name: "Sarah Chen",
-    dates: "1962 – 2025",
-    placeOfDeath: "New York, NY",
-  },
-];
+function formatDateRange(
+  birthday: Date | null,
+  dateOfDeath: Date
+): string {
+  const deathYear = new Date(dateOfDeath).getFullYear();
+  if (birthday) {
+    const birthYear = new Date(birthday).getFullYear();
+    return `${birthYear} – ${deathYear}`;
+  }
+  return `d. ${deathYear}`;
+}
 
-export default function Home() {
+export default async function Home() {
+  const recentMemorials = await prisma.memorial.findMany({
+    where: { disabled: false },
+    orderBy: { createdAt: "desc" },
+    take: 6,
+    select: {
+      id: true,
+      slug: true,
+      name: true,
+      birthday: true,
+      dateOfDeath: true,
+      placeOfDeath: true,
+      memorialPicture: true,
+    },
+  });
+
   return (
     <>
       {/* Hero section */}
@@ -55,10 +65,10 @@ export default function Home() {
           </div>
 
           <div className="mt-8 flex flex-col items-center justify-center gap-4 sm:flex-row">
-            <Button href="#" variant="primary" size="lg">
+            <Button href="/dashboard/create" variant="primary" size="lg">
               Create a Memorial
             </Button>
-            <Button href="#" variant="ghost" size="lg">
+            <Button href="#how-heading" variant="ghost" size="lg">
               Learn more
             </Button>
           </div>
@@ -130,9 +140,21 @@ export default function Home() {
             subtitle="Recently created memorial pages"
           />
           <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {SAMPLE_MEMORIALS.map((memorial) => (
-              <MemorialCard key={memorial.name} {...memorial} />
-            ))}
+            {recentMemorials.length > 0 ? (
+              recentMemorials.map((memorial) => (
+                <MemorialCard
+                  key={memorial.id}
+                  name={memorial.name}
+                  dates={formatDateRange(memorial.birthday, memorial.dateOfDeath)}
+                  placeOfDeath={memorial.placeOfDeath ?? undefined}
+                  href={`/memorial/${memorial.slug}`}
+                />
+              ))
+            ) : (
+              <p className="col-span-full text-center text-sm text-muted">
+                No memorials have been created yet. Be the first to create one.
+              </p>
+            )}
           </div>
         </div>
       </section>
@@ -151,7 +173,7 @@ export default function Home() {
             share their stories.
           </p>
           <div className="mt-8">
-            <Button href="#" variant="primary" size="lg">
+            <Button href="/dashboard/create" variant="primary" size="lg">
               Get Started
             </Button>
           </div>

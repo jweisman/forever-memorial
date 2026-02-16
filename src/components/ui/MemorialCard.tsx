@@ -1,3 +1,4 @@
+import Link from "next/link";
 import Card from "./Card";
 
 type MemorialCardProps = {
@@ -5,6 +6,7 @@ type MemorialCardProps = {
   dates: string;
   placeOfDeath?: string;
   imageUrl?: string;
+  href?: string;
 };
 
 export default function MemorialCard({
@@ -12,10 +14,20 @@ export default function MemorialCard({
   dates,
   placeOfDeath,
   imageUrl,
+  href,
 }: MemorialCardProps) {
+  const Wrapper = href
+    ? ({ children, className }: { children: React.ReactNode; className?: string }) => (
+        <Link href={href} className={`block ${className ?? ""}`}>{children}</Link>
+      )
+    : ({ children, className }: { children: React.ReactNode; className?: string }) => (
+        <div className={className}>{children}</div>
+      );
+
   return (
-    <Card padding="sm" className="group transition-shadow hover:shadow-md">
-      <div className="flex items-center gap-4">
+    <Wrapper>
+      <Card padding="sm" className="group transition-shadow hover:shadow-md">
+        <div className="flex items-center gap-4">
         <div
           className="size-16 shrink-0 rounded-lg bg-warm-200 bg-cover bg-center"
           style={imageUrl ? { backgroundImage: `url(${imageUrl})` } : undefined}
@@ -52,5 +64,6 @@ export default function MemorialCard({
         </div>
       </div>
     </Card>
+    </Wrapper>
   );
 }

@@ -18,14 +18,14 @@
 - Environment configuration
 - Base layout shell (Header, Footer, landing page)
 
-## Phase 2: Authentication & User Management
+## Phase 2: Authentication & User Management [COMPLETE]
 - NextAuth.js with Google OAuth + Email (magic link) providers
 - Prisma adapter for user/session storage
 - Sign-in/register page
 - User profile edit (name, avatar)
 - Account deletion with cascade warning
 
-## Phase 3: Memorial Pages — CRUD & Display
+## Phase 3: Memorial Pages — CRUD & Display [COMPLETE]
 - Memorial creation form (name, date of death required)
 - Friendly URL slugs: `/memorial/[id]-[slugified-name]`
 - Memorial view page with all sections
