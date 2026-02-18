@@ -121,3 +121,52 @@ export async function uploadMemorialPicture(
   const data = await confirmRes.json();
   return data.url;
 }
+
+type MemoryImageRecord = {
+  id: string;
+  s3Key: string;
+  caption: string | null;
+  url: string;
+};
+
+export async function uploadMemoryImage(
+  memorialId: string,
+  memoryId: string,
+  file: File
+): Promise<MemoryImageRecord> {
+  // 1. Get presigned URL
+  const urlRes = await fetch(
+    `/api/memorials/${memorialId}/memories/${memoryId}/images/upload-url`,
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        fileName: file.name,
+        contentType: file.type,
+      }),
+    }
+  );
+  if (!urlRes.ok) {
+    const err = await urlRes.json();
+    throw new Error(err.error || "Failed to get upload URL");
+  }
+  const { uploadUrl, s3Key, imageId } = await urlRes.json();
+
+  // 2. Upload to S3
+  await uploadImageToS3(file, uploadUrl);
+
+  // 3. Confirm
+  const confirmRes = await fetch(
+    `/api/memorials/${memorialId}/memories/${memoryId}/images/confirm`,
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ imageId, s3Key }),
+    }
+  );
+  if (!confirmRes.ok) {
+    const err = await confirmRes.json();
+    throw new Error(err.error || "Failed to confirm upload");
+  }
+  return confirmRes.json();
+}

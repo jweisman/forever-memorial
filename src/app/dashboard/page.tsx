@@ -7,6 +7,8 @@ import Link from "next/link";
 import Card from "@/components/ui/Card";
 import Button from "@/components/ui/Button";
 import SectionHeading from "@/components/ui/SectionHeading";
+import MemoryReviewCard from "@/components/memorial/MemoryReviewCard";
+import MySubmissionCard from "@/components/memorial/MySubmissionCard";
 
 type Memorial = {
   id: string;
@@ -46,15 +48,75 @@ export default function DashboardPage() {
     null
   );
 
+  // Review queue state
+  type PendingMemory = {
+    id: string;
+    memorialId: string;
+    name: string;
+    withholdName: boolean;
+    relation: string | null;
+    text: string;
+    status: string;
+    createdAt: string;
+    images: { id: string; url: string; caption: string | null }[];
+    memorial: { name: string; slug: string };
+  };
+  const [pendingMemories, setPendingMemories] = useState<PendingMemory[]>([]);
+  const [loadingReviews, setLoadingReviews] = useState(true);
+  const [showIgnored, setShowIgnored] = useState(false);
+
+  // My submissions state
+  type MySubmission = {
+    id: string;
+    memorialId: string;
+    name: string;
+    withholdName: boolean;
+    relation: string | null;
+    text: string;
+    status: string;
+    returnMessage: string | null;
+    createdAt: string;
+    images: { id: string; url: string; caption: string | null }[];
+    memorial: { id: string; name: string; slug: string };
+  };
+  const [mySubmissions, setMySubmissions] = useState<MySubmission[]>([]);
+  const [loadingSubmissions, setLoadingSubmissions] = useState(true);
+
+  async function fetchPendingMemories(memorialsList: Memorial[]) {
+    const allMemories: PendingMemory[] = [];
+    for (const mem of memorialsList) {
+      const res = await fetch(
+        `/api/memorials/${mem.id}/memories?status=PENDING,IGNORED`
+      );
+      if (res.ok) {
+        const memories = await res.json();
+        allMemories.push(...memories);
+      }
+    }
+    setPendingMemories(allMemories);
+    setLoadingReviews(false);
+  }
+
+  async function fetchMySubmissions() {
+    const res = await fetch("/api/user/memories");
+    if (res.ok) {
+      setMySubmissions(await res.json());
+    }
+    setLoadingSubmissions(false);
+  }
+
   useEffect(() => {
     async function fetchMemorials() {
       const res = await fetch("/api/memorials");
       if (res.ok) {
-        setMemorials(await res.json());
+        const data = await res.json();
+        setMemorials(data);
+        fetchPendingMemories(data);
       }
       setLoadingMemorials(false);
     }
     fetchMemorials();
+    fetchMySubmissions();
   }, []);
 
   async function handleProfileSave(e: React.FormEvent) {
@@ -226,12 +288,98 @@ export default function DashboardPage() {
 
         {/* Pending Reviews */}
         <Card>
+          <div className="flex items-center justify-between">
+            <h2 className="font-heading text-lg font-semibold text-warm-800">
+              Pending Reviews
+              {pendingMemories.filter((m) => m.status === "PENDING").length >
+                0 && (
+                <span className="ml-2 inline-flex items-center rounded-full bg-accent px-2 py-0.5 text-xs font-medium text-white">
+                  {
+                    pendingMemories.filter((m) => m.status === "PENDING")
+                      .length
+                  }
+                </span>
+              )}
+            </h2>
+            <label className="flex items-center gap-2 text-sm text-muted">
+              <input
+                type="checkbox"
+                checked={showIgnored}
+                onChange={(e) => setShowIgnored(e.target.checked)}
+                className="rounded border-warm-300 text-accent focus:ring-accent"
+              />
+              Show ignored
+            </label>
+          </div>
+
+          {loadingReviews ? (
+            <p className="mt-4 text-sm text-muted">Loading...</p>
+          ) : (() => {
+            const filtered = pendingMemories.filter(
+              (m) => showIgnored || m.status !== "IGNORED"
+            );
+            if (filtered.length === 0) {
+              return (
+                <p className="mt-4 text-sm text-muted">
+                  No pending memory submissions to review.
+                </p>
+              );
+            }
+
+            // Group by memorial
+            const grouped: Record<string, PendingMemory[]> = {};
+            for (const mem of filtered) {
+              const key = mem.memorial.name;
+              if (!grouped[key]) grouped[key] = [];
+              grouped[key].push(mem);
+            }
+
+            return (
+              <div className="mt-4 space-y-6">
+                {Object.entries(grouped).map(([memorialName, memories]) => (
+                  <div key={memorialName}>
+                    <h3 className="mb-3 font-heading text-base font-semibold text-warm-700">
+                      {memorialName}
+                    </h3>
+                    <div className="space-y-3">
+                      {memories.map((memory) => (
+                        <MemoryReviewCard
+                          key={memory.id}
+                          memory={memory}
+                          onReviewed={() => fetchPendingMemories(memorials)}
+                        />
+                      ))}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            );
+          })()}
+        </Card>
+
+        {/* My Submissions */}
+        <Card>
           <h2 className="font-heading text-lg font-semibold text-warm-800">
-            Pending Reviews
+            My Submissions
           </h2>
-          <p className="mt-2 text-sm text-muted">
-            No pending memory submissions to review.
-          </p>
+
+          {loadingSubmissions ? (
+            <p className="mt-4 text-sm text-muted">Loading...</p>
+          ) : mySubmissions.length === 0 ? (
+            <p className="mt-4 text-sm text-muted">
+              You haven&apos;t submitted any memories yet.
+            </p>
+          ) : (
+            <div className="mt-4 space-y-3">
+              {mySubmissions.map((memory) => (
+                <MySubmissionCard
+                  key={memory.id}
+                  memory={memory}
+                  onChanged={fetchMySubmissions}
+                />
+              ))}
+            </div>
+          )}
         </Card>
 
         {/* Danger Zone */}

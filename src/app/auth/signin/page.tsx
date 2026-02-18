@@ -2,11 +2,14 @@
 
 import { useState } from "react";
 import { signIn } from "next-auth/react";
+import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import Card from "@/components/ui/Card";
 import Button from "@/components/ui/Button";
 
 export default function SignInPage() {
+  const searchParams = useSearchParams();
+  const callbackUrl = searchParams.get("callbackUrl") || "/dashboard";
   const [email, setEmail] = useState("");
   const [emailSent, setEmailSent] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -15,7 +18,7 @@ export default function SignInPage() {
     e.preventDefault();
     if (!email) return;
     setLoading(true);
-    await signIn("nodemailer", { email, redirect: false, callbackUrl: "/dashboard" });
+    await signIn("nodemailer", { email, redirect: false, callbackUrl });
     setEmailSent(true);
     setLoading(false);
   }
@@ -70,7 +73,7 @@ export default function SignInPage() {
                 variant="secondary"
                 size="lg"
                 className="w-full"
-                onClick={() => signIn("google", { callbackUrl: "/dashboard" })}
+                onClick={() => signIn("google", { callbackUrl })}
               >
                 <svg className="size-5" viewBox="0 0 24 24" aria-hidden="true">
                   <path

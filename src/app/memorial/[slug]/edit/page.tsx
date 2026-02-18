@@ -10,6 +10,7 @@ import SectionHeading from "@/components/ui/SectionHeading";
 import EulogyForm from "@/components/memorial/EulogyForm";
 import MemorialPictureUploader from "@/components/memorial/MemorialPictureUploader";
 import AlbumSection from "@/components/memorial/AlbumSection";
+import MemoryEditCard from "@/components/memorial/MemoryEditCard";
 import { use } from "react";
 
 type Eulogy = {
@@ -100,6 +101,18 @@ export default function MemorialEditPage({
   const [albumDragIndex, setAlbumDragIndex] = useState<number | null>(null);
   const [albumDropIndex, setAlbumDropIndex] = useState<number | null>(null);
 
+  // Memories state
+  type MemoryRecord = {
+    id: string;
+    memorialId: string;
+    name: string;
+    withholdName: boolean;
+    relation: string | null;
+    text: string;
+    images: { id: string; url: string; caption: string | null }[];
+  };
+  const [memories, setMemories] = useState<MemoryRecord[]>([]);
+
   const fetchMemorial = useCallback(async () => {
     const res = await fetch(`/api/memorials/${memorialId}`);
     if (!res.ok) {
@@ -144,10 +157,20 @@ export default function MemorialEditPage({
     setTotalImageCount(total);
   }, [memorialId]);
 
+  const fetchMemories = useCallback(async () => {
+    const res = await fetch(
+      `/api/memorials/${memorialId}/memories?status=ACCEPTED`
+    );
+    if (res.ok) {
+      setMemories(await res.json());
+    }
+  }, [memorialId]);
+
   useEffect(() => {
     fetchMemorial();
     fetchAlbums();
-  }, [fetchMemorial, fetchAlbums]);
+    fetchMemories();
+  }, [fetchMemorial, fetchAlbums, fetchMemories]);
 
   // Check ownership
   if (!loading && memorial && session?.user?.id !== memorial.ownerId) {
@@ -683,6 +706,29 @@ export default function MemorialEditPage({
               Create Album
             </Button>
           </div>
+        </Card>
+
+        {/* Accepted Memories */}
+        <Card>
+          <h2 className="font-heading text-lg font-semibold text-warm-800">
+            Accepted Memories
+          </h2>
+          {memories.length === 0 ? (
+            <p className="mt-4 text-sm text-muted">
+              No accepted memories yet.
+            </p>
+          ) : (
+            <div className="mt-4 space-y-4">
+              {memories.map((memory) => (
+                <MemoryEditCard
+                  key={memory.id}
+                  memory={memory}
+                  onUpdated={fetchMemories}
+                  onDeleted={fetchMemories}
+                />
+              ))}
+            </div>
+          )}
         </Card>
       </div>
     </div>

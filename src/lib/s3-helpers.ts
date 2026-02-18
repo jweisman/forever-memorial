@@ -59,3 +59,12 @@ export function buildMemorialPictureS3Key(
 ): string {
   return `memorials/${memorialId}/memorial-picture.${ext}`;
 }
+
+export function buildMemoryImageS3Key(
+  memorialId: string,
+  memoryId: string,
+  imageId: string,
+  ext: string
+): string {
+  return `memorials/${memorialId}/memories/${memoryId}/${imageId}.${ext}`;
+}

@@ -42,7 +42,7 @@
 - 100-image limit per memorial
 - Memorial picture upload through same S3 flow
 
-## Phase 5: Memory Submission & Review Workflow
+## Phase 5: Memory Submission & Review Workflow [COMPLETE]
 - Memory submission form (name, withhold option, relation, text, images)
 - Review queue in dashboard (pending memories grouped by memorial)
 - Review actions: Accept, Edit, Ignore, Return (with message)

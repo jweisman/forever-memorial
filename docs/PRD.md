@@ -39,6 +39,10 @@ The Dashboard is the homepage for registered users. It supports the following fu
 * List of user's memorial pages, with an option to delete the page
 * Create a new memorial page
 * Review memories submitted by other users
+* List memories the user has submitted, with the following option based on status:
+  * RETURNED: edit and resubmit or delete
+  * ACCEPTED: delete
+  * SUBMITTED: delete 
 
 ### Review memory flow
 Memories submitted by other users can be reviewed by the owner of the memorial page. The following options are available:
@@ -97,15 +101,15 @@ Users receive notifications:
 * When a new memory is added a memorial page they own
 
 ## Non-functional requirements
-* Support mobile or desktop users
+* Optimized for mobile or desktop
 * Support a localized interface, starting with English and Hebrew (RTL), and provide a language picker (UI only, not the content submitted by users)
 * Data model should not be country specific, i.e. it should support addresses/locations, etc. from multiple countries (e.g. US, England, Israel)
 * Support search engine indexing
 * Memorial page URLs should be friendly and sharable (i.e. slug with ID and name)
 * Technology stack:
   * Next.js and TS for website (NextAuth for authentication)
-  * Postgres for DB (AWS RDS for production)
-  * ASW S3 for image storage (including presigned direct uploads and signed URLs for display); image optimization/thumbnail handling will be done in a future version. 
+  * Postgres for DB (hosted service for production)
+  * ASW S3 for image storage (including presigned direct uploads and signed URLs for display); images should be reasonably optimized for display with small versions created for use as the memorial image and in the album grid.
   * AWS SES for email sending
 * Memorial pages load in < 2 seconds
 * Site should be built to be cloud deployed (sensitive data in environment, etc.)

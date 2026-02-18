@@ -9,6 +9,10 @@ import Card from "@/components/ui/Card";
 import Button from "@/components/ui/Button";
 import CollapsibleText from "@/components/ui/CollapsibleText";
 import GalleryView from "@/components/memorial/GalleryView";
+import MemoryCard from "@/components/memorial/MemoryCard";
+import MemorySubmissionForm from "@/components/memorial/MemorySubmissionForm";
+
+export const dynamic = "force-dynamic";
 
 type Props = {
   params: Promise<{ slug: string }>;
@@ -27,6 +31,11 @@ async function getMemorial(slug: string) {
         },
       },
       owner: { select: { id: true, name: true } },
+      memories: {
+        where: { status: "ACCEPTED" },
+        orderBy: { createdAt: "asc" },
+        include: { images: true },
+      },
     },
   });
 
@@ -50,10 +59,25 @@ async function getMemorial(slug: string) {
     }))
   );
 
+  const memoriesWithUrls = await Promise.all(
+    memorial.memories.map(async (memory) => ({
+      ...memory,
+      name: memory.withholdName ? "Anonymous" : memory.name,
+      createdAt: memory.createdAt.toISOString(),
+      images: await Promise.all(
+        memory.images.map(async (img) => ({
+          ...img,
+          url: await generateViewUrl(img.s3Key),
+        }))
+      ),
+    }))
+  );
+
   return {
     ...memorial,
     memorialPictureUrl,
     albums: albumsWithUrls,
+    memories: memoriesWithUrls,
   };
 }
 
@@ -324,7 +348,46 @@ export default async function MemorialPage({ params }: Props) {
             </section>
           )}
 
-          {/* Memories placeholder - Phase 5 */}
+          {/* Memories */}
+          {memorial.memories.length > 0 && (
+            <section>
+              <h2 className="font-heading text-xl font-semibold text-warm-800">
+                Memories
+              </h2>
+              <div className="mt-6 space-y-6">
+                {memorial.memories.map((memory) => (
+                  <MemoryCard key={memory.id} memory={memory} />
+                ))}
+              </div>
+            </section>
+          )}
+
+          {/* Share a Memory */}
+          <section>
+            <h2 className="font-heading text-xl font-semibold text-warm-800">
+              Share a Memory
+            </h2>
+            {session?.user ? (
+              <Card className="mt-6">
+                <MemorySubmissionForm memorialId={memorial.id} />
+              </Card>
+            ) : (
+              <Card className="mt-6">
+                <p className="text-sm text-warm-600">
+                  Have a memory of {memorial.name} you&apos;d like to share?
+                </p>
+                <div className="mt-3">
+                  <Button
+                    href={`/auth/signin?callbackUrl=/memorial/${memorial.slug}`}
+                    variant="secondary"
+                    size="sm"
+                  >
+                    Sign in to share a memory
+                  </Button>
+                </div>
+              </Card>
+            )}
+          </section>
 
           {/* Back link */}
           <div className="pt-4 text-center">
