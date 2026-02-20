@@ -25,7 +25,6 @@ export default function Header() {
             size="sm"
             placeholder="Search memorials..."
             className="hidden w-56 sm:block lg:w-64"
-            disabled
             aria-label="Search memorials"
           />
 

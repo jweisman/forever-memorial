@@ -51,7 +51,7 @@
 - Accepted memories displayed on memorial page (chronological)
 - Page owner can edit accepted memories in edit mode
 
-## Phase 6: Search
+## Phase 6: Search [COMPLETE]
 - `pg_trgm` extension + GIN trigram index on memorial name
 - Search API with ILIKE/trigram similarity
 - Typeahead component (debounced, suggestions: "Name (place of death)")
