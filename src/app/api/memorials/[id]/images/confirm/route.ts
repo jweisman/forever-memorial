@@ -1,7 +1,11 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { generateViewUrl } from "@/lib/s3-helpers";
+import {
+  generateViewUrl,
+  thumbKeyFromBase,
+  fullKeyFromBase,
+} from "@/lib/s3-helpers";
 
 export async function POST(
   request: Request,
@@ -73,7 +77,10 @@ export async function POST(
     },
   });
 
-  const url = await generateViewUrl(s3Key);
+  const [thumbUrl, url] = await Promise.all([
+    generateViewUrl(thumbKeyFromBase(s3Key)),
+    generateViewUrl(fullKeyFromBase(s3Key)),
+  ]);
 
-  return NextResponse.json({ ...image, url }, { status: 201 });
+  return NextResponse.json({ ...image, thumbUrl, url }, { status: 201 });
 }

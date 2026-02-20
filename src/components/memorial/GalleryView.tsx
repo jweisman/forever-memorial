@@ -6,6 +6,7 @@ import ScrollableRow from "./ScrollableRow";
 
 type ImageWithUrl = {
   id: string;
+  thumbUrl: string;
   url: string;
   caption: string | null;
 };
@@ -59,7 +60,7 @@ export default function GalleryView({ albums }: GalleryViewProps) {
                   className="group relative size-36 shrink-0 overflow-hidden rounded-lg bg-warm-100"
                 >
                   <img
-                    src={image.url}
+                    src={image.thumbUrl}
                     alt={image.caption || "Gallery image"}
                     className="size-full object-cover transition-transform group-hover:scale-105"
                     loading="lazy"

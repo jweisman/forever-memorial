@@ -58,7 +58,7 @@ export default function DashboardPage() {
     text: string;
     status: string;
     createdAt: string;
-    images: { id: string; url: string; caption: string | null }[];
+    images: { id: string; thumbUrl: string; url: string; caption: string | null }[];
     memorial: { name: string; slug: string };
   };
   const [pendingMemories, setPendingMemories] = useState<PendingMemory[]>([]);
@@ -76,7 +76,7 @@ export default function DashboardPage() {
     status: string;
     returnMessage: string | null;
     createdAt: string;
-    images: { id: string; url: string; caption: string | null }[];
+    images: { id: string; thumbUrl: string; url: string; caption: string | null }[];
     memorial: { id: string; name: string; slug: string };
   };
   const [mySubmissions, setMySubmissions] = useState<MySubmission[]>([]);

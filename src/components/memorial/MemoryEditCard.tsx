@@ -11,7 +11,7 @@ type MemoryEditCardProps = {
     withholdName: boolean;
     relation: string | null;
     text: string;
-    images: { id: string; url: string; caption: string | null }[];
+    images: { id: string; thumbUrl: string; url: string; caption: string | null }[];
   };
   onUpdated: () => void;
   onDeleted: () => void;
@@ -124,7 +124,7 @@ export default function MemoryEditCard({
                     className="group relative size-16 overflow-hidden rounded-lg bg-warm-100"
                   >
                     <img
-                      src={img.url}
+                      src={img.thumbUrl}
                       alt={img.caption || "Memory photo"}
                       className="size-full object-cover"
                     />

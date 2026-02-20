@@ -1,24 +1,26 @@
+import { resizeImage, resizeImageSquare } from "./image-resize";
+
 const ALLOWED_TYPES = ["image/jpeg", "image/png", "image/webp", "image/gif"];
-const MAX_SIZE = 5 * 1024 * 1024; // 5MB
+const MAX_SIZE = 15 * 1024 * 1024; // 15MB (original before resize)
 
 export function validateImageFile(file: File): string | null {
   if (!ALLOWED_TYPES.includes(file.type)) {
     return "Only JPEG, PNG, WebP, and GIF images are allowed.";
   }
   if (file.size > MAX_SIZE) {
-    return "Image must be 5MB or smaller.";
+    return "Image must be 15MB or smaller.";
   }
   return null;
 }
 
-export async function uploadImageToS3(
-  file: File,
+async function uploadBlobToS3(
+  blob: Blob,
   presignedUrl: string
 ): Promise<void> {
   const res = await fetch(presignedUrl, {
     method: "PUT",
-    body: file,
-    headers: { "Content-Type": file.type },
+    body: blob,
+    headers: { "Content-Type": "image/webp" },
   });
   if (!res.ok) throw new Error("Upload to S3 failed");
 }
@@ -37,7 +39,13 @@ export async function uploadImage(
   file: File,
   options?: { albumId?: string; caption?: string }
 ): Promise<ImageRecord> {
-  // 1. Get presigned URL
+  // 1. Resize client-side
+  const [thumb, full] = await Promise.all([
+    resizeImage(file, 400, 0.8),
+    resizeImage(file, 1600, 0.85),
+  ]);
+
+  // 2. Get presigned URLs for variants
   const urlRes = await fetch(
     `/api/memorials/${memorialId}/images/upload-url`,
     {
@@ -54,12 +62,16 @@ export async function uploadImage(
     const err = await urlRes.json();
     throw new Error(err.error || "Failed to get upload URL");
   }
-  const { uploadUrl, s3Key, imageId, albumId } = await urlRes.json();
+  const { thumbUploadUrl, fullUploadUrl, s3Key, imageId, albumId } =
+    await urlRes.json();
 
-  // 2. Upload directly to S3/MinIO
-  await uploadImageToS3(file, uploadUrl);
+  // 3. Upload both variants to S3
+  await Promise.all([
+    uploadBlobToS3(thumb, thumbUploadUrl),
+    uploadBlobToS3(full, fullUploadUrl),
+  ]);
 
-  // 3. Confirm upload
+  // 4. Confirm upload
   const confirmRes = await fetch(
     `/api/memorials/${memorialId}/images/confirm`,
     {
@@ -84,7 +96,10 @@ export async function uploadMemorialPicture(
   memorialId: string,
   file: File
 ): Promise<string> {
-  // 1. Get presigned URL
+  // 1. Resize to square thumbnail
+  const thumb = await resizeImageSquare(file, 256, 0.8);
+
+  // 2. Get presigned URL for thumb variant
   const urlRes = await fetch(
     `/api/memorials/${memorialId}/memorial-picture/upload-url`,
     {
@@ -100,18 +115,18 @@ export async function uploadMemorialPicture(
     const err = await urlRes.json();
     throw new Error(err.error || "Failed to get upload URL");
   }
-  const { uploadUrl, s3Key } = await urlRes.json();
+  const { thumbUploadUrl, thumbS3Key } = await urlRes.json();
 
-  // 2. Upload to S3
-  await uploadImageToS3(file, uploadUrl);
+  // 3. Upload to S3
+  await uploadBlobToS3(thumb, thumbUploadUrl);
 
-  // 3. Confirm
+  // 4. Confirm
   const confirmRes = await fetch(
     `/api/memorials/${memorialId}/memorial-picture/confirm`,
     {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ s3Key }),
+      body: JSON.stringify({ s3Key: thumbS3Key }),
     }
   );
   if (!confirmRes.ok) {
@@ -134,7 +149,13 @@ export async function uploadMemoryImage(
   memoryId: string,
   file: File
 ): Promise<MemoryImageRecord> {
-  // 1. Get presigned URL
+  // 1. Resize client-side
+  const [thumb, full] = await Promise.all([
+    resizeImage(file, 400, 0.8),
+    resizeImage(file, 1600, 0.85),
+  ]);
+
+  // 2. Get presigned URLs for variants
   const urlRes = await fetch(
     `/api/memorials/${memorialId}/memories/${memoryId}/images/upload-url`,
     {
@@ -150,12 +171,16 @@ export async function uploadMemoryImage(
     const err = await urlRes.json();
     throw new Error(err.error || "Failed to get upload URL");
   }
-  const { uploadUrl, s3Key, imageId } = await urlRes.json();
+  const { thumbUploadUrl, fullUploadUrl, s3Key, imageId } =
+    await urlRes.json();
 
-  // 2. Upload to S3
-  await uploadImageToS3(file, uploadUrl);
+  // 3. Upload both variants to S3
+  await Promise.all([
+    uploadBlobToS3(thumb, thumbUploadUrl),
+    uploadBlobToS3(full, fullUploadUrl),
+  ]);
 
-  // 3. Confirm
+  // 4. Confirm
   const confirmRes = await fetch(
     `/api/memorials/${memorialId}/memories/${memoryId}/images/confirm`,
     {

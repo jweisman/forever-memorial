@@ -6,6 +6,7 @@ import {
   getExtFromFileName,
   generateUploadUrl,
   buildMemorialPictureS3Key,
+  thumbKeyFromBase,
 } from "@/lib/s3-helpers";
 
 export async function POST(
@@ -43,7 +44,8 @@ export async function POST(
 
   const ext = getExtFromFileName(fileName || "image.jpg");
   const s3Key = buildMemorialPictureS3Key(id, ext);
-  const uploadUrl = await generateUploadUrl(s3Key, contentType);
+  const thumbS3Key = thumbKeyFromBase(s3Key);
+  const thumbUploadUrl = await generateUploadUrl(thumbS3Key, "image/webp");
 
-  return NextResponse.json({ uploadUrl, s3Key });
+  return NextResponse.json({ thumbUploadUrl, thumbS3Key });
 }

@@ -4,7 +4,11 @@ import Link from "next/link";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { parseIdFromSlug } from "@/lib/slug";
-import { generateViewUrl } from "@/lib/s3-helpers";
+import {
+  generateViewUrl,
+  thumbKeyFromBase,
+  fullKeyFromBase,
+} from "@/lib/s3-helpers";
 import Card from "@/components/ui/Card";
 import Button from "@/components/ui/Button";
 import CollapsibleText from "@/components/ui/CollapsibleText";
@@ -53,7 +57,8 @@ async function getMemorial(slug: string) {
       images: await Promise.all(
         album.images.map(async (img) => ({
           ...img,
-          url: await generateViewUrl(img.s3Key),
+          thumbUrl: await generateViewUrl(thumbKeyFromBase(img.s3Key)),
+          url: await generateViewUrl(fullKeyFromBase(img.s3Key)),
         }))
       ),
     }))
@@ -67,7 +72,8 @@ async function getMemorial(slug: string) {
       images: await Promise.all(
         memory.images.map(async (img) => ({
           ...img,
-          url: await generateViewUrl(img.s3Key),
+          thumbUrl: await generateViewUrl(thumbKeyFromBase(img.s3Key)),
+          url: await generateViewUrl(fullKeyFromBase(img.s3Key)),
         }))
       ),
     }))
@@ -151,6 +157,7 @@ export default async function MemorialPage({ params }: Props) {
       name: a.name,
       images: a.images.map((img) => ({
         id: img.id,
+        thumbUrl: img.thumbUrl,
         url: img.url,
         caption: img.caption,
       })),

@@ -68,3 +68,17 @@ export function buildMemoryImageS3Key(
 ): string {
   return `memorials/${memorialId}/memories/${memoryId}/${imageId}.${ext}`;
 }
+
+/** Derive the thumbnail variant key from a base s3Key. */
+export function thumbKeyFromBase(s3Key: string): string {
+  const dotIdx = s3Key.lastIndexOf(".");
+  if (dotIdx === -1) return `${s3Key}_thumb.webp`;
+  return `${s3Key.slice(0, dotIdx)}_thumb.webp`;
+}
+
+/** Derive the full-size variant key from a base s3Key. */
+export function fullKeyFromBase(s3Key: string): string {
+  const dotIdx = s3Key.lastIndexOf(".");
+  if (dotIdx === -1) return `${s3Key}_full.webp`;
+  return `${s3Key.slice(0, dotIdx)}_full.webp`;
+}

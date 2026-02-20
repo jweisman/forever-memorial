@@ -11,6 +11,7 @@ type ImageRecord = {
   albumId: string;
   caption: string | null;
   order: number;
+  thumbUrl: string;
   url: string;
 };
 
@@ -221,7 +222,7 @@ export default function AlbumSection({
                   } ${dropIndex === index ? "ring-2 ring-accent" : ""}`}
                 >
                   <img
-                    src={image.url}
+                    src={image.thumbUrl}
                     alt={image.caption || "Gallery image"}
                     className="size-full cursor-grab object-cover active:cursor-grabbing"
                     loading="lazy"

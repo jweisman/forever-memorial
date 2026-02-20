@@ -2,7 +2,7 @@
 
 import { InputHTMLAttributes } from "react";
 
-type SearchBarProps = Omit<InputHTMLAttributes<HTMLInputElement>, "type"> & {
+type SearchBarProps = Omit<InputHTMLAttributes<HTMLInputElement>, "type" | "size"> & {
   size?: "sm" | "lg";
 };
 

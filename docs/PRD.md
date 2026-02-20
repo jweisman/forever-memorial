@@ -109,7 +109,7 @@ Users receive notifications:
 * Technology stack:
   * Next.js and TS for website (NextAuth for authentication)
   * Postgres for DB (hosted service for production)
-  * ASW S3 for image storage (including presigned direct uploads and signed URLs for display); images should be reasonably optimized for display with small versions created for use as the memorial image and in the album grid.
+  * AWS S3 for image storage (including presigned direct uploads and signed URLs for display); images should be reasonably optimized for display with small versions created for use as the memorial image and in the album grid.
   * AWS SES for email sending
 * Memorial pages load in < 2 seconds
 * Site should be built to be cloud deployed (sensitive data in environment, etc.)

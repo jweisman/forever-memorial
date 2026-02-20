@@ -1,7 +1,11 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { generateViewUrl } from "@/lib/s3-helpers";
+import {
+  generateViewUrl,
+  thumbKeyFromBase,
+  fullKeyFromBase,
+} from "@/lib/s3-helpers";
 
 export async function GET(
   _request: Request,
@@ -25,7 +29,8 @@ export async function GET(
       images: await Promise.all(
         album.images.map(async (img) => ({
           ...img,
-          url: await generateViewUrl(img.s3Key),
+          thumbUrl: await generateViewUrl(thumbKeyFromBase(img.s3Key)),
+          url: await generateViewUrl(fullKeyFromBase(img.s3Key)),
         }))
       ),
     }))

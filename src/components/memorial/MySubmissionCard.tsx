@@ -15,7 +15,7 @@ type MySubmissionCardProps = {
     status: string;
     returnMessage: string | null;
     createdAt: string;
-    images: { id: string; url: string; caption: string | null }[];
+    images: { id: string; thumbUrl: string; url: string; caption: string | null }[];
     memorial: { id: string; name: string; slug: string };
   };
   onChanged: () => void;
@@ -241,7 +241,7 @@ export default function MySubmissionCard({
               key={img.id}
               className="size-10 overflow-hidden rounded bg-warm-100"
             >
-              <img src={img.url} alt="" className="size-full object-cover" />
+              <img src={img.thumbUrl} alt="" className="size-full object-cover" />
             </div>
           ))}
         </div>

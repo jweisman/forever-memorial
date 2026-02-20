@@ -9,7 +9,7 @@ type MemoryCardProps = {
     relation: string | null;
     text: string;
     createdAt: string;
-    images: { id: string; url: string; caption: string | null }[];
+    images: { id: string; thumbUrl: string; url: string; caption: string | null }[];
   };
 };
 
@@ -37,7 +37,7 @@ export default function MemoryCard({ memory }: MemoryCardProps) {
                 className="size-20 shrink-0 overflow-hidden rounded-lg bg-warm-100"
               >
                 <img
-                  src={img.url}
+                  src={img.thumbUrl}
                   alt={img.caption || "Memory photo"}
                   className="size-full object-cover"
                   loading="lazy"

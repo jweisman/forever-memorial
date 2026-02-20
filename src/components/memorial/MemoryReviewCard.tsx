@@ -13,7 +13,7 @@ type MemoryReviewCardProps = {
     text: string;
     status: string;
     createdAt: string;
-    images: { id: string; url: string; caption: string | null }[];
+    images: { id: string; thumbUrl: string; url: string; caption: string | null }[];
   };
   onReviewed: () => void;
 };
@@ -96,7 +96,7 @@ export default function MemoryReviewCard({
               className="size-16 shrink-0 overflow-hidden rounded-lg bg-warm-100"
             >
               <img
-                src={img.url}
+                src={img.thumbUrl}
                 alt={img.caption || "Memory photo"}
                 className="size-full object-cover"
                 loading="lazy"

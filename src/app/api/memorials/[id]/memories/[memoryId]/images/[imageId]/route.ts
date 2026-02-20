@@ -1,7 +1,11 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { deleteS3Object } from "@/lib/s3-helpers";
+import {
+  deleteS3Object,
+  thumbKeyFromBase,
+  fullKeyFromBase,
+} from "@/lib/s3-helpers";
 
 type Params = { id: string; memoryId: string; imageId: string };
 
@@ -39,10 +43,13 @@ export async function DELETE(
     return NextResponse.json({ error: "Not found" }, { status: 404 });
   }
 
-  try {
-    await deleteS3Object(image.s3Key);
-  } catch {
-    // Ignore S3 deletion errors
+  // Delete variant S3 objects (thumb + full)
+  for (const key of [thumbKeyFromBase(image.s3Key), fullKeyFromBase(image.s3Key)]) {
+    try {
+      await deleteS3Object(key);
+    } catch {
+      // Ignore S3 deletion errors
+    }
   }
 
   await prisma.memoryImage.delete({ where: { id: imageId } });

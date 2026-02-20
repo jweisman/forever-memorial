@@ -1,7 +1,12 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { deleteS3Object, generateViewUrl } from "@/lib/s3-helpers";
+import {
+  deleteS3Object,
+  generateViewUrl,
+  thumbKeyFromBase,
+  fullKeyFromBase,
+} from "@/lib/s3-helpers";
 
 type Params = { id: string; memoryId: string };
 
@@ -35,7 +40,8 @@ export async function GET(
   const images = await Promise.all(
     memory.images.map(async (img) => ({
       ...img,
-      url: await generateViewUrl(img.s3Key),
+      thumbUrl: await generateViewUrl(thumbKeyFromBase(img.s3Key)),
+      url: await generateViewUrl(fullKeyFromBase(img.s3Key)),
     }))
   );
 
@@ -133,12 +139,14 @@ export async function DELETE(
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 
-  // Clean up S3 objects
+  // Clean up S3 variant objects (thumb + full for each image)
   for (const img of memory.images) {
-    try {
-      await deleteS3Object(img.s3Key);
-    } catch {
-      // Ignore S3 deletion errors
+    for (const key of [thumbKeyFromBase(img.s3Key), fullKeyFromBase(img.s3Key)]) {
+      try {
+        await deleteS3Object(key);
+      } catch {
+        // Ignore S3 deletion errors
+      }
     }
   }
 

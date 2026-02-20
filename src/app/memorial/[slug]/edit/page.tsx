@@ -27,6 +27,7 @@ type ImageRecord = {
   albumId: string;
   caption: string | null;
   order: number;
+  thumbUrl: string;
   url: string;
 };
 
@@ -109,7 +110,7 @@ export default function MemorialEditPage({
     withholdName: boolean;
     relation: string | null;
     text: string;
-    images: { id: string; url: string; caption: string | null }[];
+    images: { id: string; thumbUrl: string; url: string; caption: string | null }[];
   };
   const [memories, setMemories] = useState<MemoryRecord[]>([]);
 

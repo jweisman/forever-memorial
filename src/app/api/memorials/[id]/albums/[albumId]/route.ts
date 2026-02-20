@@ -1,7 +1,11 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { deleteS3Object } from "@/lib/s3-helpers";
+import {
+  deleteS3Object,
+  thumbKeyFromBase,
+  fullKeyFromBase,
+} from "@/lib/s3-helpers";
 
 export async function PATCH(
   request: Request,
@@ -74,12 +78,14 @@ export async function DELETE(
     select: { s3Key: true },
   });
 
-  // Delete S3 objects
+  // Delete S3 variant objects (thumb + full for each image)
   for (const image of images) {
-    try {
-      await deleteS3Object(image.s3Key);
-    } catch {
-      // Ignore individual S3 deletion errors
+    for (const key of [thumbKeyFromBase(image.s3Key), fullKeyFromBase(image.s3Key)]) {
+      try {
+        await deleteS3Object(key);
+      } catch {
+        // Ignore individual S3 deletion errors
+      }
     }
   }
 
