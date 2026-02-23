@@ -1,7 +1,8 @@
 "use client";
 
 import { InputHTMLAttributes, useCallback, useEffect, useRef, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
+import { useRouter } from "@/i18n/navigation";
 
 type Suggestion = {
   id: string;
@@ -46,6 +47,7 @@ export default function SearchBar({
   ...props
 }: SearchBarProps) {
   const router = useRouter();
+  const t = useTranslations("SearchBar");
   const [query, setQuery] = useState("");
   const [suggestions, setSuggestions] = useState<Suggestion[]>([]);
   const [open, setOpen] = useState(false);
@@ -236,7 +238,7 @@ export default function SearchBar({
               router.push(`/search?q=${encodeURIComponent(query.trim())}`);
             }}
           >
-            View all results
+            {t("viewAll")}
           </li>
         </ul>
       )}

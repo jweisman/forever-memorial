@@ -1,6 +1,8 @@
-import { notFound, redirect } from "next/navigation";
+import { notFound } from "next/navigation";
 import type { Metadata } from "next";
-import Link from "next/link";
+import { getTranslations, setRequestLocale } from "next-intl/server";
+import { Link } from "@/i18n/navigation";
+import { redirect } from "next/navigation";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { parseIdFromSlug } from "@/lib/slug";
@@ -19,7 +21,7 @@ import MemorySubmissionForm from "@/components/memorial/MemorySubmissionForm";
 export const dynamic = "force-dynamic";
 
 type Props = {
-  params: Promise<{ slug: string }>;
+  params: Promise<{ slug: string; locale: string }>;
 };
 
 async function getMemorial(slug: string) {
@@ -67,7 +69,6 @@ async function getMemorial(slug: string) {
   const memoriesWithUrls = await Promise.all(
     memorial.memories.map(async (memory) => ({
       ...memory,
-      name: memory.withholdName ? "Anonymous" : memory.name,
       createdAt: memory.createdAt.toISOString(),
       images: await Promise.all(
         memory.images.map(async (img) => ({
@@ -112,9 +113,9 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   };
 }
 
-function formatDate(date: Date | null | undefined): string {
+function formatDate(date: Date | null | undefined, locale: string): string {
   if (!date) return "";
-  return new Date(date).toLocaleDateString("en-US", {
+  return new Date(date).toLocaleDateString(locale, {
     year: "numeric",
     month: "long",
     day: "numeric",
@@ -123,18 +124,22 @@ function formatDate(date: Date | null | undefined): string {
 
 function formatDateRange(
   birthday: Date | null | undefined,
-  dateOfDeath: Date
+  dateOfDeath: Date,
+  diedLabel: string
 ): string {
   const deathYear = new Date(dateOfDeath).getFullYear();
   if (birthday) {
     const birthYear = new Date(birthday).getFullYear();
     return `${birthYear} – ${deathYear}`;
   }
-  return `d. ${deathYear}`;
+  return diedLabel;
 }
 
 export default async function MemorialPage({ params }: Props) {
-  const { slug } = await params;
+  const { slug, locale } = await params;
+  setRequestLocale(locale);
+  const t = await getTranslations("Memorial");
+
   const memorial = await getMemorial(slug);
 
   if (!memorial) {
@@ -220,7 +225,11 @@ export default async function MemorialPage({ params }: Props) {
           </h1>
 
           <p className="mt-2 text-lg text-muted">
-            {formatDateRange(memorial.birthday, memorial.dateOfDeath)}
+            {formatDateRange(
+              memorial.birthday,
+              memorial.dateOfDeath,
+              t("died", { year: new Date(memorial.dateOfDeath).getFullYear() })
+            )}
           </p>
 
           {memorial.placeOfDeath && (
@@ -236,7 +245,7 @@ export default async function MemorialPage({ params }: Props) {
                 variant="secondary"
                 size="sm"
               >
-                Edit Memorial
+                {t("editMemorial")}
               </Button>
             </div>
           )}
@@ -247,27 +256,27 @@ export default async function MemorialPage({ params }: Props) {
           {(memorial.birthday || memorial.placeOfDeath) && (
             <Card>
               <h2 className="font-heading text-lg font-semibold text-warm-800">
-                Details
+                {t("details")}
               </h2>
               <dl className="mt-4 space-y-3 text-sm">
                 {memorial.birthday && (
                   <div>
-                    <dt className="font-medium text-warm-600">Born</dt>
+                    <dt className="font-medium text-warm-600">{t("born")}</dt>
                     <dd className="mt-0.5 text-warm-800">
-                      {formatDate(memorial.birthday)}
+                      {formatDate(memorial.birthday, locale)}
                     </dd>
                   </div>
                 )}
                 <div>
-                  <dt className="font-medium text-warm-600">Passed away</dt>
+                  <dt className="font-medium text-warm-600">{t("passedAway")}</dt>
                   <dd className="mt-0.5 text-warm-800">
-                    {formatDate(memorial.dateOfDeath)}
+                    {formatDate(memorial.dateOfDeath, locale)}
                   </dd>
                 </div>
                 {memorial.placeOfDeath && (
                   <div>
                     <dt className="font-medium text-warm-600">
-                      Place of death
+                      {t("placeOfDeath")}
                     </dt>
                     <dd className="mt-0.5 text-warm-800">
                       {memorial.placeOfDeath}
@@ -282,7 +291,7 @@ export default async function MemorialPage({ params }: Props) {
           {memorial.funeralInfo && (
             <Card>
               <h2 className="font-heading text-lg font-semibold text-warm-800">
-                Funeral Information
+                {t("funeralInfo")}
               </h2>
               <p className="mt-3 whitespace-pre-wrap text-sm leading-relaxed text-warm-700">
                 {memorial.funeralInfo}
@@ -294,7 +303,7 @@ export default async function MemorialPage({ params }: Props) {
           {memorial.survivedBy && (
             <Card>
               <h2 className="font-heading text-lg font-semibold text-warm-800">
-                Survived By
+                {t("survivedBy")}
               </h2>
               <p className="mt-3 whitespace-pre-wrap text-sm leading-relaxed text-warm-700">
                 {memorial.survivedBy}
@@ -306,7 +315,7 @@ export default async function MemorialPage({ params }: Props) {
           {memorial.lifeStory && (
             <Card>
               <h2 className="font-heading text-lg font-semibold text-warm-800">
-                Life Story
+                {t("lifeStory")}
               </h2>
               <p className="mt-3 whitespace-pre-wrap text-sm leading-relaxed text-warm-700">
                 {memorial.lifeStory}
@@ -318,7 +327,7 @@ export default async function MemorialPage({ params }: Props) {
           {galleryAlbums.length > 0 && (
             <section>
               <h2 className="font-heading text-xl font-semibold text-warm-800">
-                Photos
+                {t("photos")}
               </h2>
               <div className="mt-6">
                 <GalleryView albums={galleryAlbums} />
@@ -330,12 +339,12 @@ export default async function MemorialPage({ params }: Props) {
           {memorial.eulogies.length > 0 && (
             <section>
               <h2 className="font-heading text-xl font-semibold text-warm-800">
-                Eulogies
+                {t("eulogies")}
               </h2>
               <div className="mt-6 space-y-6">
                 {memorial.eulogies.map((eulogy) => (
                   <Card key={eulogy.id}>
-                    <blockquote className="border-l-4 border-gold-400 pl-4">
+                    <blockquote className="border-s-4 border-gold-400 ps-4">
                       <CollapsibleText text={eulogy.text} maxLines={8} />
                       <footer className="mt-4 text-sm">
                         <span className="font-medium text-warm-800">
@@ -359,7 +368,7 @@ export default async function MemorialPage({ params }: Props) {
           {memorial.memories.length > 0 && (
             <section>
               <h2 className="font-heading text-xl font-semibold text-warm-800">
-                Memories
+                {t("memories")}
               </h2>
               <div className="mt-6 space-y-6">
                 {memorial.memories.map((memory) => (
@@ -372,7 +381,7 @@ export default async function MemorialPage({ params }: Props) {
           {/* Share a Memory */}
           <section>
             <h2 className="font-heading text-xl font-semibold text-warm-800">
-              Share a Memory
+              {t("shareMemory")}
             </h2>
             {session?.user ? (
               <Card className="mt-6">
@@ -381,7 +390,7 @@ export default async function MemorialPage({ params }: Props) {
             ) : (
               <Card className="mt-6">
                 <p className="text-sm text-warm-600">
-                  Have a memory of {memorial.name} you&apos;d like to share?
+                  {t("shareMemoryPrompt", { name: memorial.name })}
                 </p>
                 <div className="mt-3">
                   <Button
@@ -389,7 +398,7 @@ export default async function MemorialPage({ params }: Props) {
                     variant="secondary"
                     size="sm"
                   >
-                    Sign in to share a memory
+                    {t("signInToShare")}
                   </Button>
                 </div>
               </Card>
@@ -402,7 +411,7 @@ export default async function MemorialPage({ params }: Props) {
               href="/"
               className="text-sm text-accent hover:text-accent-hover"
             >
-              &larr; Back to home
+              &larr; {t("backHome")}
             </Link>
           </div>
         </div>

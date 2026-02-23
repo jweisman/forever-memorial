@@ -1,4 +1,5 @@
 import { ButtonHTMLAttributes, AnchorHTMLAttributes } from "react";
+import { Link } from "@/i18n/navigation";
 
 type ButtonVariant = "primary" | "secondary" | "ghost";
 type ButtonSize = "sm" | "md" | "lg";
@@ -41,7 +42,7 @@ export default function Button({
 
   if ("href" in props && props.href !== undefined) {
     const { href, ...rest } = props as ButtonAsLink;
-    return <a href={href} className={classes} {...rest} />;
+    return <Link href={href} className={classes} {...rest} />;
   }
 
   return <button className={classes} {...(props as ButtonAsButton)} />;

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useLocale, useTranslations } from "next-intl";
 import Button from "@/components/ui/Button";
 
 type MemoryReviewCardProps = {
@@ -18,8 +19,8 @@ type MemoryReviewCardProps = {
   onReviewed: () => void;
 };
 
-function formatDate(date: string): string {
-  return new Date(date).toLocaleDateString("en-US", {
+function formatDate(date: string, locale: string): string {
+  return new Date(date).toLocaleDateString(locale, {
     year: "numeric",
     month: "short",
     day: "numeric",
@@ -30,6 +31,8 @@ export default function MemoryReviewCard({
   memory,
   onReviewed,
 }: MemoryReviewCardProps) {
+  const t = useTranslations("MemoryReview");
+  const locale = useLocale();
   const [showReturnForm, setShowReturnForm] = useState(false);
   const [returnMessage, setReturnMessage] = useState("");
   const [acting, setActing] = useState(false);
@@ -63,8 +66,8 @@ export default function MemoryReviewCard({
           <p className="text-sm font-medium text-warm-800">
             {memory.name}
             {memory.withholdName && (
-              <span className="ml-2 text-xs text-warm-400">
-                (wants to be anonymous)
+              <span className="ms-2 text-xs text-warm-400">
+                {t("wantsAnonymous")}
               </span>
             )}
           </p>
@@ -75,11 +78,11 @@ export default function MemoryReviewCard({
         <div className="flex items-center gap-2">
           {memory.status === "IGNORED" && (
             <span className="rounded bg-warm-100 px-2 py-0.5 text-xs text-warm-500">
-              Ignored
+              {t("ignored")}
             </span>
           )}
           <span className="text-xs text-warm-300">
-            {formatDate(memory.createdAt)}
+            {formatDate(memory.createdAt, locale)}
           </span>
         </div>
       </div>
@@ -97,7 +100,7 @@ export default function MemoryReviewCard({
             >
               <img
                 src={img.thumbUrl}
-                alt={img.caption || "Memory photo"}
+                alt={img.caption || t("memoryPhoto")}
                 className="size-full object-cover"
                 loading="lazy"
               />
@@ -112,7 +115,7 @@ export default function MemoryReviewCard({
           <textarea
             value={returnMessage}
             onChange={(e) => setReturnMessage(e.target.value)}
-            placeholder="Explain what you'd like the submitter to change..."
+            placeholder={t("returnPlaceholder")}
             rows={3}
             className="w-full rounded-lg border border-border bg-surface px-3 py-2 text-sm text-warm-800 placeholder-warm-400 focus:border-accent focus:outline-none"
             autoFocus
@@ -124,7 +127,7 @@ export default function MemoryReviewCard({
               onClick={() => handleAction("return")}
               disabled={acting || !returnMessage.trim()}
             >
-              Send back
+              {t("sendBack")}
             </Button>
             <Button
               variant="ghost"
@@ -134,7 +137,7 @@ export default function MemoryReviewCard({
                 setReturnMessage("");
               }}
             >
-              Cancel
+              {t("cancel")}
             </Button>
           </div>
         </div>
@@ -149,7 +152,7 @@ export default function MemoryReviewCard({
             onClick={() => handleAction("accept")}
             disabled={acting}
           >
-            Accept
+            {t("accept")}
           </Button>
           <Button
             variant="ghost"
@@ -157,7 +160,7 @@ export default function MemoryReviewCard({
             onClick={() => handleAction("ignore")}
             disabled={acting}
           >
-            Ignore
+            {t("ignore")}
           </Button>
           <Button
             variant="ghost"
@@ -166,7 +169,7 @@ export default function MemoryReviewCard({
             onClick={() => setShowReturnForm(true)}
             disabled={acting}
           >
-            Return
+            {t("return")}
           </Button>
         </div>
       )}

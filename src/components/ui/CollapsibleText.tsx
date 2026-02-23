@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 
 type CollapsibleTextProps = {
   text: string;
@@ -13,6 +14,7 @@ export default function CollapsibleText({
   maxLines = 8,
   className = "",
 }: CollapsibleTextProps) {
+  const t = useTranslations("CollapsibleText");
   const [expanded, setExpanded] = useState(false);
   const lineCount = text.split("\n").length;
   const charCount = text.length;
@@ -42,7 +44,7 @@ export default function CollapsibleText({
           onClick={() => setExpanded(!expanded)}
           className="mt-2 text-sm font-medium text-accent hover:text-accent-hover"
         >
-          {expanded ? "Show less" : "Read more"}
+          {expanded ? t("showLess") : t("readMore")}
         </button>
       )}
     </div>

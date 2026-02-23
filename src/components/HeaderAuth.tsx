@@ -1,11 +1,13 @@
 "use client";
 
-import Link from "next/link";
 import { useSession } from "next-auth/react";
+import { useTranslations } from "next-intl";
+import { Link } from "@/i18n/navigation";
 import SignOutButton from "@/components/SignOutButton";
 
 export default function HeaderAuth() {
   const { data: session } = useSession();
+  const t = useTranslations("HeaderAuth");
 
   if (session?.user) {
     return (
@@ -14,7 +16,7 @@ export default function HeaderAuth() {
           href="/dashboard"
           className="text-sm font-medium text-warm-600 transition-colors hover:text-accent"
         >
-          {session.user.name || "Dashboard"}
+          {session.user.name || t("dashboard")}
         </Link>
         <SignOutButton />
       </>
@@ -26,7 +28,7 @@ export default function HeaderAuth() {
       href="/auth/signin"
       className="text-sm font-medium text-warm-600 transition-colors hover:text-accent"
     >
-      Sign in
+      {t("signIn")}
     </Link>
   );
 }

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 import Button from "@/components/ui/Button";
 import ImageUploader from "./ImageUploader";
 import ScrollableRow from "./ScrollableRow";
@@ -41,6 +42,7 @@ export default function AlbumSection({
   onAlbumDragEnd,
   isAlbumDragTarget,
 }: AlbumSectionProps) {
+  const t = useTranslations("EditMemorial");
   const [editingName, setEditingName] = useState(false);
   const [albumName, setAlbumName] = useState(album.name);
   const [editingCaptionId, setEditingCaptionId] = useState<string | null>(null);
@@ -60,7 +62,7 @@ export default function AlbumSection({
   }
 
   async function handleDeleteAlbum() {
-    if (!confirm(`Delete album "${album.name}" and all its images?`)) return;
+    if (!confirm(t("deleteAlbumConfirm", { name: album.name }))) return;
     await fetch(`/api/memorials/${memorialId}/albums/${album.id}`, {
       method: "DELETE",
     });
@@ -136,7 +138,7 @@ export default function AlbumSection({
           {albumDraggable && (
             <span
               className="cursor-grab text-warm-300 active:cursor-grabbing"
-              title="Drag to reorder album"
+              title={t("dragToReorder")}
             >
               <svg className="size-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
@@ -160,7 +162,7 @@ export default function AlbumSection({
                 }}
               />
               <Button variant="ghost" size="sm" onClick={handleRenameAlbum}>
-                Save
+                {t("save")}
               </Button>
               <Button
                 variant="ghost"
@@ -170,7 +172,7 @@ export default function AlbumSection({
                   setEditingName(false);
                 }}
               >
-                Cancel
+                {t("cancel")}
               </Button>
             </div>
           ) : (
@@ -186,7 +188,7 @@ export default function AlbumSection({
               size="sm"
               onClick={() => setEditingName(true)}
             >
-              Rename
+              {t("rename")}
             </Button>
           )}
           <Button
@@ -195,7 +197,7 @@ export default function AlbumSection({
             className="text-red-600 hover:text-red-700"
             onClick={handleDeleteAlbum}
           >
-            Delete
+            {t("delete")}
           </Button>
         </div>
       </div>
@@ -205,7 +207,7 @@ export default function AlbumSection({
         <>
           {images.length > 1 && (
             <p className="mt-2 text-xs text-warm-400">
-              Drag images to reorder
+              {t("dragImagesHint")}
             </p>
           )}
           <div className="mt-2">
@@ -223,7 +225,7 @@ export default function AlbumSection({
                 >
                   <img
                     src={image.thumbUrl}
-                    alt={image.caption || "Gallery image"}
+                    alt={image.caption || t("galleryImage")}
                     className="size-full cursor-grab object-cover active:cursor-grabbing"
                     loading="lazy"
                     draggable={false}
@@ -238,13 +240,13 @@ export default function AlbumSection({
                       }}
                       className="rounded bg-black/50 px-1.5 py-0.5 text-xs text-white hover:bg-black/70"
                     >
-                      Caption
+                      {t("caption")}
                     </button>
                     <button
                       onClick={() => handleDeleteImage(image.id)}
                       className="rounded bg-red-600/80 px-1.5 py-0.5 text-xs text-white hover:bg-red-700"
                     >
-                      Delete
+                      {t("delete")}
                     </button>
                   </div>
 
@@ -256,7 +258,7 @@ export default function AlbumSection({
                         value={captionValue}
                         onChange={(e) => setCaptionValue(e.target.value)}
                         className="w-full rounded border border-border px-2 py-1 text-xs"
-                        placeholder="Add a caption..."
+                        placeholder={t("captionPlaceholder")}
                         autoFocus
                         onKeyDown={(e) => {
                           if (e.key === "Enter") handleSaveCaption(image.id);
@@ -268,13 +270,13 @@ export default function AlbumSection({
                           onClick={() => handleSaveCaption(image.id)}
                           className="text-xs text-accent hover:text-accent-hover"
                         >
-                          Save
+                          {t("save")}
                         </button>
                         <button
                           onClick={() => setEditingCaptionId(null)}
                           className="text-xs text-warm-400 hover:text-warm-600"
                         >
-                          Cancel
+                          {t("cancel")}
                         </button>
                       </div>
                     </div>

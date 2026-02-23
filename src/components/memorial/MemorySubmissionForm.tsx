@@ -2,6 +2,7 @@
 
 import { useState, useRef } from "react";
 import { useSession } from "next-auth/react";
+import { useTranslations } from "next-intl";
 import Button from "@/components/ui/Button";
 import { validateImageFile, uploadMemoryImage } from "@/lib/upload";
 
@@ -18,6 +19,7 @@ export default function MemorySubmissionForm({
   onSubmitted,
 }: MemorySubmissionFormProps) {
   const { data: session } = useSession();
+  const t = useTranslations("MemorySubmission");
   const [name, setName] = useState(session?.user?.name || "");
   const [withholdName, setWithholdName] = useState(false);
   const [relation, setRelation] = useState("");
@@ -36,7 +38,6 @@ export default function MemorySubmissionForm({
     setError("");
 
     try {
-      // 1. Create the memory
       const res = await fetch(`/api/memorials/${memorialId}/memories`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -55,12 +56,10 @@ export default function MemorySubmissionForm({
 
       const memory = await res.json();
 
-      // 2. Upload images if any
       for (const file of files) {
         await uploadMemoryImage(memorialId, memory.id, file);
       }
 
-      // Success
       setSuccess(true);
       setName(session?.user?.name || "");
       setWithholdName(false);
@@ -79,7 +78,7 @@ export default function MemorySubmissionForm({
     const selected = Array.from(e.target.files || []);
     const totalCount = files.length + selected.length;
     if (totalCount > 5) {
-      setError("Maximum 5 images per memory");
+      setError(t("maxPhotos"));
       return;
     }
 
@@ -104,11 +103,10 @@ export default function MemorySubmissionForm({
     return (
       <div className="rounded-lg border border-gold-400 bg-gold-300/10 p-6 text-center">
         <p className="font-heading text-base font-semibold text-warm-800">
-          Thank you for sharing your memory
+          {t("thankYou")}
         </p>
         <p className="mt-2 text-sm text-warm-600">
-          Your submission has been received and is awaiting review by the page
-          owner.
+          {t("awaitingReview")}
         </p>
         <Button
           variant="ghost"
@@ -116,7 +114,7 @@ export default function MemorySubmissionForm({
           className="mt-4"
           onClick={() => setSuccess(false)}
         >
-          Share another memory
+          {t("shareAnother")}
         </Button>
       </div>
     );
@@ -129,7 +127,7 @@ export default function MemorySubmissionForm({
           htmlFor="memory-name"
           className="block text-sm font-medium text-warm-700"
         >
-          Your name <span className="text-red-500">*</span>
+          {t("nameLabel")} <span className="text-red-500">*</span>
         </label>
         <input
           id="memory-name"
@@ -138,7 +136,7 @@ export default function MemorySubmissionForm({
           onChange={(e) => setName(e.target.value)}
           required
           className={inputClass}
-          placeholder="Your name"
+          placeholder={t("namePlaceholder")}
         />
       </div>
 
@@ -150,7 +148,7 @@ export default function MemorySubmissionForm({
           className="rounded border-warm-300 text-accent focus:ring-accent"
         />
         <span className="text-sm text-warm-600">
-          Display as anonymous
+          {t("anonymous")}
         </span>
       </label>
 
@@ -159,7 +157,7 @@ export default function MemorySubmissionForm({
           htmlFor="memory-relation"
           className="block text-sm font-medium text-warm-700"
         >
-          Relation
+          {t("relationLabel")}
         </label>
         <input
           id="memory-relation"
@@ -167,7 +165,7 @@ export default function MemorySubmissionForm({
           value={relation}
           onChange={(e) => setRelation(e.target.value)}
           className={inputClass}
-          placeholder="e.g. Friend, Colleague, Neighbor"
+          placeholder={t("relationPlaceholder")}
         />
       </div>
 
@@ -176,7 +174,7 @@ export default function MemorySubmissionForm({
           htmlFor="memory-text"
           className="block text-sm font-medium text-warm-700"
         >
-          Your memory <span className="text-red-500">*</span>
+          {t("memoryLabel")} <span className="text-red-500">*</span>
         </label>
         <textarea
           id="memory-text"
@@ -185,14 +183,14 @@ export default function MemorySubmissionForm({
           required
           rows={5}
           className={inputClass}
-          placeholder="Share your memory..."
+          placeholder={t("memoryPlaceholder")}
         />
       </div>
 
       {/* Image upload */}
       <div>
         <label className="block text-sm font-medium text-warm-700">
-          Photos (optional, up to 5)
+          {t("photosLabel")}
         </label>
         {files.length > 0 && (
           <div className="mt-2 flex flex-wrap gap-2">
@@ -209,7 +207,7 @@ export default function MemorySubmissionForm({
                 <button
                   type="button"
                   onClick={() => removeFile(index)}
-                  className="absolute right-0.5 top-0.5 flex size-5 items-center justify-center rounded-full bg-black/60 text-xs text-white hover:bg-black/80"
+                  className="absolute end-0.5 top-0.5 flex size-5 items-center justify-center rounded-full bg-black/60 text-xs text-white hover:bg-black/80"
                 >
                   &times;
                 </button>
@@ -232,7 +230,7 @@ export default function MemorySubmissionForm({
               onClick={() => inputRef.current?.click()}
               className="rounded-lg border-2 border-dashed border-warm-300 px-4 py-2 text-sm text-warm-500 hover:border-accent hover:text-accent"
             >
-              Add photos
+              {t("addPhotos")}
             </button>
           </div>
         )}
@@ -241,7 +239,7 @@ export default function MemorySubmissionForm({
       {error && <p className="text-sm text-red-600">{error}</p>}
 
       <Button type="submit" variant="primary" size="sm" disabled={submitting}>
-        {submitting ? "Submitting..." : "Submit Memory"}
+        {submitting ? t("submitting") : t("submit")}
       </Button>
     </form>
   );

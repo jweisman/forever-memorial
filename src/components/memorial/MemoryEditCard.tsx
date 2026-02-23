@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 import Button from "@/components/ui/Button";
 
 type MemoryEditCardProps = {
@@ -25,6 +26,7 @@ export default function MemoryEditCard({
   onUpdated,
   onDeleted,
 }: MemoryEditCardProps) {
+  const t = useTranslations("EditMemorial");
   const [editing, setEditing] = useState(false);
   const [name, setName] = useState(memory.name);
   const [relation, setRelation] = useState(memory.relation || "");
@@ -79,7 +81,7 @@ export default function MemoryEditCard({
         <div className="space-y-3">
           <div>
             <label className="block text-sm font-medium text-warm-700">
-              Name
+              {t("name")}
             </label>
             <input
               type="text"
@@ -90,19 +92,19 @@ export default function MemoryEditCard({
           </div>
           <div>
             <label className="block text-sm font-medium text-warm-700">
-              Relation
+              {t("relation")}
             </label>
             <input
               type="text"
               value={relation}
               onChange={(e) => setRelation(e.target.value)}
               className={inputClass}
-              placeholder="e.g. Friend, Colleague"
+              placeholder={t("relationPlaceholder")}
             />
           </div>
           <div>
             <label className="block text-sm font-medium text-warm-700">
-              Memory text
+              {t("memoryText")}
             </label>
             <textarea
               value={text}
@@ -115,7 +117,7 @@ export default function MemoryEditCard({
           {memory.images.length > 0 && (
             <div>
               <label className="block text-sm font-medium text-warm-700">
-                Photos
+                {t("photos")}
               </label>
               <div className="mt-2 flex gap-2">
                 {memory.images.map((img) => (
@@ -125,7 +127,7 @@ export default function MemoryEditCard({
                   >
                     <img
                       src={img.thumbUrl}
-                      alt={img.caption || "Memory photo"}
+                      alt={img.caption || t("memoryPhoto")}
                       className="size-full object-cover"
                     />
                     <button
@@ -133,7 +135,7 @@ export default function MemoryEditCard({
                       onClick={() => handleDeleteImage(img.id)}
                       className="absolute inset-0 flex items-center justify-center bg-black/50 text-xs text-white opacity-0 transition-opacity group-hover:opacity-100"
                     >
-                      Delete
+                      {t("delete")}
                     </button>
                   </div>
                 ))}
@@ -148,7 +150,7 @@ export default function MemoryEditCard({
               onClick={handleSave}
               disabled={saving || !name.trim() || !text.trim()}
             >
-              {saving ? "Saving..." : "Save"}
+              {saving ? t("saving") : t("save")}
             </Button>
             <Button
               variant="ghost"
@@ -160,7 +162,7 @@ export default function MemoryEditCard({
                 setEditing(false);
               }}
             >
-              Cancel
+              {t("cancel")}
             </Button>
           </div>
         </div>
@@ -197,7 +199,7 @@ export default function MemoryEditCard({
 
       <div className="mt-3 flex gap-2">
         <Button variant="ghost" size="sm" onClick={() => setEditing(true)}>
-          Edit
+          {t("edit")}
         </Button>
         {confirmDelete ? (
           <div className="flex gap-1">
@@ -207,14 +209,14 @@ export default function MemoryEditCard({
               className="text-red-600 hover:text-red-700"
               onClick={handleDelete}
             >
-              Confirm
+              {t("confirm")}
             </Button>
             <Button
               variant="ghost"
               size="sm"
               onClick={() => setConfirmDelete(false)}
             >
-              Cancel
+              {t("cancel")}
             </Button>
           </div>
         ) : (
@@ -224,7 +226,7 @@ export default function MemoryEditCard({
             className="text-red-600 hover:text-red-700"
             onClick={() => setConfirmDelete(true)}
           >
-            Delete
+            {t("delete")}
           </Button>
         )}
       </div>

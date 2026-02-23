@@ -2,7 +2,8 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { useSession } from "next-auth/react";
-import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
+import { useRouter } from "@/i18n/navigation";
 import { parseIdFromSlug } from "@/lib/slug";
 import Card from "@/components/ui/Card";
 import Button from "@/components/ui/Button";
@@ -68,6 +69,7 @@ export default function MemorialEditPage({
   const { slug } = use(params);
   const { data: session } = useSession();
   const router = useRouter();
+  const t = useTranslations("EditMemorial");
   const memorialId = parseIdFromSlug(slug);
 
   const [memorial, setMemorial] = useState<Memorial | null>(null);
@@ -178,7 +180,7 @@ export default function MemorialEditPage({
     return (
       <div className="mx-auto max-w-3xl px-4 py-12 text-center">
         <p className="text-warm-600">
-          You don&apos;t have permission to edit this memorial.
+          {t("noPermission")}
         </p>
         <Button
           href={`/memorial/${slug}`}
@@ -186,7 +188,7 @@ export default function MemorialEditPage({
           size="sm"
           className="mt-4"
         >
-          View memorial
+          {t("viewMemorial")}
         </Button>
       </div>
     );
@@ -370,7 +372,7 @@ export default function MemorialEditPage({
     <div className="mx-auto max-w-3xl px-4 py-12 sm:px-6 lg:px-8">
       <div className="mb-6 flex items-center justify-between">
         <SectionHeading
-          title="Edit Memorial"
+          title={t("title")}
           subtitle={memorial?.name}
           as="h1"
           align="start"
@@ -380,7 +382,7 @@ export default function MemorialEditPage({
           variant="ghost"
           size="sm"
         >
-          View page
+          {t("viewPage")}
         </Button>
       </div>
 
@@ -388,7 +390,7 @@ export default function MemorialEditPage({
         {/* General Info */}
         <Card>
           <h2 className="font-heading text-lg font-semibold text-warm-800">
-            General Information
+            {t("generalInfo")}
           </h2>
 
           {/* Memorial Picture */}
@@ -406,7 +408,7 @@ export default function MemorialEditPage({
                 htmlFor="edit-name"
                 className="block text-sm font-medium text-warm-700"
               >
-                Name <span className="text-red-500">*</span>
+                {t("nameLabel")} <span className="text-red-500">*</span>
               </label>
               <input
                 id="edit-name"
@@ -424,7 +426,7 @@ export default function MemorialEditPage({
                   htmlFor="edit-birthday"
                   className="block text-sm font-medium text-warm-700"
                 >
-                  Birthday
+                  {t("birthdayLabel")}
                 </label>
                 <input
                   id="edit-birthday"
@@ -439,7 +441,7 @@ export default function MemorialEditPage({
                   htmlFor="edit-date-of-death"
                   className="block text-sm font-medium text-warm-700"
                 >
-                  Date of death <span className="text-red-500">*</span>
+                  {t("dateOfDeathLabel")} <span className="text-red-500">*</span>
                 </label>
                 <input
                   id="edit-date-of-death"
@@ -457,7 +459,7 @@ export default function MemorialEditPage({
                 htmlFor="edit-place-of-death"
                 className="block text-sm font-medium text-warm-700"
               >
-                Place of death
+                {t("placeOfDeathLabel")}
               </label>
               <input
                 id="edit-place-of-death"
@@ -465,7 +467,7 @@ export default function MemorialEditPage({
                 value={placeOfDeath}
                 onChange={(e) => setPlaceOfDeath(e.target.value)}
                 className={inputClass}
-                placeholder="e.g. Jerusalem, Israel"
+                placeholder={t("placeOfDeathPlaceholder")}
               />
             </div>
 
@@ -474,7 +476,7 @@ export default function MemorialEditPage({
                 htmlFor="edit-funeral-info"
                 className="block text-sm font-medium text-warm-700"
               >
-                Funeral information
+                {t("funeralInfoLabel")}
               </label>
               <textarea
                 id="edit-funeral-info"
@@ -482,7 +484,7 @@ export default function MemorialEditPage({
                 onChange={(e) => setFuneralInfo(e.target.value)}
                 rows={3}
                 className={inputClass}
-                placeholder="Details about funeral arrangements..."
+                placeholder={t("funeralInfoPlaceholder")}
               />
             </div>
 
@@ -491,7 +493,7 @@ export default function MemorialEditPage({
                 htmlFor="edit-survived-by"
                 className="block text-sm font-medium text-warm-700"
               >
-                Survived by
+                {t("survivedByLabel")}
               </label>
               <textarea
                 id="edit-survived-by"
@@ -499,7 +501,7 @@ export default function MemorialEditPage({
                 onChange={(e) => setSurvivedBy(e.target.value)}
                 rows={3}
                 className={inputClass}
-                placeholder="Family members..."
+                placeholder={t("survivedByPlaceholder")}
               />
             </div>
 
@@ -508,7 +510,7 @@ export default function MemorialEditPage({
                 htmlFor="edit-life-story"
                 className="block text-sm font-medium text-warm-700"
               >
-                Life story
+                {t("lifeStoryLabel")}
               </label>
               <textarea
                 id="edit-life-story"
@@ -516,7 +518,7 @@ export default function MemorialEditPage({
                 onChange={(e) => setLifeStory(e.target.value)}
                 rows={8}
                 className={inputClass}
-                placeholder="Tell the story of their life..."
+                placeholder={t("lifeStoryPlaceholder")}
               />
             </div>
 
@@ -527,10 +529,10 @@ export default function MemorialEditPage({
                 size="sm"
                 disabled={saving}
               >
-                {saving ? "Saving..." : "Save changes"}
+                {saving ? t("saving") : t("saveChanges")}
               </Button>
               {saved && (
-                <span className="text-sm text-gold-600">Saved!</span>
+                <span className="text-sm text-gold-600">{t("saved")}</span>
               )}
               {error && (
                 <span className="text-sm text-red-600">{error}</span>
@@ -543,7 +545,7 @@ export default function MemorialEditPage({
         <Card>
           <div className="flex items-center justify-between">
             <h2 className="font-heading text-lg font-semibold text-warm-800">
-              Eulogies
+              {t("eulogies")}
             </h2>
             {!showEulogyForm && (
               <Button
@@ -551,7 +553,7 @@ export default function MemorialEditPage({
                 size="sm"
                 onClick={() => setShowEulogyForm(true)}
               >
-                Add Eulogy
+                {t("addEulogy")}
               </Button>
             )}
           </div>
@@ -567,7 +569,7 @@ export default function MemorialEditPage({
 
           {eulogies.length === 0 && !showEulogyForm && (
             <p className="mt-4 text-sm text-muted">
-              No eulogies have been added yet.
+              {t("noEulogies")}
             </p>
           )}
 
@@ -609,7 +611,7 @@ export default function MemorialEditPage({
                         size="sm"
                         onClick={() => setEditingEulogyId(eulogy.id)}
                       >
-                        Edit
+                        {t("edit")}
                       </Button>
                       <Button
                         variant="ghost"
@@ -617,7 +619,7 @@ export default function MemorialEditPage({
                         className="text-red-600 hover:text-red-700"
                         onClick={() => handleDeleteEulogy(eulogy.id)}
                       >
-                        Delete
+                        {t("delete")}
                       </Button>
                       {index > 0 && (
                         <Button
@@ -651,16 +653,16 @@ export default function MemorialEditPage({
         <Card>
           <div className="flex items-center justify-between">
             <h2 className="font-heading text-lg font-semibold text-warm-800">
-              Photo Gallery
+              {t("photoGallery")}
             </h2>
             <p className="text-sm text-warm-400">
-              {totalImageCount} / 100 images
+              {t("imageCount", { count: totalImageCount })}
             </p>
           </div>
 
           {albums.length > 1 && (
             <p className="mt-2 text-xs text-warm-400">
-              Drag albums to reorder
+              {t("dragAlbumsHint")}
             </p>
           )}
 
@@ -689,7 +691,7 @@ export default function MemorialEditPage({
               type="text"
               value={newAlbumName}
               onChange={(e) => setNewAlbumName(e.target.value)}
-              placeholder="New album name..."
+              placeholder={t("newAlbumPlaceholder")}
               className="rounded-lg border border-border bg-surface px-3 py-2 text-sm text-warm-800 placeholder-warm-400 focus:border-accent focus:outline-none"
               onKeyDown={(e) => {
                 if (e.key === "Enter") {
@@ -704,7 +706,7 @@ export default function MemorialEditPage({
               onClick={handleCreateAlbum}
               disabled={!newAlbumName.trim()}
             >
-              Create Album
+              {t("createAlbum")}
             </Button>
           </div>
         </Card>
@@ -712,11 +714,11 @@ export default function MemorialEditPage({
         {/* Accepted Memories */}
         <Card>
           <h2 className="font-heading text-lg font-semibold text-warm-800">
-            Accepted Memories
+            {t("acceptedMemories")}
           </h2>
           {memories.length === 0 ? (
             <p className="mt-4 text-sm text-muted">
-              No accepted memories yet.
+              {t("noAcceptedMemories")}
             </p>
           ) : (
             <div className="mt-4 space-y-4">

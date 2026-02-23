@@ -1,7 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
+import { useRouter } from "@/i18n/navigation";
 import Card from "@/components/ui/Card";
 import Button from "@/components/ui/Button";
 import SectionHeading from "@/components/ui/SectionHeading";
@@ -11,6 +12,7 @@ const inputClass =
 
 export default function CreateMemorialPage() {
   const router = useRouter();
+  const t = useTranslations("CreateMemorial");
   const [name, setName] = useState("");
   const [dateOfDeath, setDateOfDeath] = useState("");
   const [birthday, setBirthday] = useState("");
@@ -53,8 +55,8 @@ export default function CreateMemorialPage() {
   return (
     <div className="mx-auto max-w-3xl px-4 py-12 sm:px-6 lg:px-8">
       <SectionHeading
-        title="Create a Memorial"
-        subtitle="Create a lasting memorial page for your loved one"
+        title={t("title")}
+        subtitle={t("subtitle")}
         as="h1"
         align="start"
       />
@@ -67,7 +69,7 @@ export default function CreateMemorialPage() {
                 htmlFor="create-name"
                 className="block text-sm font-medium text-warm-700"
               >
-                Name <span className="text-red-500">*</span>
+                {t("nameLabel")} <span className="text-red-500">*</span>
               </label>
               <input
                 id="create-name"
@@ -76,7 +78,7 @@ export default function CreateMemorialPage() {
                 onChange={(e) => setName(e.target.value)}
                 required
                 className={inputClass}
-                placeholder="Full name of the deceased"
+                placeholder={t("namePlaceholder")}
               />
             </div>
 
@@ -86,7 +88,7 @@ export default function CreateMemorialPage() {
                   htmlFor="create-birthday"
                   className="block text-sm font-medium text-warm-700"
                 >
-                  Birthday
+                  {t("birthdayLabel")}
                 </label>
                 <input
                   id="create-birthday"
@@ -101,7 +103,7 @@ export default function CreateMemorialPage() {
                   htmlFor="create-date-of-death"
                   className="block text-sm font-medium text-warm-700"
                 >
-                  Date of death <span className="text-red-500">*</span>
+                  {t("dateOfDeathLabel")} <span className="text-red-500">*</span>
                 </label>
                 <input
                   id="create-date-of-death"
@@ -119,7 +121,7 @@ export default function CreateMemorialPage() {
                 htmlFor="create-place-of-death"
                 className="block text-sm font-medium text-warm-700"
               >
-                Place of death
+                {t("placeOfDeathLabel")}
               </label>
               <input
                 id="create-place-of-death"
@@ -127,7 +129,7 @@ export default function CreateMemorialPage() {
                 value={placeOfDeath}
                 onChange={(e) => setPlaceOfDeath(e.target.value)}
                 className={inputClass}
-                placeholder="e.g. Jerusalem, Israel"
+                placeholder={t("placeOfDeathPlaceholder")}
               />
             </div>
 
@@ -136,7 +138,7 @@ export default function CreateMemorialPage() {
                 htmlFor="create-funeral-info"
                 className="block text-sm font-medium text-warm-700"
               >
-                Funeral information
+                {t("funeralInfoLabel")}
               </label>
               <textarea
                 id="create-funeral-info"
@@ -144,7 +146,7 @@ export default function CreateMemorialPage() {
                 onChange={(e) => setFuneralInfo(e.target.value)}
                 rows={3}
                 className={inputClass}
-                placeholder="Details about funeral arrangements..."
+                placeholder={t("funeralInfoPlaceholder")}
               />
             </div>
 
@@ -153,7 +155,7 @@ export default function CreateMemorialPage() {
                 htmlFor="create-survived-by"
                 className="block text-sm font-medium text-warm-700"
               >
-                Survived by
+                {t("survivedByLabel")}
               </label>
               <textarea
                 id="create-survived-by"
@@ -161,7 +163,7 @@ export default function CreateMemorialPage() {
                 onChange={(e) => setSurvivedBy(e.target.value)}
                 rows={3}
                 className={inputClass}
-                placeholder="Family members..."
+                placeholder={t("survivedByPlaceholder")}
               />
             </div>
 
@@ -170,7 +172,7 @@ export default function CreateMemorialPage() {
                 htmlFor="create-life-story"
                 className="block text-sm font-medium text-warm-700"
               >
-                Life story
+                {t("lifeStoryLabel")}
               </label>
               <textarea
                 id="create-life-story"
@@ -178,7 +180,7 @@ export default function CreateMemorialPage() {
                 onChange={(e) => setLifeStory(e.target.value)}
                 rows={6}
                 className={inputClass}
-                placeholder="Tell the story of their life..."
+                placeholder={t("lifeStoryPlaceholder")}
               />
             </div>
 
@@ -191,10 +193,10 @@ export default function CreateMemorialPage() {
                 size="lg"
                 disabled={saving}
               >
-                {saving ? "Creating..." : "Create Memorial"}
+                {saving ? t("creating") : t("create")}
               </Button>
               <Button href="/dashboard" variant="ghost" size="lg">
-                Cancel
+                {t("cancel")}
               </Button>
             </div>
           </form>

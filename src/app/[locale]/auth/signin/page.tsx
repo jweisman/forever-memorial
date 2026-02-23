@@ -3,13 +3,15 @@
 import { useState } from "react";
 import { signIn } from "next-auth/react";
 import { useSearchParams } from "next/navigation";
-import Link from "next/link";
+import { useTranslations } from "next-intl";
+import { Link } from "@/i18n/navigation";
 import Card from "@/components/ui/Card";
 import Button from "@/components/ui/Button";
 
 export default function SignInPage() {
   const searchParams = useSearchParams();
   const callbackUrl = searchParams.get("callbackUrl") || "/dashboard";
+  const t = useTranslations("SignIn");
   const [email, setEmail] = useState("");
   const [emailSent, setEmailSent] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -28,10 +30,10 @@ export default function SignInPage() {
       <Card className="w-full max-w-md">
         <div className="text-center">
           <h1 className="font-heading text-2xl font-semibold text-warm-800">
-            Welcome to Forever
+            {t("title")}
           </h1>
           <p className="mt-2 text-sm text-muted">
-            Sign in to create memorials and share memories
+            {t("subtitle")}
           </p>
         </div>
 
@@ -52,17 +54,16 @@ export default function SignInPage() {
               />
             </svg>
             <h2 className="mt-4 font-heading text-lg font-semibold text-warm-800">
-              Check your email
+              {t("checkEmail")}
             </h2>
             <p className="mt-2 text-sm text-muted">
-              We sent a magic link to <strong className="text-warm-700">{email}</strong>.
-              Click the link in the email to sign in.
+              {t("emailSent", { email })}
             </p>
             <button
               onClick={() => setEmailSent(false)}
               className="mt-4 text-sm font-medium text-accent hover:text-accent-hover"
             >
-              Use a different email
+              {t("differentEmail")}
             </button>
           </div>
         ) : (
@@ -93,7 +94,7 @@ export default function SignInPage() {
                     fill="#EA4335"
                   />
                 </svg>
-                Continue with Google
+                {t("google")}
               </Button>
             </div>
 
@@ -104,7 +105,7 @@ export default function SignInPage() {
               </div>
               <div className="relative flex justify-center text-sm">
                 <span className="bg-surface px-4 text-muted">
-                  or continue with email
+                  {t("orEmail")}
                 </span>
               </div>
             </div>
@@ -115,7 +116,7 @@ export default function SignInPage() {
                 htmlFor="email"
                 className="block text-sm font-medium text-warm-700"
               >
-                Email address
+                {t("emailLabel")}
               </label>
               <input
                 id="email"
@@ -123,7 +124,7 @@ export default function SignInPage() {
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder="you@example.com"
+                placeholder={t("emailPlaceholder")}
                 className="mt-1 w-full rounded-lg border border-border bg-surface px-4 py-2.5 text-sm text-warm-800 placeholder-warm-400 transition-colors focus:border-accent focus:outline-none"
               />
               <Button
@@ -133,7 +134,7 @@ export default function SignInPage() {
                 className="mt-4 w-full"
                 disabled={loading}
               >
-                {loading ? "Sending..." : "Send magic link"}
+                {loading ? t("sending") : t("sendLink")}
               </Button>
             </form>
           </>
@@ -141,7 +142,7 @@ export default function SignInPage() {
 
         <p className="mt-6 text-center text-sm text-muted">
           <Link href="/" className="text-accent hover:text-accent-hover">
-            &larr; Back to home
+            &larr; {t("backHome")}
           </Link>
         </p>
       </Card>

@@ -1,7 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import Link from "next/link";
+import { useLocale, useTranslations } from "next-intl";
+import { Link } from "@/i18n/navigation";
 import Button from "@/components/ui/Button";
 
 type MySubmissionCardProps = {
@@ -24,27 +25,8 @@ type MySubmissionCardProps = {
 const inputClass =
   "mt-1 w-full rounded-lg border border-border bg-surface px-4 py-2.5 text-sm text-warm-800 placeholder-warm-400 transition-colors focus:border-accent focus:outline-none";
 
-const statusLabels: Record<string, { label: string; className: string }> = {
-  PENDING: {
-    label: "Pending review",
-    className: "bg-amber-100 text-amber-700",
-  },
-  ACCEPTED: {
-    label: "Accepted",
-    className: "bg-green-100 text-green-700",
-  },
-  RETURNED: {
-    label: "Returned",
-    className: "bg-red-100 text-red-700",
-  },
-  IGNORED: {
-    label: "Under review",
-    className: "bg-warm-100 text-warm-500",
-  },
-};
-
-function formatDate(date: string): string {
-  return new Date(date).toLocaleDateString("en-US", {
+function formatDate(date: string, locale: string): string {
+  return new Date(date).toLocaleDateString(locale, {
     year: "numeric",
     month: "short",
     day: "numeric",
@@ -55,6 +37,8 @@ export default function MySubmissionCard({
   memory,
   onChanged,
 }: MySubmissionCardProps) {
+  const t = useTranslations("MySubmission");
+  const locale = useLocale();
   const [editing, setEditing] = useState(false);
   const [name, setName] = useState(memory.name);
   const [relation, setRelation] = useState(memory.relation || "");
@@ -62,6 +46,25 @@ export default function MySubmissionCard({
   const [withholdName, setWithholdName] = useState(memory.withholdName);
   const [saving, setSaving] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
+
+  const statusLabels: Record<string, { label: string; className: string }> = {
+    PENDING: {
+      label: t("pendingReview"),
+      className: "bg-amber-100 text-amber-700",
+    },
+    ACCEPTED: {
+      label: t("accepted"),
+      className: "bg-green-100 text-green-700",
+    },
+    RETURNED: {
+      label: t("returned"),
+      className: "bg-red-100 text-red-700",
+    },
+    IGNORED: {
+      label: t("underReview"),
+      className: "bg-warm-100 text-warm-500",
+    },
+  };
 
   const status = statusLabels[memory.status] ?? statusLabels.PENDING;
 
@@ -118,7 +121,7 @@ export default function MySubmissionCard({
         {memory.returnMessage && (
           <div className="mb-4 rounded-lg bg-red-50 p-3">
             <p className="text-xs font-medium text-red-700">
-              Feedback from page owner:
+              {t("ownerFeedback")}
             </p>
             <p className="mt-1 text-sm text-red-600">
               {memory.returnMessage}
@@ -129,7 +132,7 @@ export default function MySubmissionCard({
         <div className="space-y-3">
           <div>
             <label className="block text-sm font-medium text-warm-700">
-              Your name
+              {t("yourName")}
             </label>
             <input
               type="text"
@@ -146,25 +149,25 @@ export default function MySubmissionCard({
               onChange={(e) => setWithholdName(e.target.checked)}
               className="rounded border-warm-300 text-accent focus:ring-accent"
             />
-            <span className="text-sm text-warm-600">Display as anonymous</span>
+            <span className="text-sm text-warm-600">{t("anonymous")}</span>
           </label>
 
           <div>
             <label className="block text-sm font-medium text-warm-700">
-              Relation
+              {t("relation")}
             </label>
             <input
               type="text"
               value={relation}
               onChange={(e) => setRelation(e.target.value)}
               className={inputClass}
-              placeholder="e.g. Friend, Colleague"
+              placeholder={t("relationPlaceholder")}
             />
           </div>
 
           <div>
             <label className="block text-sm font-medium text-warm-700">
-              Your memory
+              {t("yourMemory")}
             </label>
             <textarea
               value={text}
@@ -181,7 +184,7 @@ export default function MySubmissionCard({
               onClick={handleSaveAndResubmit}
               disabled={saving || !name.trim() || !text.trim()}
             >
-              {saving ? "Saving..." : "Save & Resubmit"}
+              {saving ? t("saving") : t("saveResubmit")}
             </Button>
             <Button
               variant="ghost"
@@ -194,7 +197,7 @@ export default function MySubmissionCard({
                 setEditing(false);
               }}
             >
-              Cancel
+              {t("cancel")}
             </Button>
           </div>
         </div>
@@ -218,7 +221,7 @@ export default function MySubmissionCard({
             {status.label}
           </span>
           <span className="text-xs text-warm-300">
-            {formatDate(memory.createdAt)}
+            {formatDate(memory.createdAt, locale)}
           </span>
         </div>
       </div>
@@ -226,7 +229,7 @@ export default function MySubmissionCard({
       {memory.status === "RETURNED" && memory.returnMessage && (
         <div className="mt-3 rounded-lg bg-red-50 p-3">
           <p className="text-xs font-medium text-red-700">
-            Feedback from page owner:
+            {t("ownerFeedback")}
           </p>
           <p className="mt-1 text-sm text-red-600">{memory.returnMessage}</p>
         </div>
@@ -250,7 +253,7 @@ export default function MySubmissionCard({
       <div className="mt-3 flex gap-2">
         {memory.status === "RETURNED" && (
           <Button variant="primary" size="sm" onClick={() => setEditing(true)}>
-            Edit & Resubmit
+            {t("editResubmit")}
           </Button>
         )}
         {(memory.status === "PENDING" || memory.status === "ACCEPTED" || memory.status === "RETURNED") &&
@@ -262,14 +265,14 @@ export default function MySubmissionCard({
                 className="text-red-600 hover:text-red-700"
                 onClick={handleDelete}
               >
-                Confirm delete
+                {t("confirmDelete")}
               </Button>
               <Button
                 variant="ghost"
                 size="sm"
                 onClick={() => setConfirmDelete(false)}
               >
-                Cancel
+                {t("cancel")}
               </Button>
             </div>
           ) : (
@@ -279,7 +282,7 @@ export default function MySubmissionCard({
               className="text-red-600 hover:text-red-700"
               onClick={() => setConfirmDelete(true)}
             >
-              Delete
+              {t("delete")}
             </Button>
           ))}
       </div>

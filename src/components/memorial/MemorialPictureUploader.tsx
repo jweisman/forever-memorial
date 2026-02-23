@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef } from "react";
+import { useTranslations } from "next-intl";
 import { validateImageFile, uploadMemorialPicture } from "@/lib/upload";
 
 type MemorialPictureUploaderProps = {
@@ -14,6 +15,7 @@ export default function MemorialPictureUploader({
   currentPictureUrl,
   onUpdate,
 }: MemorialPictureUploaderProps) {
+  const t = useTranslations("EditMemorial");
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
@@ -60,12 +62,12 @@ export default function MemorialPictureUploader({
             if (!uploading) inputRef.current?.click();
           }
         }}
-        aria-label="Upload memorial picture"
+        aria-label={t("uploadLabel")}
       >
         {currentPictureUrl ? (
           <img
             src={currentPictureUrl}
-            alt="Memorial picture"
+            alt={t("memorialPicture")}
             className="size-full object-cover"
           />
         ) : (
@@ -90,7 +92,7 @@ export default function MemorialPictureUploader({
         {/* Hover overlay */}
         <div className="absolute inset-0 flex items-center justify-center rounded-full bg-black/40 opacity-0 transition-opacity group-hover:opacity-100">
           <span className="text-xs font-medium text-white">
-            {uploading ? "Uploading..." : "Change photo"}
+            {uploading ? t("uploading") : t("changePhoto")}
           </span>
         </div>
       </div>
@@ -112,7 +114,7 @@ export default function MemorialPictureUploader({
           onClick={handleRemove}
           className="text-xs text-red-600 hover:text-red-700"
         >
-          Remove photo
+          {t("removePhoto")}
         </button>
       )}
 

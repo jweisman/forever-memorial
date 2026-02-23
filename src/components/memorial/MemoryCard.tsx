@@ -1,3 +1,4 @@
+import { useLocale, useTranslations } from "next-intl";
 import Card from "@/components/ui/Card";
 import CollapsibleText from "@/components/ui/CollapsibleText";
 
@@ -13,8 +14,8 @@ type MemoryCardProps = {
   };
 };
 
-function formatDate(date: string): string {
-  return new Date(date).toLocaleDateString("en-US", {
+function formatDate(date: string, locale: string): string {
+  return new Date(date).toLocaleDateString(locale, {
     year: "numeric",
     month: "long",
     day: "numeric",
@@ -22,11 +23,13 @@ function formatDate(date: string): string {
 }
 
 export default function MemoryCard({ memory }: MemoryCardProps) {
-  const displayName = memory.withholdName ? "Anonymous" : memory.name;
+  const t = useTranslations("Memorial");
+  const locale = useLocale();
+  const displayName = memory.withholdName ? t("anonymous") : memory.name;
 
   return (
     <Card>
-      <blockquote className="border-l-4 border-gold-400 pl-4">
+      <blockquote className="border-s-4 border-gold-400 ps-4">
         <CollapsibleText text={memory.text} maxLines={6} />
 
         {memory.images.length > 0 && (
@@ -38,7 +41,7 @@ export default function MemoryCard({ memory }: MemoryCardProps) {
               >
                 <img
                   src={img.thumbUrl}
-                  alt={img.caption || "Memory photo"}
+                  alt={img.caption || t("memoryPhoto")}
                   className="size-full object-cover"
                   loading="lazy"
                 />
@@ -52,8 +55,8 @@ export default function MemoryCard({ memory }: MemoryCardProps) {
           {memory.relation && (
             <span className="text-warm-400"> — {memory.relation}</span>
           )}
-          <span className="ml-2 text-warm-300">
-            {formatDate(memory.createdAt)}
+          <span className="ms-2 text-warm-300">
+            {formatDate(memory.createdAt, locale)}
           </span>
         </footer>
       </blockquote>

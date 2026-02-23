@@ -56,8 +56,8 @@ export default function ScrollableRow({
       {canScrollLeft && (
         <button
           onClick={() => scroll("left")}
-          className="absolute left-0 top-1/2 z-10 flex size-8 -translate-y-1/2 items-center justify-center rounded-full bg-white/90 shadow-md transition-colors hover:bg-white"
-          aria-label="Scroll left"
+          className="absolute start-0 top-1/2 z-10 flex size-8 -translate-y-1/2 items-center justify-center rounded-full bg-white/90 shadow-md transition-colors hover:bg-white"
+          aria-label="Scroll back"
         >
           <svg
             className="size-4 text-warm-600"
@@ -79,8 +79,8 @@ export default function ScrollableRow({
       {canScrollRight && (
         <button
           onClick={() => scroll("right")}
-          className="absolute right-0 top-1/2 z-10 flex size-8 -translate-y-1/2 items-center justify-center rounded-full bg-white/90 shadow-md transition-colors hover:bg-white"
-          aria-label="Scroll right"
+          className="absolute end-0 top-1/2 z-10 flex size-8 -translate-y-1/2 items-center justify-center rounded-full bg-white/90 shadow-md transition-colors hover:bg-white"
+          aria-label="Scroll forward"
         >
           <svg
             className="size-4 text-warm-600"

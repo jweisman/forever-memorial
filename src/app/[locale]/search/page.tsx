@@ -1,11 +1,12 @@
 import { Metadata } from "next";
+import { getTranslations, setRequestLocale } from "next-intl/server";
 import { prisma } from "@/lib/prisma";
 import { generateViewUrl } from "@/lib/s3-helpers";
-import { Prisma } from "@/generated/prisma/client";
 import MemorialCard from "@/components/ui/MemorialCard";
 import SectionHeading from "@/components/ui/SectionHeading";
 
 type Props = {
+  params: Promise<{ locale: string }>;
   searchParams: Promise<{ q?: string }>;
 };
 
@@ -26,16 +27,20 @@ export async function generateMetadata({ searchParams }: Props): Promise<Metadat
   };
 }
 
-function formatDateRange(birthday: Date | null, dateOfDeath: Date): string {
+function formatDateRange(birthday: Date | null, dateOfDeath: Date, diedLabel: string): string {
   const deathYear = new Date(dateOfDeath).getFullYear();
   if (birthday) {
     const birthYear = new Date(birthday).getFullYear();
     return `${birthYear} – ${deathYear}`;
   }
-  return `d. ${deathYear}`;
+  return diedLabel;
 }
 
-export default async function SearchPage({ searchParams }: Props) {
+export default async function SearchPage({ params, searchParams }: Props) {
+  const { locale } = await params;
+  setRequestLocale(locale);
+  const t = await getTranslations("Search");
+
   const { q } = await searchParams;
   const query = q?.trim() ?? "";
 
@@ -63,7 +68,11 @@ export default async function SearchPage({ searchParams }: Props) {
         id: row.id,
         slug: row.slug,
         name: row.name,
-        dates: formatDateRange(row.birthday, row.dateOfDeath),
+        dates: formatDateRange(
+          row.birthday,
+          row.dateOfDeath,
+          t("died", { year: new Date(row.dateOfDeath).getFullYear() })
+        ),
         placeOfDeath: row.placeOfDeath,
         pictureUrl: row.memorialPicture
           ? await generateViewUrl(row.memorialPicture)
@@ -78,10 +87,10 @@ export default async function SearchPage({ searchParams }: Props) {
         {query.length >= 2 ? (
           <>
             <SectionHeading
-              title={`Results for "${query}"`}
+              title={t("titleWithQuery", { query })}
               subtitle={
                 results.length > 0
-                  ? `${results.length} memorial${results.length === 1 ? "" : "s"} found`
+                  ? t("resultCount", { count: results.length })
                   : undefined
               }
             />
@@ -102,10 +111,10 @@ export default async function SearchPage({ searchParams }: Props) {
             ) : (
               <div className="mt-12 text-center">
                 <p className="text-lg text-warm-500">
-                  No memorials found matching your search.
+                  {t("noResults")}
                 </p>
                 <p className="mt-2 text-sm text-muted">
-                  Try a different name or check the spelling.
+                  {t("noResultsHint")}
                 </p>
               </div>
             )}
@@ -113,7 +122,7 @@ export default async function SearchPage({ searchParams }: Props) {
         ) : (
           <div className="mt-12 text-center">
             <p className="text-lg text-warm-500">
-              Enter at least 2 characters to search.
+              {t("minChars")}
             </p>
           </div>
         )}

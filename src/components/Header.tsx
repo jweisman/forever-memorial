@@ -1,8 +1,12 @@
-import Link from "next/link";
+import { getTranslations } from "next-intl/server";
+import { Link } from "@/i18n/navigation";
 import SearchBar from "@/components/ui/SearchBar";
 import HeaderAuth from "@/components/HeaderAuth";
+import LanguageSwitcher from "@/components/LanguageSwitcher";
 
-export default function Header() {
+export default async function Header() {
+  const t = await getTranslations("Header");
+
   return (
     <header className="border-b border-border bg-surface" role="banner">
       <nav
@@ -12,30 +16,25 @@ export default function Header() {
         <Link
           href="/"
           className="flex items-baseline gap-2 transition-opacity hover:opacity-80"
-          aria-label="Forever — Home"
+          aria-label={t("homeLabel")}
         >
           <span className="font-heading text-xl font-semibold text-warm-800">
-            Forever
+            {t("home")}
           </span>
-          <span className="font-heading text-lg text-gold-500">לעולם</span>
+          <span className="font-heading text-lg text-gold-500">{t("homeHebrew")}</span>
         </Link>
 
         <div className="flex items-center gap-3 sm:gap-4">
           <SearchBar
             size="sm"
-            placeholder="Search memorials..."
+            placeholder={t("searchPlaceholder")}
             className="hidden w-56 sm:block lg:w-64"
-            aria-label="Search memorials"
+            aria-label={t("searchLabel")}
           />
 
           <HeaderAuth />
 
-          <button
-            className="rounded-md px-2 py-1 text-sm font-medium text-warm-500 transition-colors hover:bg-warm-50 hover:text-warm-700"
-            aria-label="Switch language"
-          >
-            EN
-          </button>
+          <LanguageSwitcher />
         </div>
       </nav>
     </header>

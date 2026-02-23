@@ -1,3 +1,4 @@
+import { getTranslations, setRequestLocale } from "next-intl/server";
 import Button from "@/components/ui/Button";
 import SearchBar from "@/components/ui/SearchBar";
 import SectionHeading from "@/components/ui/SectionHeading";
@@ -7,17 +8,26 @@ import { generateViewUrl } from "@/lib/s3-helpers";
 
 function formatDateRange(
   birthday: Date | null,
-  dateOfDeath: Date
+  dateOfDeath: Date,
+  diedLabel: string
 ): string {
   const deathYear = new Date(dateOfDeath).getFullYear();
   if (birthday) {
     const birthYear = new Date(birthday).getFullYear();
     return `${birthYear} – ${deathYear}`;
   }
-  return `d. ${deathYear}`;
+  return diedLabel;
 }
 
-export default async function Home() {
+export default async function Home({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}) {
+  const { locale } = await params;
+  setRequestLocale(locale);
+  const t = await getTranslations("Home");
+
   const rawMemorials = await prisma.memorial.findMany({
     where: { disabled: false },
     orderBy: { createdAt: "desc" },
@@ -42,6 +52,12 @@ export default async function Home() {
     }))
   );
 
+  const steps = [
+    { step: "1", title: t("step1"), description: t("step1Desc") },
+    { step: "2", title: t("step2"), description: t("step2Desc") },
+    { step: "3", title: t("step3"), description: t("step3Desc") },
+  ];
+
   return (
     <>
       {/* Hero section */}
@@ -54,32 +70,30 @@ export default async function Home() {
             id="hero-heading"
             className="font-heading text-4xl font-semibold tracking-tight text-warm-800 sm:text-5xl"
           >
-            Preserve the memories
+            {t("heroTitle")}
             <br />
-            <span className="text-gold-500">that matter forever</span>
+            <span className="text-gold-500">{t("heroTitleAccent")}</span>
           </h1>
           <p className="mt-6 text-lg leading-relaxed text-muted">
-            Create a lasting memorial for your loved ones. Share stories,
-            photos, and cherished moments with family, friends, and the wider
-            community.
+            {t("heroDescription")}
           </p>
 
           {/* Hero search */}
           <div className="mt-10">
             <SearchBar
               size="lg"
-              placeholder="Search for a memorial by name..."
+              placeholder={t("searchPlaceholder")}
               className="mx-auto max-w-md"
-              aria-label="Search for a memorial"
+              aria-label={t("searchLabel")}
             />
           </div>
 
           <div className="mt-8 flex flex-col items-center justify-center gap-4 sm:flex-row">
             <Button href="/dashboard/create" variant="primary" size="lg">
-              Create a Memorial
+              {t("createMemorial")}
             </Button>
             <Button href="#how-heading" variant="ghost" size="lg">
-              Learn more
+              {t("learnMore")}
             </Button>
           </div>
         </div>
@@ -98,30 +112,11 @@ export default async function Home() {
         <div className="mx-auto max-w-4xl">
           <SectionHeading
             id="how-heading"
-            title="A place to remember, together"
-            subtitle="Create a memorial page in minutes. Invite others to contribute their memories."
+            title={t("howTitle")}
+            subtitle={t("howSubtitle")}
           />
           <div className="mt-12 grid gap-8 sm:grid-cols-3">
-            {[
-              {
-                step: "1",
-                title: "Create",
-                description:
-                  "Set up a memorial page with photos, life story, and funeral details.",
-              },
-              {
-                step: "2",
-                title: "Share",
-                description:
-                  "Invite family and friends to visit the page and contribute memories.",
-              },
-              {
-                step: "3",
-                title: "Preserve",
-                description:
-                  "Collect and curate stories, eulogies, and images — all in one place.",
-              },
-            ].map(({ step, title, description }) => (
+            {steps.map(({ step, title, description }) => (
               <div key={step} className="text-center">
                 <div className="mx-auto flex size-10 items-center justify-center rounded-full bg-gold-400/20 font-heading text-lg font-semibold text-gold-600">
                   {step}
@@ -146,8 +141,8 @@ export default async function Home() {
         <div className="mx-auto max-w-4xl">
           <SectionHeading
             id="recent-heading"
-            title="Recent Memorials"
-            subtitle="Recently created memorial pages"
+            title={t("recentTitle")}
+            subtitle={t("recentSubtitle")}
           />
           <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {recentMemorials.length > 0 ? (
@@ -155,7 +150,11 @@ export default async function Home() {
                 <MemorialCard
                   key={memorial.id}
                   name={memorial.name}
-                  dates={formatDateRange(memorial.birthday, memorial.dateOfDeath)}
+                  dates={formatDateRange(
+                    memorial.birthday,
+                    memorial.dateOfDeath,
+                    t("died", { year: new Date(memorial.dateOfDeath).getFullYear() })
+                  )}
                   placeOfDeath={memorial.placeOfDeath ?? undefined}
                   imageUrl={memorial.pictureUrl ?? undefined}
                   href={`/memorial/${memorial.slug}`}
@@ -163,7 +162,7 @@ export default async function Home() {
               ))
             ) : (
               <p className="col-span-full text-center text-sm text-muted">
-                No memorials have been created yet. Be the first to create one.
+                {t("noMemorials")}
               </p>
             )}
           </div>
@@ -177,15 +176,14 @@ export default async function Home() {
             id="cta-heading"
             className="font-heading text-2xl font-semibold text-warm-800 sm:text-3xl"
           >
-            Every life deserves to be remembered
+            {t("ctaTitle")}
           </h2>
           <p className="mt-4 text-base text-muted">
-            Create a free memorial page and give family and friends a place to
-            share their stories.
+            {t("ctaDescription")}
           </p>
           <div className="mt-8">
             <Button href="/dashboard/create" variant="primary" size="lg">
-              Get Started
+              {t("getStarted")}
             </Button>
           </div>
         </div>

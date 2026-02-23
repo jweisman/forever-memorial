@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useCallback } from "react";
+import { useTranslations } from "next-intl";
 
 type LightboxImage = {
   url: string;
@@ -20,6 +21,7 @@ export default function Lightbox({
   onClose,
   onNavigate,
 }: LightboxProps) {
+  const t = useTranslations("Memorial");
   const image = images[currentIndex];
   const hasPrev = currentIndex > 0;
   const hasNext = currentIndex < images.length - 1;
@@ -48,13 +50,13 @@ export default function Lightbox({
       onClick={onClose}
       role="dialog"
       aria-modal="true"
-      aria-label="Image viewer"
+      aria-label={t("lightboxTitle")}
     >
       {/* Close button */}
       <button
         onClick={onClose}
-        className="absolute right-4 top-4 z-10 rounded-full bg-black/50 p-2 text-white transition-colors hover:bg-black/70"
-        aria-label="Close"
+        className="absolute end-4 top-4 z-10 rounded-full bg-black/50 p-2 text-white transition-colors hover:bg-black/70"
+        aria-label={t("lightboxClose")}
       >
         <svg
           className="size-6"
@@ -78,8 +80,8 @@ export default function Lightbox({
             e.stopPropagation();
             onNavigate(currentIndex - 1);
           }}
-          className="absolute left-4 z-10 rounded-full bg-black/50 p-2 text-white transition-colors hover:bg-black/70"
-          aria-label="Previous image"
+          className="absolute start-4 z-10 rounded-full bg-black/50 p-2 text-white transition-colors hover:bg-black/70"
+          aria-label={t("lightboxPrev")}
         >
           <svg
             className="size-6"
@@ -104,8 +106,8 @@ export default function Lightbox({
             e.stopPropagation();
             onNavigate(currentIndex + 1);
           }}
-          className="absolute right-4 z-10 rounded-full bg-black/50 p-2 text-white transition-colors hover:bg-black/70"
-          aria-label="Next image"
+          className="absolute end-4 z-10 rounded-full bg-black/50 p-2 text-white transition-colors hover:bg-black/70"
+          aria-label={t("lightboxNext")}
         >
           <svg
             className="size-6"
@@ -130,7 +132,7 @@ export default function Lightbox({
       >
         <img
           src={image.url}
-          alt={image.caption || "Gallery image"}
+          alt={image.caption || t("galleryImage")}
           className="max-h-[80vh] max-w-full object-contain"
         />
         {image.caption && (

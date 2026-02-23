@@ -3,7 +3,8 @@
 import { useState, useEffect } from "react";
 import { useSession } from "next-auth/react";
 import { signOut } from "next-auth/react";
-import Link from "next/link";
+import { useTranslations, useFormatter } from "next-intl";
+import { Link } from "@/i18n/navigation";
 import Card from "@/components/ui/Card";
 import Button from "@/components/ui/Button";
 import SectionHeading from "@/components/ui/SectionHeading";
@@ -35,6 +36,7 @@ function formatDateRange(
 
 export default function DashboardPage() {
   const { data: session, update } = useSession();
+  const t = useTranslations("Dashboard");
   const [name, setName] = useState(session?.user?.name ?? "");
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
@@ -160,8 +162,8 @@ export default function DashboardPage() {
   return (
     <div className="mx-auto max-w-4xl px-4 py-12 sm:px-6 lg:px-8">
       <SectionHeading
-        title="Dashboard"
-        subtitle={`Welcome back, ${session.user.name || session.user.email}`}
+        title={t("title")}
+        subtitle={t("welcomeBack", { name: session.user.name || session.user.email || "" })}
         as="h1"
         align="start"
       />
@@ -170,7 +172,7 @@ export default function DashboardPage() {
         {/* Profile Section */}
         <Card>
           <h2 className="font-heading text-lg font-semibold text-warm-800">
-            Profile
+            {t("profile")}
           </h2>
           <form onSubmit={handleProfileSave} className="mt-4 space-y-4">
             <div>
@@ -178,7 +180,7 @@ export default function DashboardPage() {
                 htmlFor="profile-name"
                 className="block text-sm font-medium text-warm-700"
               >
-                Display name
+                {t("displayName")}
               </label>
               <input
                 id="profile-name"
@@ -186,21 +188,21 @@ export default function DashboardPage() {
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 className="mt-1 w-full max-w-md rounded-lg border border-border bg-surface px-4 py-2.5 text-sm text-warm-800 placeholder-warm-400 transition-colors focus:border-accent focus:outline-none"
-                placeholder="Your name"
+                placeholder={t("namePlaceholder")}
               />
             </div>
             <div>
               <label className="block text-sm font-medium text-warm-700">
-                Email
+                {t("email")}
               </label>
               <p className="mt-1 text-sm text-muted">{session.user.email}</p>
             </div>
             <div className="flex items-center gap-3">
               <Button type="submit" variant="primary" size="sm" disabled={saving}>
-                {saving ? "Saving..." : "Save changes"}
+                {saving ? t("saving") : t("saveChanges")}
               </Button>
               {saved && (
-                <span className="text-sm text-gold-600">Saved!</span>
+                <span className="text-sm text-gold-600">{t("saved")}</span>
               )}
             </div>
           </form>
@@ -210,18 +212,18 @@ export default function DashboardPage() {
         <Card>
           <div className="flex items-center justify-between">
             <h2 className="font-heading text-lg font-semibold text-warm-800">
-              My Memorials
+              {t("myMemorials")}
             </h2>
             <Button href="/dashboard/create" variant="primary" size="sm">
-              Create a Memorial
+              {t("createMemorial")}
             </Button>
           </div>
 
           {loadingMemorials ? (
-            <p className="mt-4 text-sm text-muted">Loading...</p>
+            <p className="mt-4 text-sm text-muted">{t("loading")}</p>
           ) : memorials.length === 0 ? (
             <p className="mt-4 text-sm text-muted">
-              You haven&apos;t created any memorial pages yet.
+              {t("noMemorials")}
             </p>
           ) : (
             <div className="mt-4 space-y-3">
@@ -243,13 +245,13 @@ export default function DashboardPage() {
                         ` · ${memorial.placeOfDeath}`}
                     </p>
                   </Link>
-                  <div className="ml-4 flex shrink-0 gap-2">
+                  <div className="ms-4 flex shrink-0 gap-2">
                     <Button
                       href={`/memorial/${memorial.slug}/edit`}
                       variant="ghost"
                       size="sm"
                     >
-                      Edit
+                      {t("edit")}
                     </Button>
                     {deletingMemorialId === memorial.id ? (
                       <div className="flex gap-1">
@@ -259,14 +261,14 @@ export default function DashboardPage() {
                           className="text-red-600 hover:text-red-700"
                           onClick={() => handleDeleteMemorial(memorial.id)}
                         >
-                          Confirm
+                          {t("confirm")}
                         </Button>
                         <Button
                           variant="ghost"
                           size="sm"
                           onClick={() => setDeletingMemorialId(null)}
                         >
-                          Cancel
+                          {t("cancel")}
                         </Button>
                       </div>
                     ) : (
@@ -276,7 +278,7 @@ export default function DashboardPage() {
                         className="text-red-600 hover:text-red-700"
                         onClick={() => setDeletingMemorialId(memorial.id)}
                       >
-                        Delete
+                        {t("delete")}
                       </Button>
                     )}
                   </div>
@@ -290,10 +292,10 @@ export default function DashboardPage() {
         <Card>
           <div className="flex items-center justify-between">
             <h2 className="font-heading text-lg font-semibold text-warm-800">
-              Pending Reviews
+              {t("pendingReviews")}
               {pendingMemories.filter((m) => m.status === "PENDING").length >
                 0 && (
-                <span className="ml-2 inline-flex items-center rounded-full bg-accent px-2 py-0.5 text-xs font-medium text-white">
+                <span className="ms-2 inline-flex items-center rounded-full bg-accent px-2 py-0.5 text-xs font-medium text-white">
                   {
                     pendingMemories.filter((m) => m.status === "PENDING")
                       .length
@@ -308,12 +310,12 @@ export default function DashboardPage() {
                 onChange={(e) => setShowIgnored(e.target.checked)}
                 className="rounded border-warm-300 text-accent focus:ring-accent"
               />
-              Show ignored
+              {t("showIgnored")}
             </label>
           </div>
 
           {loadingReviews ? (
-            <p className="mt-4 text-sm text-muted">Loading...</p>
+            <p className="mt-4 text-sm text-muted">{t("loading")}</p>
           ) : (() => {
             const filtered = pendingMemories.filter(
               (m) => showIgnored || m.status !== "IGNORED"
@@ -321,7 +323,7 @@ export default function DashboardPage() {
             if (filtered.length === 0) {
               return (
                 <p className="mt-4 text-sm text-muted">
-                  No pending memory submissions to review.
+                  {t("noPendingReviews")}
                 </p>
               );
             }
@@ -360,14 +362,14 @@ export default function DashboardPage() {
         {/* My Submissions */}
         <Card>
           <h2 className="font-heading text-lg font-semibold text-warm-800">
-            My Submissions
+            {t("mySubmissions")}
           </h2>
 
           {loadingSubmissions ? (
-            <p className="mt-4 text-sm text-muted">Loading...</p>
+            <p className="mt-4 text-sm text-muted">{t("loading")}</p>
           ) : mySubmissions.length === 0 ? (
             <p className="mt-4 text-sm text-muted">
-              You haven&apos;t submitted any memories yet.
+              {t("noSubmissions")}
             </p>
           ) : (
             <div className="mt-4 space-y-3">
@@ -385,18 +387,16 @@ export default function DashboardPage() {
         {/* Danger Zone */}
         <Card className="border-red-200">
           <h2 className="font-heading text-lg font-semibold text-red-700">
-            Delete Account
+            {t("deleteAccount")}
           </h2>
           <p className="mt-2 text-sm text-muted">
-            Permanently delete your account and all memorial pages you own. This
-            action cannot be undone.
+            {t("deleteAccountDesc")}
           </p>
 
           {showDeleteConfirm ? (
             <div className="mt-4 rounded-lg bg-red-50 p-4">
               <p className="text-sm font-medium text-red-800">
-                Are you sure? All your memorial pages and their content will be
-                permanently deleted.
+                {t("deleteConfirm")}
               </p>
               <div className="mt-3 flex gap-3">
                 <Button
@@ -406,14 +406,14 @@ export default function DashboardPage() {
                   onClick={handleDeleteAccount}
                   disabled={deleting}
                 >
-                  {deleting ? "Deleting..." : "Yes, delete my account"}
+                  {deleting ? t("deleting") : t("yesDelete")}
                 </Button>
                 <Button
                   variant="ghost"
                   size="sm"
                   onClick={() => setShowDeleteConfirm(false)}
                 >
-                  Cancel
+                  {t("cancel")}
                 </Button>
               </div>
             </div>
@@ -425,7 +425,7 @@ export default function DashboardPage() {
                 className="border-red-200 text-red-700 hover:border-red-300 hover:bg-red-50"
                 onClick={() => setShowDeleteConfirm(true)}
               >
-                Delete account
+                {t("deleteAccount")}
               </Button>
             </div>
           )}

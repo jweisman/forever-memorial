@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef } from "react";
+import { useTranslations } from "next-intl";
 import { validateImageFile, uploadImage } from "@/lib/upload";
 
 type ImageRecord = {
@@ -25,6 +26,7 @@ export default function ImageUploader({
   onUploadComplete,
   disabled,
 }: ImageUploaderProps) {
+  const t = useTranslations("EditMemorial");
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState("");
   const [dragOver, setDragOver] = useState(false);
@@ -92,7 +94,7 @@ export default function ImageUploader({
             if (!disabled && !uploading) inputRef.current?.click();
           }
         }}
-        aria-label="Upload images"
+        aria-label={t("uploadImages")}
       >
         <input
           ref={inputRef}
@@ -104,9 +106,9 @@ export default function ImageUploader({
         />
 
         {uploading ? (
-          <p className="text-sm text-muted">Uploading...</p>
+          <p className="text-sm text-muted">{t("uploadingImages")}</p>
         ) : disabled ? (
-          <p className="text-sm text-muted">Image limit reached (100)</p>
+          <p className="text-sm text-muted">{t("imageLimitReached")}</p>
         ) : (
           <>
             <svg
@@ -124,10 +126,10 @@ export default function ImageUploader({
               />
             </svg>
             <p className="mt-2 text-sm text-muted">
-              Drop images here or click to upload
+              {t("dropOrClick")}
             </p>
             <p className="mt-1 text-xs text-warm-400">
-              JPEG, PNG, WebP, or GIF up to 5MB
+              {t("imageFormats")}
             </p>
           </>
         )}

@@ -59,7 +59,7 @@
 - Persistent search bar in header
 - Landing page with hero, search, recent memorials grid
 
-## Phase 7: Internationalization (English + Hebrew)
+## Phase 7: Internationalization (English + Hebrew) [COMPLETE]
 - `next-intl` with locale routing (`/en/...`, `/he/...`)
 - Extract UI strings to message files
 - Language picker in header

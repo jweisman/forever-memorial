@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 import Button from "@/components/ui/Button";
 
 type EulogyData = {
@@ -23,6 +24,7 @@ export default function EulogyForm({
   onSave,
   onCancel,
 }: EulogyFormProps) {
+  const t = useTranslations("Eulogy");
   const [text, setText] = useState(initialData?.text ?? "");
   const [deliveredBy, setDeliveredBy] = useState(
     initialData?.deliveredBy ?? ""
@@ -45,7 +47,7 @@ export default function EulogyForm({
           htmlFor="eulogy-text"
           className="block text-sm font-medium text-warm-700"
         >
-          Eulogy text
+          {t("textLabel")}
         </label>
         <textarea
           id="eulogy-text"
@@ -54,7 +56,7 @@ export default function EulogyForm({
           required
           rows={6}
           className={inputClass}
-          placeholder="Enter the eulogy text..."
+          placeholder={t("textPlaceholder")}
         />
       </div>
       <div className="grid gap-4 sm:grid-cols-2">
@@ -63,7 +65,7 @@ export default function EulogyForm({
             htmlFor="eulogy-delivered-by"
             className="block text-sm font-medium text-warm-700"
           >
-            Delivered by
+            {t("deliveredByLabel")}
           </label>
           <input
             id="eulogy-delivered-by"
@@ -72,7 +74,7 @@ export default function EulogyForm({
             onChange={(e) => setDeliveredBy(e.target.value)}
             required
             className={inputClass}
-            placeholder="Name of speaker"
+            placeholder={t("deliveredByPlaceholder")}
           />
         </div>
         <div>
@@ -80,7 +82,7 @@ export default function EulogyForm({
             htmlFor="eulogy-relation"
             className="block text-sm font-medium text-warm-700"
           >
-            Relation (optional)
+            {t("relationLabel")}
           </label>
           <input
             id="eulogy-relation"
@@ -88,13 +90,13 @@ export default function EulogyForm({
             value={relation}
             onChange={(e) => setRelation(e.target.value)}
             className={inputClass}
-            placeholder="e.g. Son, Friend, Rabbi"
+            placeholder={t("relationPlaceholder")}
           />
         </div>
       </div>
       <div className="flex gap-3">
         <Button type="submit" variant="primary" size="sm" disabled={saving}>
-          {saving ? "Saving..." : initialData ? "Update Eulogy" : "Add Eulogy"}
+          {saving ? t("saving") : initialData ? t("update") : t("add")}
         </Button>
         <Button
           type="button"
@@ -102,7 +104,7 @@ export default function EulogyForm({
           size="sm"
           onClick={onCancel}
         >
-          Cancel
+          {t("cancel")}
         </Button>
       </div>
     </form>
