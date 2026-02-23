@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { deleteS3Object, generateViewUrl } from "@/lib/s3-helpers";
+import { isUserDisabled } from "@/lib/admin";
 
 export async function POST(
   request: Request,
@@ -11,6 +12,10 @@ export async function POST(
   const session = await auth();
   if (!session?.user?.id) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  if (await isUserDisabled(session.user.id)) {
+    return NextResponse.json({ error: "Account disabled" }, { status: 403 });
   }
 
   const memorial = await prisma.memorial.findUnique({

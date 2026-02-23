@@ -7,6 +7,7 @@ import {
   thumbKeyFromBase,
   fullKeyFromBase,
 } from "@/lib/s3-helpers";
+import { isUserDisabled } from "@/lib/admin";
 
 type Params = { id: string; memoryId: string };
 
@@ -56,6 +57,10 @@ export async function PATCH(
   const session = await auth();
   if (!session?.user?.id) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  if (await isUserDisabled(session.user.id)) {
+    return NextResponse.json({ error: "Account disabled" }, { status: 403 });
   }
 
   const memory = await prisma.memory.findUnique({
@@ -120,6 +125,10 @@ export async function DELETE(
   const session = await auth();
   if (!session?.user?.id) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  if (await isUserDisabled(session.user.id)) {
+    return NextResponse.json({ error: "Account disabled" }, { status: 403 });
   }
 
   const memory = await prisma.memory.findUnique({

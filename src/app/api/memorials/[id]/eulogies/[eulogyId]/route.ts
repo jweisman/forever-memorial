@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { isUserDisabled } from "@/lib/admin";
 
 async function verifyOwnership(memorialId: string, userId: string) {
   const memorial = await prisma.memorial.findUnique({
@@ -18,6 +19,10 @@ export async function PATCH(
   const session = await auth();
   if (!session?.user?.id) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  if (await isUserDisabled(session.user.id)) {
+    return NextResponse.json({ error: "Account disabled" }, { status: 403 });
   }
 
   if (!(await verifyOwnership(id, session.user.id))) {
@@ -79,6 +84,10 @@ export async function DELETE(
   const session = await auth();
   if (!session?.user?.id) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  if (await isUserDisabled(session.user.id)) {
+    return NextResponse.json({ error: "Account disabled" }, { status: 403 });
   }
 
   if (!(await verifyOwnership(id, session.user.id))) {

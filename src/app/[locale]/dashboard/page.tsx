@@ -169,6 +169,23 @@ export default function DashboardPage() {
       />
 
       <div className="mt-10 space-y-8">
+        {/* Admin Panel Link */}
+        {session.user.role === "ADMIN" && (
+          <Card className="border-gold-300 bg-gold-50">
+            <div className="flex items-center justify-between">
+              <div>
+                <h2 className="font-heading text-lg font-semibold text-warm-800">
+                  {t("adminPanel")}
+                </h2>
+                <p className="text-sm text-muted">{t("adminPanelDesc")}</p>
+              </div>
+              <Button href="/dashboard/admin" variant="primary" size="sm">
+                {t("openAdmin")}
+              </Button>
+            </div>
+          </Card>
+        )}
+
         {/* Profile Section */}
         <Card>
           <h2 className="font-heading text-lg font-semibold text-warm-800">

@@ -76,11 +76,14 @@
     "lightboxClose": "Close",
     "lightboxPrev": "Previous image",
     "lightboxNext": "Next image",
-    "galleryImage": "Gallery image"
+    "galleryImage": "Gallery image",
+    "disabledTitle": "Memorial Unavailable",
+    "disabledMessage": "This memorial page has been temporarily disabled by an administrator. If you believe this is an error, please contact support."
   },
   "SignIn": {
     "title": "Welcome to Forever",
     "subtitle": "Sign in to create memorials and share memories",
+    "accountDisabled": "Your account has been disabled. Please contact support if you believe this is an error.",
     "google": "Continue with Google",
     "orEmail": "or continue with email",
     "emailLabel": "Email address",
@@ -119,7 +122,10 @@
     "deleteAccountDesc": "Permanently delete your account and all memorial pages you own. This action cannot be undone.",
     "deleteConfirm": "Are you sure? All your memorial pages and their content will be permanently deleted.",
     "yesDelete": "Yes, delete my account",
-    "deleting": "Deleting..."
+    "deleting": "Deleting...",
+    "adminPanel": "Admin Panel",
+    "adminPanelDesc": "Manage all memorials and users",
+    "openAdmin": "Open Admin"
   },
   "CreateMemorial": {
     "title": "Create a Memorial",
@@ -263,5 +269,32 @@
   "CollapsibleText": {
     "showLess": "Show less",
     "readMore": "Read more"
+  },
+  "Admin": {
+    "title": "Admin Panel",
+    "subtitle": "Manage memorials and users",
+    "memorialsTab": "Memorials",
+    "usersTab": "Users",
+    "owner": "Owner",
+    "disabled": "Disabled",
+    "enabled": "Enabled",
+    "disable": "Disable",
+    "enable": "Enable",
+    "ban": "Ban",
+    "unban": "Unban",
+    "banned": "Banned",
+    "active": "Active",
+    "memorials": "memorials",
+    "memoriesCount": "memories",
+    "deleteMemory": "Delete",
+    "confirmDelete": "Confirm",
+    "cancel": "Cancel",
+    "noMemorials": "No memorials found.",
+    "noUsers": "No users found.",
+    "showMemories": "Show memories",
+    "hideMemories": "Hide memories",
+    "noMemories": "No accepted memories.",
+    "accessDenied": "Access denied",
+    "loading": "Loading..."
   }
 }

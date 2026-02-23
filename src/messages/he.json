@@ -76,11 +76,14 @@
     "lightboxClose": "סגירה",
     "lightboxPrev": "התמונה הקודמת",
     "lightboxNext": "התמונה הבאה",
-    "galleryImage": "תמונת גלריה"
+    "galleryImage": "תמונת גלריה",
+    "disabledTitle": "האנדרטה אינה זמינה",
+    "disabledMessage": "דף הנצחה זה הושבת באופן זמני על ידי מנהל המערכת. אם אתם סבורים שמדובר בטעות, אנא פנו לתמיכה."
   },
   "SignIn": {
     "title": "ברוכים הבאים ל-Forever",
     "subtitle": "התחברו כדי ליצור אנדרטאות ולשתף זיכרונות",
+    "accountDisabled": "חשבונכם הושבת. אנא פנו לתמיכה אם אתם סבורים שמדובר בטעות.",
     "google": "המשך עם Google",
     "orEmail": "או המשך עם אימייל",
     "emailLabel": "כתובת אימייל",
@@ -119,7 +122,10 @@
     "deleteAccountDesc": "מחיקה לצמיתות של החשבון וכל דפי ההנצחה שבבעלותכם. פעולה זו אינה ניתנת לביטול.",
     "deleteConfirm": "האם אתם בטוחים? כל דפי ההנצחה והתוכן שלהם יימחקו לצמיתות.",
     "yesDelete": "כן, מחקו את חשבוני",
-    "deleting": "מוחק..."
+    "deleting": "מוחק...",
+    "adminPanel": "לוח ניהול",
+    "adminPanelDesc": "ניהול כל האנדרטאות והמשתמשים",
+    "openAdmin": "פתח ניהול"
   },
   "CreateMemorial": {
     "title": "יצירת דף הנצחה",
@@ -263,5 +269,32 @@
   "CollapsibleText": {
     "showLess": "הצג פחות",
     "readMore": "קרא עוד"
+  },
+  "Admin": {
+    "title": "לוח ניהול",
+    "subtitle": "ניהול אנדרטאות ומשתמשים",
+    "memorialsTab": "אנדרטאות",
+    "usersTab": "משתמשים",
+    "owner": "בעלים",
+    "disabled": "מושבת",
+    "enabled": "פעיל",
+    "disable": "השבתה",
+    "enable": "הפעלה",
+    "ban": "חסימה",
+    "unban": "ביטול חסימה",
+    "banned": "חסום",
+    "active": "פעיל",
+    "memorials": "אנדרטאות",
+    "memoriesCount": "זיכרונות",
+    "deleteMemory": "מחיקה",
+    "confirmDelete": "אישור",
+    "cancel": "ביטול",
+    "noMemorials": "לא נמצאו אנדרטאות.",
+    "noUsers": "לא נמצאו משתמשים.",
+    "showMemories": "הצג זיכרונות",
+    "hideMemories": "הסתר זיכרונות",
+    "noMemories": "אין זיכרונות מאושרים.",
+    "accessDenied": "אין גישה",
+    "loading": "טוען..."
   }
 }

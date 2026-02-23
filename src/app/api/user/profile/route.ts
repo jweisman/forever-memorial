@@ -1,11 +1,16 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { isUserDisabled } from "@/lib/admin";
 
 export async function PATCH(request: Request) {
   const session = await auth();
   if (!session?.user?.id) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  if (await isUserDisabled(session.user.id)) {
+    return NextResponse.json({ error: "Account disabled" }, { status: 403 });
   }
 
   const body = await request.json();

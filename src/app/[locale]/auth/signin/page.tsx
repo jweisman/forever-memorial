@@ -11,6 +11,7 @@ import Button from "@/components/ui/Button";
 export default function SignInPage() {
   const searchParams = useSearchParams();
   const callbackUrl = searchParams.get("callbackUrl") || "/dashboard";
+  const errorParam = searchParams.get("error");
   const t = useTranslations("SignIn");
   const [email, setEmail] = useState("");
   const [emailSent, setEmailSent] = useState(false);
@@ -36,6 +37,12 @@ export default function SignInPage() {
             {t("subtitle")}
           </p>
         </div>
+
+        {errorParam === "disabled" && (
+          <div className="mt-6 rounded-lg bg-red-50 p-4 text-center text-sm text-red-700">
+            {t("accountDisabled")}
+          </div>
+        )}
 
         {emailSent ? (
           <div className="mt-8 rounded-lg bg-warm-50 p-6 text-center">

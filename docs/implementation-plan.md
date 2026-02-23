@@ -65,7 +65,7 @@
 - Language picker in header
 - RTL CSS support (Tailwind RTL plugin or logical properties)
 
-## Phase 8: Admin Capabilities
+## Phase 8: Admin Capabilities [COMPLETE]
 - Admin seeded via `ADMIN_EMAIL` environment variable
 - Admin guards on API routes
 - Admin-only UI controls: disable page, remove memories

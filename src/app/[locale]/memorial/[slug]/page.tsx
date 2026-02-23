@@ -24,6 +24,17 @@ type Props = {
   params: Promise<{ slug: string; locale: string }>;
 };
 
+async function checkDisabled(slug: string) {
+  const id = parseIdFromSlug(slug);
+  const row = await prisma.memorial.findUnique({
+    where: { id },
+    select: { disabled: true, name: true, slug: true },
+  });
+  if (!row) return null;
+  if (row.disabled) return { disabled: true as const, name: row.name, slug: row.slug };
+  return false as const;
+}
+
 async function getMemorial(slug: string) {
   const id = parseIdFromSlug(slug);
   const memorial = await prisma.memorial.findUnique({
@@ -45,7 +56,7 @@ async function getMemorial(slug: string) {
     },
   });
 
-  if (!memorial || memorial.disabled) return null;
+  if (!memorial) return null;
 
   // Resolve presigned URLs
   let memorialPictureUrl: string | null = null;
@@ -90,6 +101,15 @@ async function getMemorial(slug: string) {
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
+
+  const disabledCheck = await checkDisabled(slug);
+  if (disabledCheck === null) {
+    return { title: "Memorial Not Found" };
+  }
+  if (disabledCheck !== false) {
+    return { title: `${disabledCheck.name} — Memorial Unavailable` };
+  }
+
   const memorial = await getMemorial(slug);
 
   if (!memorial) {
@@ -139,6 +159,32 @@ export default async function MemorialPage({ params }: Props) {
   const { slug, locale } = await params;
   setRequestLocale(locale);
   const t = await getTranslations("Memorial");
+
+  // Check disabled status with a lightweight query first
+  const disabledCheck = await checkDisabled(slug);
+  if (disabledCheck === null) {
+    notFound();
+  }
+  if (disabledCheck !== false) {
+    return (
+      <div className="mx-auto max-w-3xl px-4 py-24 text-center">
+        <Card>
+          <h1 className="font-heading text-2xl font-semibold text-warm-800">
+            {t("disabledTitle")}
+          </h1>
+          <p className="mt-4 text-warm-600">{t("disabledMessage")}</p>
+          <div className="mt-6">
+            <Link
+              href="/"
+              className="text-sm text-accent hover:text-accent-hover"
+            >
+              &larr; {t("backHome")}
+            </Link>
+          </div>
+        </Card>
+      </div>
+    );
+  }
 
   const memorial = await getMemorial(slug);
 

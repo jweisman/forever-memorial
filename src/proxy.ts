@@ -17,7 +17,7 @@ function isProtected(pathname: string): boolean {
   );
 }
 
-export async function middleware(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   // Check if this is a protected route
@@ -27,14 +27,20 @@ export async function middleware(request: NextRequest) {
       secret: process.env.AUTH_SECRET,
     });
 
-    if (!token) {
-      // Extract locale from pathname or use default
-      const localeMatch = pathname.match(/^\/(en|he)/);
-      const locale = localeMatch ? localeMatch[1] : routing.defaultLocale;
+    const localeMatch = pathname.match(/^\/(en|he)/);
+    const locale = localeMatch ? localeMatch[1] : routing.defaultLocale;
 
+    if (!token) {
       const signInUrl = new URL(`/${locale}/auth/signin`, request.url);
       signInUrl.searchParams.set("callbackUrl", request.url);
       return NextResponse.redirect(signInUrl);
+    }
+
+    // Block disabled (banned) users from protected routes
+    if (token.disabled) {
+      const disabledUrl = new URL(`/${locale}/auth/signin`, request.url);
+      disabledUrl.searchParams.set("error", "disabled");
+      return NextResponse.redirect(disabledUrl);
     }
   }
 

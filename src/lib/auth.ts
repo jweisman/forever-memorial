@@ -46,9 +46,11 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         // Look up role from DB
         const dbUser = await prisma.user.findUnique({
           where: { id: user.id },
-          select: { role: true },
+          select: { role: true, disabled: true },
         });
         token.role = dbUser?.role ?? "USER";
+        token.disabled = dbUser?.disabled ?? false;
+        token.checkedAt = Date.now();
 
         // Auto-promote admin by email
         if (
@@ -61,6 +63,24 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
             data: { role: "ADMIN" },
           });
         }
+      }
+
+      // Re-check disabled/role from DB every 5 minutes
+      const RECHECK_INTERVAL = 5 * 60 * 1000;
+      if (
+        token.id &&
+        (!token.checkedAt ||
+          Date.now() - (token.checkedAt as number) > RECHECK_INTERVAL)
+      ) {
+        const dbUser = await prisma.user.findUnique({
+          where: { id: token.id as string },
+          select: { role: true, disabled: true },
+        });
+        if (dbUser) {
+          token.role = dbUser.role;
+          token.disabled = dbUser.disabled;
+        }
+        token.checkedAt = Date.now();
       }
 
       // Handle client-side session updates (e.g. name change)
@@ -97,5 +117,7 @@ declare module "next-auth/jwt" {
   interface JWT {
     id: string;
     role: Role;
+    disabled: boolean;
+    checkedAt: number;
   }
 }
