@@ -32,9 +32,11 @@ export async function proxy(request: NextRequest) {
 
   // Check if this is a protected route
   if (isProtected(pathname)) {
+    const isSecure = request.nextUrl.protocol === "https:";
     const token = await getToken({
       req: request,
       secret: process.env.AUTH_SECRET,
+      secureCookie: isSecure,
     });
 
     if (!token) {
