@@ -20,15 +20,22 @@ function isProtected(pathname: string): boolean {
 export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
+  // If the path has no locale prefix, let the i18n middleware redirect first
+  // (e.g. /dashboard → /en/dashboard) before we check auth.
+  // This avoids auth-checking on the bare path during post-login redirects.
+  const localeMatch = pathname.match(/^\/(en|he)/);
+  if (!localeMatch) {
+    return intlMiddleware(request);
+  }
+
+  const locale = localeMatch[1];
+
   // Check if this is a protected route
   if (isProtected(pathname)) {
     const token = await getToken({
       req: request,
       secret: process.env.AUTH_SECRET,
     });
-
-    const localeMatch = pathname.match(/^\/(en|he)/);
-    const locale = localeMatch ? localeMatch[1] : routing.defaultLocale;
 
     if (!token) {
       const signInUrl = new URL(`/${locale}/auth/signin`, request.url);
