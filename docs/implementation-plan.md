@@ -72,7 +72,7 @@
 - Ban/disable user capability
 - Disabled memorials show notification message
 
-## Phase 9: Email Notifications
+## Phase 9: Email Notifications [COMPLETE]
 - AWS SES integration (local dev: console logging or Mailhog)
 - Email templates: memory accepted, returned (with edit link), new submission
 - Notification triggers on memory status changes

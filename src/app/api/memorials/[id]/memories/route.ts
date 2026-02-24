@@ -7,6 +7,7 @@ import {
   fullKeyFromBase,
 } from "@/lib/s3-helpers";
 import { isUserDisabled } from "@/lib/admin";
+import { sendNotification, newSubmissionEmail } from "@/lib/email";
 
 export async function GET(
   request: Request,
@@ -101,7 +102,7 @@ export async function POST(
 
   const memorial = await prisma.memorial.findUnique({
     where: { id },
-    select: { id: true, disabled: true },
+    select: { id: true, disabled: true, name: true, owner: { select: { email: true } } },
   });
 
   if (!memorial) {
@@ -143,6 +144,17 @@ export async function POST(
       text,
     },
   });
+
+  // Notify memorial owner
+  if (memorial.owner.email) {
+    const dashboardUrl = `${process.env.AUTH_URL || "http://localhost:3000"}/dashboard`;
+    const email = newSubmissionEmail({
+      memorialName: memorial.name,
+      submitterName: name,
+      dashboardUrl,
+    });
+    sendNotification({ to: memorial.owner.email, ...email });
+  }
 
   return NextResponse.json(memory, { status: 201 });
 }

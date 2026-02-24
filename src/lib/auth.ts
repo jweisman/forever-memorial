@@ -5,14 +5,6 @@ import { PrismaAdapter } from "@auth/prisma-adapter";
 import { prisma } from "@/lib/prisma";
 import type { Role } from "@/generated/prisma/enums";
 
-// In development, log magic link to console instead of sending email
-const devMailTransport = {
-  host: "localhost",
-  port: 25,
-  auth: { user: "", pass: "" },
-  // This will fail to send, but we capture the link in sendVerificationRequest
-};
-
 export const { handlers, auth, signIn, signOut } = NextAuth({
   adapter: PrismaAdapter(prisma),
   session: { strategy: "jwt" },
@@ -25,18 +17,8 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       clientSecret: process.env.GOOGLE_CLIENT_SECRET,
     }),
     Nodemailer({
-      server: process.env.EMAIL_SERVER ?? devMailTransport,
-      from: process.env.SES_FROM_EMAIL || "Forever <noreply@forever.local>",
-      ...(process.env.NODE_ENV !== "production"
-        ? {
-            sendVerificationRequest: async ({ identifier, url }) => {
-              console.log("\n========================================");
-              console.log("  MAGIC LINK for", identifier);
-              console.log("  ", url);
-              console.log("========================================\n");
-            },
-          }
-        : {}),
+      server: process.env.EMAIL_SERVER ?? "smtp://localhost:1025",
+      from: process.env.FROM_EMAIL || "Forever <noreply@forever.local>",
     }),
   ],
   callbacks: {

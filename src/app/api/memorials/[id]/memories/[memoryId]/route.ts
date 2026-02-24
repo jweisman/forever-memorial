@@ -8,6 +8,7 @@ import {
   fullKeyFromBase,
 } from "@/lib/s3-helpers";
 import { isUserDisabled } from "@/lib/admin";
+import { sendNotification, memoryResubmittedEmail } from "@/lib/email";
 
 type Params = { id: string; memoryId: string };
 
@@ -65,7 +66,7 @@ export async function PATCH(
 
   const memory = await prisma.memory.findUnique({
     where: { id: memoryId },
-    include: { memorial: { select: { ownerId: true } } },
+    include: { memorial: { select: { ownerId: true, name: true, owner: { select: { email: true } } } } },
   });
 
   if (!memory || memory.memorialId !== id) {
@@ -104,7 +105,8 @@ export async function PATCH(
   }
 
   // If submitter edits a RETURNED memory, reset to PENDING
-  if (isSubmitter && memory.status === "RETURNED") {
+  const isResubmission = isSubmitter && memory.status === "RETURNED";
+  if (isResubmission) {
     data.status = "PENDING";
     data.returnMessage = null;
   }
@@ -113,6 +115,17 @@ export async function PATCH(
     where: { id: memoryId },
     data,
   });
+
+  // Notify memorial owner about resubmission
+  if (isResubmission && memory.memorial.owner.email) {
+    const dashboardUrl = `${process.env.AUTH_URL || "http://localhost:3000"}/dashboard`;
+    const email = memoryResubmittedEmail({
+      memorialName: memory.memorial.name,
+      submitterName: memory.name,
+      dashboardUrl,
+    });
+    sendNotification({ to: memory.memorial.owner.email, ...email });
+  }
 
   return NextResponse.json(updated);
 }

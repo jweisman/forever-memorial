@@ -2,6 +2,11 @@ import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { isUserDisabled } from "@/lib/admin";
+import {
+  sendNotification,
+  memoryAcceptedEmail,
+  memoryReturnedEmail,
+} from "@/lib/email";
 
 type Params = { id: string; memoryId: string };
 
@@ -21,7 +26,7 @@ export async function POST(
 
   const memorial = await prisma.memorial.findUnique({
     where: { id },
-    select: { ownerId: true },
+    select: { ownerId: true, name: true, slug: true },
   });
 
   if (!memorial) {
@@ -34,6 +39,7 @@ export async function POST(
 
   const memory = await prisma.memory.findUnique({
     where: { id: memoryId },
+    include: { submitter: { select: { email: true } } },
   });
 
   if (!memory || memory.memorialId !== id) {
@@ -73,6 +79,25 @@ export async function POST(
     where: { id: memoryId },
     data,
   });
+
+  // Notify the memory submitter
+  const baseUrl = process.env.AUTH_URL || "http://localhost:3000";
+  if (memory.submitter.email) {
+    if (action === "accept") {
+      const email = memoryAcceptedEmail({
+        memorialName: memorial.name,
+        memorialUrl: `${baseUrl}/memorial/${memorial.slug}`,
+      });
+      sendNotification({ to: memory.submitter.email, ...email });
+    } else if (action === "return") {
+      const email = memoryReturnedEmail({
+        memorialName: memorial.name,
+        returnMessage: returnMessage.trim(),
+        dashboardUrl: `${baseUrl}/dashboard`,
+      });
+      sendNotification({ to: memory.submitter.email, ...email });
+    }
+  }
 
   return NextResponse.json(updated);
 }
