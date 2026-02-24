@@ -262,7 +262,7 @@ export default function DashboardPage() {
                         ` · ${memorial.placeOfDeath}`}
                     </p>
                   </Link>
-                  <div className="ms-4 flex shrink-0 gap-2">
+                  <div className="ms-4 flex shrink-0 flex-wrap gap-2">
                     <Button
                       href={`/memorial/${memorial.slug}/edit`}
                       variant="ghost"

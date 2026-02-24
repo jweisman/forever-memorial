@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { generateViewUrl } from "@/lib/s3-helpers";
 import { Prisma } from "@/generated/prisma/client";
+import { rateLimit, getClientIp } from "@/lib/rate-limit";
 
 type MemorialRow = {
   id: string;
@@ -14,6 +15,12 @@ type MemorialRow = {
 };
 
 export async function GET(request: NextRequest) {
+  const ip = getClientIp(request);
+  const { success } = rateLimit({ key: `search:${ip}`, limit: 30, windowMs: 60_000 });
+  if (!success) {
+    return NextResponse.json({ error: "Too many requests" }, { status: 429 });
+  }
+
   const q = request.nextUrl.searchParams.get("q")?.trim() ?? "";
   const limitParam = parseInt(
     request.nextUrl.searchParams.get("limit") ?? "5",

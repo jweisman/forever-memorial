@@ -8,6 +8,7 @@ import {
 } from "@/lib/s3-helpers";
 import { isUserDisabled } from "@/lib/admin";
 import { sendNotification, newSubmissionEmail } from "@/lib/email";
+import { rateLimit, getClientIp } from "@/lib/rate-limit";
 
 export async function GET(
   request: Request,
@@ -91,6 +92,13 @@ export async function POST(
   { params }: { params: Promise<{ id: string }> }
 ) {
   const { id } = await params;
+
+  const ip = getClientIp(request);
+  const { success } = rateLimit({ key: `memories:${ip}`, limit: 10, windowMs: 60_000 });
+  if (!success) {
+    return NextResponse.json({ error: "Too many requests" }, { status: 429 });
+  }
+
   const session = await auth();
   if (!session?.user?.id) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });

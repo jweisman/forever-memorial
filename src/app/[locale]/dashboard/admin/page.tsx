@@ -159,8 +159,12 @@ export default function AdminPage() {
       />
 
       {/* Tabs */}
-      <div className="mt-8 flex gap-4 border-b border-border">
+      <div className="mt-8 flex gap-4 border-b border-border" role="tablist">
         <button
+          role="tab"
+          aria-selected={activeTab === "memorials"}
+          aria-controls="panel-memorials"
+          id="tab-memorials"
           onClick={() => setActiveTab("memorials")}
           className={`pb-3 text-sm font-medium transition-colors ${
             activeTab === "memorials"
@@ -171,6 +175,10 @@ export default function AdminPage() {
           {t("memorialsTab")} ({memorials.length})
         </button>
         <button
+          role="tab"
+          aria-selected={activeTab === "users"}
+          aria-controls="panel-users"
+          id="tab-users"
           onClick={() => setActiveTab("users")}
           className={`pb-3 text-sm font-medium transition-colors ${
             activeTab === "users"
@@ -184,7 +192,7 @@ export default function AdminPage() {
 
       {/* Memorials Tab */}
       {activeTab === "memorials" && (
-        <div className="mt-6 space-y-3">
+        <div id="panel-memorials" role="tabpanel" aria-labelledby="tab-memorials" className="mt-6 space-y-3">
           {memorials.length === 0 ? (
             <p className="text-sm text-muted">{t("noMemorials")}</p>
           ) : (
@@ -283,7 +291,7 @@ export default function AdminPage() {
 
       {/* Users Tab */}
       {activeTab === "users" && (
-        <div className="mt-6 space-y-3">
+        <div id="panel-users" role="tabpanel" aria-labelledby="tab-users" className="mt-6 space-y-3">
           {users.length === 0 ? (
             <p className="text-sm text-muted">{t("noUsers")}</p>
           ) : (

@@ -25,6 +25,29 @@ export default async function Header() {
         </Link>
 
         <div className="flex items-center gap-3 sm:gap-4">
+          {/* Mobile search icon */}
+          <Link
+            href="/search"
+            className="flex size-9 items-center justify-center rounded-lg text-warm-500 transition-colors hover:bg-warm-50 hover:text-warm-700 sm:hidden"
+            aria-label={t("searchLabel")}
+          >
+            <svg
+              className="size-5"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+              aria-hidden="true"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z"
+              />
+            </svg>
+          </Link>
+
+          {/* Desktop search bar */}
           <SearchBar
             size="sm"
             placeholder={t("searchPlaceholder")}

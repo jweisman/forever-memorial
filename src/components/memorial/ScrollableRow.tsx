@@ -47,7 +47,7 @@ export default function ScrollableRow({
       <div
         ref={scrollRef}
         onScroll={checkScroll}
-        className={`grid auto-cols-max grid-flow-col grid-rows-2 justify-start gap-3 overflow-x-hidden ${className}`}
+        className={`grid auto-cols-max grid-flow-col grid-rows-2 justify-start gap-3 overflow-x-auto scroll-smooth scrollbar-hide ${className}`}
       >
         {children}
       </div>

@@ -5,6 +5,9 @@ function getTransport() {
   if (server) {
     return nodemailer.createTransport(server);
   }
+  if (process.env.NODE_ENV === "production") {
+    console.warn("[email] EMAIL_SERVER is not set — emails will not be sent in production");
+  }
   // Fallback to Mailhog for local development
   return nodemailer.createTransport({ host: "localhost", port: 1025 });
 }

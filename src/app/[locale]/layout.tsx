@@ -8,6 +8,7 @@ import { routing } from "@/i18n/routing";
 import SessionProvider from "@/components/SessionProvider";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
+import { ToastProvider } from "@/components/ui/Toast";
 import "../globals.css";
 
 const lora = Lora({
@@ -64,14 +65,16 @@ export default async function LocaleLayout({
       >
         <SessionProvider session={session}>
           <NextIntlClientProvider messages={messages}>
-            <a href="#main-content" className="skip-link">
-              Skip to main content
-            </a>
-            <Header />
-            <main id="main-content" className="flex-1">
-              {children}
-            </main>
-            <Footer />
+            <ToastProvider>
+              <a href="#main-content" className="skip-link">
+                Skip to main content
+              </a>
+              <Header />
+              <main id="main-content" className="flex-1">
+                {children}
+              </main>
+              <Footer />
+            </ToastProvider>
           </NextIntlClientProvider>
         </SessionProvider>
       </body>

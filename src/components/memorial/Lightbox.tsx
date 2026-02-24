@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useCallback } from "react";
+import { useEffect, useCallback, useRef } from "react";
 import { useTranslations } from "next-intl";
 
 type LightboxImage = {
@@ -25,27 +25,57 @@ export default function Lightbox({
   const image = images[currentIndex];
   const hasPrev = currentIndex > 0;
   const hasNext = currentIndex < images.length - 1;
+  const dialogRef = useRef<HTMLDivElement>(null);
+  const closeRef = useRef<HTMLButtonElement>(null);
+  const triggerRef = useRef<Element | null>(null);
 
   const handleKeyDown = useCallback(
     (e: KeyboardEvent) => {
       if (e.key === "Escape") onClose();
       if (e.key === "ArrowLeft" && hasPrev) onNavigate(currentIndex - 1);
       if (e.key === "ArrowRight" && hasNext) onNavigate(currentIndex + 1);
+
+      // Focus trap: cycle Tab within the dialog
+      if (e.key === "Tab" && dialogRef.current) {
+        const focusable = dialogRef.current.querySelectorAll<HTMLElement>(
+          'button, [href], [tabindex]:not([tabindex="-1"])'
+        );
+        if (focusable.length === 0) return;
+        const first = focusable[0];
+        const last = focusable[focusable.length - 1];
+        if (e.shiftKey && document.activeElement === first) {
+          e.preventDefault();
+          last.focus();
+        } else if (!e.shiftKey && document.activeElement === last) {
+          e.preventDefault();
+          first.focus();
+        }
+      }
     },
     [onClose, onNavigate, currentIndex, hasPrev, hasNext]
   );
 
   useEffect(() => {
+    // Save the element that triggered the lightbox
+    triggerRef.current = document.activeElement;
+    // Auto-focus the close button
+    closeRef.current?.focus();
+
     document.addEventListener("keydown", handleKeyDown);
     document.body.style.overflow = "hidden";
     return () => {
       document.removeEventListener("keydown", handleKeyDown);
       document.body.style.overflow = "";
+      // Return focus to the triggering element
+      if (triggerRef.current instanceof HTMLElement) {
+        triggerRef.current.focus();
+      }
     };
   }, [handleKeyDown]);
 
   return (
     <div
+      ref={dialogRef}
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/80"
       onClick={onClose}
       role="dialog"
@@ -54,6 +84,7 @@ export default function Lightbox({
     >
       {/* Close button */}
       <button
+        ref={closeRef}
         onClick={onClose}
         className="absolute end-4 top-4 z-10 rounded-full bg-black/50 p-2 text-white transition-colors hover:bg-black/70"
         aria-label={t("lightboxClose")}
