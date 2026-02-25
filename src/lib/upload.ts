@@ -1,5 +1,6 @@
 import { resizeImage, resizeImageSquare } from "./image-resize";
 
+
 const ALLOWED_TYPES = ["image/jpeg", "image/png", "image/webp", "image/gif"];
 const MAX_SIZE = 15 * 1024 * 1024; // 15MB (original before resize)
 
@@ -121,6 +122,52 @@ export async function uploadMemorialPicture(
   await uploadBlobToS3(thumb, thumbUploadUrl);
 
   // 4. Confirm
+  const confirmRes = await fetch(
+    `/api/memorials/${memorialId}/memorial-picture/confirm`,
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ s3Key: thumbS3Key }),
+    }
+  );
+  if (!confirmRes.ok) {
+    const err = await confirmRes.json();
+    throw new Error(err.error || "Failed to confirm upload");
+  }
+  const data = await confirmRes.json();
+  return data.url;
+}
+
+/**
+ * Upload a pre-cropped blob as the memorial picture (skips resizeImageSquare).
+ * Used after the interactive crop UI.
+ */
+export async function uploadMemorialPictureBlob(
+  memorialId: string,
+  blob: Blob
+): Promise<string> {
+  // 1. Get presigned URL
+  const urlRes = await fetch(
+    `/api/memorials/${memorialId}/memorial-picture/upload-url`,
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        fileName: "memorial-picture.webp",
+        contentType: "image/webp",
+      }),
+    }
+  );
+  if (!urlRes.ok) {
+    const err = await urlRes.json();
+    throw new Error(err.error || "Failed to get upload URL");
+  }
+  const { thumbUploadUrl, thumbS3Key } = await urlRes.json();
+
+  // 2. Upload blob to S3
+  await uploadBlobToS3(blob, thumbUploadUrl);
+
+  // 3. Confirm
   const confirmRes = await fetch(
     `/api/memorials/${memorialId}/memorial-picture/confirm`,
     {

@@ -38,8 +38,9 @@ export async function POST(
     return NextResponse.json({ error: "s3Key is required" }, { status: 400 });
   }
 
-  // Delete old memorial picture from S3 if it exists
-  if (memorial.memorialPicture) {
+  // Delete old memorial picture from S3 if it exists and differs from the new key
+  // (same key means the upload already overwrote it — deleting would cause 404)
+  if (memorial.memorialPicture && memorial.memorialPicture !== s3Key) {
     try {
       await deleteS3Object(memorial.memorialPicture);
     } catch {
