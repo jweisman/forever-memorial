@@ -36,8 +36,8 @@ export async function GET(request: NextRequest) {
     SELECT id, slug, name, "placeOfDeath", "dateOfDeath", birthday, "memorialPicture"
     FROM memorials
     WHERE disabled = false
-      AND (name ILIKE ${"%" + q + "%"} OR similarity(name, ${q}) > 0.1)
-    ORDER BY similarity(name, ${q}) DESC
+      AND (name ILIKE ${"%" + q + "%"} OR word_similarity(${q}, name) > 0.4)
+    ORDER BY word_similarity(${q}, name) DESC
     LIMIT ${limit}
   `;
 

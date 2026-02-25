@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { generateViewUrl } from "@/lib/s3-helpers";
 import MemorialCard from "@/components/ui/MemorialCard";
 import SectionHeading from "@/components/ui/SectionHeading";
+import SearchBar from "@/components/ui/SearchBar";
 
 type Props = {
   params: Promise<{ locale: string }>;
@@ -58,8 +59,8 @@ export default async function SearchPage({ params, searchParams }: Props) {
       SELECT id, slug, name, "placeOfDeath", "dateOfDeath", birthday, "memorialPicture"
       FROM memorials
       WHERE disabled = false
-        AND (name ILIKE ${"%" + query + "%"} OR similarity(name, ${query}) > 0.1)
-      ORDER BY similarity(name, ${query}) DESC
+        AND (name ILIKE ${"%" + query + "%"} OR word_similarity(${query}, name) > 0.4)
+      ORDER BY word_similarity(${query}, name) DESC
       LIMIT 20
     `;
 
@@ -84,6 +85,16 @@ export default async function SearchPage({ params, searchParams }: Props) {
   return (
     <section className="px-4 py-12 sm:px-6 lg:px-8">
       <div className="mx-auto max-w-4xl">
+        <div className="mb-8">
+          <SearchBar
+            size="lg"
+            initialValue={query}
+            autoFocus={query.length < 2}
+            placeholder={t("placeholder")}
+            className="w-full"
+          />
+        </div>
+
         {query.length >= 2 ? (
           <>
             <SectionHeading
@@ -121,9 +132,7 @@ export default async function SearchPage({ params, searchParams }: Props) {
           </>
         ) : (
           <div className="mt-12 text-center">
-            <p className="text-lg text-warm-500">
-              {t("minChars")}
-            </p>
+            <p className="text-lg text-warm-500">{t("minChars")}</p>
           </div>
         )}
       </div>

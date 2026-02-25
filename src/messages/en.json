@@ -47,6 +47,7 @@
     "noResults": "No memorials found matching your search.",
     "noResultsHint": "Try a different name or check the spelling.",
     "minChars": "Enter at least 2 characters to search.",
+    "placeholder": "Search memorials...",
     "died": "d. {year}"
   },
   "SearchBar": {

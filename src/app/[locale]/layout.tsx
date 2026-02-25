@@ -9,6 +9,7 @@ import SessionProvider from "@/components/SessionProvider";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { ToastProvider } from "@/components/ui/Toast";
+import DisableBodyDrop from "@/components/DisableBodyDrop";
 import "../globals.css";
 
 const lora = Lora({
@@ -69,6 +70,7 @@ export default async function LocaleLayout({
               <a href="#main-content" className="skip-link">
                 Skip to main content
               </a>
+              <DisableBodyDrop />
               <Header />
               <main id="main-content" className="flex-1">
                 {children}

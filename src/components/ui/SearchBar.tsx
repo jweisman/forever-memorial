@@ -16,6 +16,7 @@ type Suggestion = {
 
 type SearchBarProps = Omit<InputHTMLAttributes<HTMLInputElement>, "type" | "size"> & {
   size?: "sm" | "lg";
+  initialValue?: string;
 };
 
 const sizeClasses = {
@@ -44,11 +45,12 @@ function formatDateRange(birthday: string | null, dateOfDeath: string): string {
 export default function SearchBar({
   size = "sm",
   className = "",
+  initialValue,
   ...props
 }: SearchBarProps) {
   const router = useRouter();
   const t = useTranslations("SearchBar");
-  const [query, setQuery] = useState("");
+  const [query, setQuery] = useState(initialValue ?? "");
   const [suggestions, setSuggestions] = useState<Suggestion[]>([]);
   const [open, setOpen] = useState(false);
   const [activeIndex, setActiveIndex] = useState(-1);
