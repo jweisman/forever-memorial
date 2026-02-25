@@ -225,7 +225,10 @@
     "add": "הוספת הספד",
     "cancel": "ביטול",
     "moveUp": "הזז למעלה",
-    "moveDown": "הזז למטה"
+    "moveDown": "הזז למטה",
+    "importFromFile": "ייבוא מקובץ Word",
+    "importing": "מייבא...",
+    "importError": "לא ניתן לחלץ טקסט מהקובץ"
   },
   "MemorySubmission": {
     "nameLabel": "שמכם",

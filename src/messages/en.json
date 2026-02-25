@@ -225,7 +225,10 @@
     "add": "Add Eulogy",
     "cancel": "Cancel",
     "moveUp": "Move up",
-    "moveDown": "Move down"
+    "moveDown": "Move down",
+    "importFromFile": "Import from Word file",
+    "importing": "Importing...",
+    "importError": "Could not extract text from file"
   },
   "MemorySubmission": {
     "nameLabel": "Your name",

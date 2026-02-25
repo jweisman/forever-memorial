@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { useTranslations } from "next-intl";
 import Button from "@/components/ui/Button";
 
@@ -31,6 +31,34 @@ export default function EulogyForm({
   );
   const [relation, setRelation] = useState(initialData?.relation ?? "");
   const [saving, setSaving] = useState(false);
+  const [importing, setImporting] = useState(false);
+  const [importError, setImportError] = useState("");
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  async function handleFileImport(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (fileInputRef.current) fileInputRef.current.value = "";
+    setImportError("");
+    setImporting(true);
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+      const res = await fetch("/api/eulogies/extract-text", {
+        method: "POST",
+        body: formData,
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setImportError(data.error || t("importError"));
+      } else {
+        setText(data.text);
+      }
+    } catch {
+      setImportError(t("importError"));
+    }
+    setImporting(false);
+  }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -43,12 +71,32 @@ export default function EulogyForm({
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       <div>
-        <label
-          htmlFor="eulogy-text"
-          className="block text-sm font-medium text-warm-700"
-        >
-          {t("textLabel")}
-        </label>
+        <div className="flex items-center justify-between">
+          <label
+            htmlFor="eulogy-text"
+            className="block text-sm font-medium text-warm-700"
+          >
+            {t("textLabel")}
+          </label>
+          <button
+            type="button"
+            onClick={() => fileInputRef.current?.click()}
+            disabled={importing || saving}
+            className="text-xs text-accent hover:underline disabled:opacity-50"
+          >
+            {importing ? t("importing") : t("importFromFile")}
+          </button>
+        </div>
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept=".docx,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+          onChange={handleFileImport}
+          className="hidden"
+        />
+        {importError && (
+          <p className="mt-1 text-xs text-red-600">{importError}</p>
+        )}
         <textarea
           id="eulogy-text"
           value={text}
