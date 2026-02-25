@@ -48,6 +48,7 @@ type Memorial = {
   funeralInfo: string | null;
   survivedBy: string | null;
   lifeStory: string | null;
+  deathAfterSunset: boolean;
   memorialPicture: string | null;
   ownerId: string;
   eulogies: Eulogy[];
@@ -86,6 +87,7 @@ export default function MemorialEditPage({
   const [funeralInfo, setFuneralInfo] = useState("");
   const [survivedBy, setSurvivedBy] = useState("");
   const [lifeStory, setLifeStory] = useState("");
+  const [deathAfterSunset, setDeathAfterSunset] = useState(false);
 
   // Memorial picture
   const [memorialPictureUrl, setMemorialPictureUrl] = useState<string | null>(
@@ -132,6 +134,7 @@ export default function MemorialEditPage({
     setFuneralInfo(data.funeralInfo ?? "");
     setSurvivedBy(data.survivedBy ?? "");
     setLifeStory(data.lifeStory ?? "");
+    setDeathAfterSunset(data.deathAfterSunset);
     setMemorialPictureUrl(data.memorialPicture);
     setEulogies(data.eulogies);
     setLoading(false);
@@ -211,6 +214,7 @@ export default function MemorialEditPage({
         funeralInfo,
         survivedBy,
         lifeStory,
+        deathAfterSunset,
       }),
     });
 
@@ -451,6 +455,15 @@ export default function MemorialEditPage({
                   required
                   className={inputClass}
                 />
+                <label className="mt-2 flex items-center gap-2 text-sm text-warm-700">
+                  <input
+                    type="checkbox"
+                    checked={deathAfterSunset}
+                    onChange={(e) => setDeathAfterSunset(e.target.checked)}
+                    className="rounded border-border accent-accent"
+                  />
+                  {t("deathAfterSunset")}
+                </label>
               </div>
             </div>
 

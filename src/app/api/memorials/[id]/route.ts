@@ -115,6 +115,9 @@ export async function PATCH(
   if (body.lifeStory !== undefined) {
     data.lifeStory = body.lifeStory?.trim() || null;
   }
+  if (body.deathAfterSunset !== undefined) {
+    data.deathAfterSunset = body.deathAfterSunset === true;
+  }
 
   const updated = await prisma.memorial.update({
     where: { id },

@@ -87,6 +87,7 @@ export async function POST(request: Request) {
       funeralInfo: body.funeralInfo?.trim() || null,
       survivedBy: body.survivedBy?.trim() || null,
       lifeStory: body.lifeStory?.trim() || null,
+      deathAfterSunset: body.deathAfterSunset === true,
     },
   });
 

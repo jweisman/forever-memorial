@@ -20,6 +20,7 @@ export default function CreateMemorialPage() {
   const [funeralInfo, setFuneralInfo] = useState("");
   const [survivedBy, setSurvivedBy] = useState("");
   const [lifeStory, setLifeStory] = useState("");
+  const [deathAfterSunset, setDeathAfterSunset] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
 
@@ -39,6 +40,7 @@ export default function CreateMemorialPage() {
         funeralInfo: funeralInfo || undefined,
         survivedBy: survivedBy || undefined,
         lifeStory: lifeStory || undefined,
+        deathAfterSunset,
       }),
     });
 
@@ -113,6 +115,15 @@ export default function CreateMemorialPage() {
                   required
                   className={inputClass}
                 />
+                <label className="mt-2 flex items-center gap-2 text-sm text-warm-700">
+                  <input
+                    type="checkbox"
+                    checked={deathAfterSunset}
+                    onChange={(e) => setDeathAfterSunset(e.target.checked)}
+                    className="rounded border-border accent-accent"
+                  />
+                  {t("deathAfterSunset")}
+                </label>
               </div>
             </div>
 

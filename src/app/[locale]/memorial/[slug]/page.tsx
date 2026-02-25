@@ -11,6 +11,7 @@ import {
   thumbKeyFromBase,
   fullKeyFromBase,
 } from "@/lib/s3-helpers";
+import { getHebrewDeathDate } from "@/lib/hebrewDate";
 import Card from "@/components/ui/Card";
 import Button from "@/components/ui/Button";
 import CollapsibleText from "@/components/ui/CollapsibleText";
@@ -298,40 +299,44 @@ export default async function MemorialPage({ params }: Props) {
         </header>
 
         <div className="mt-12 space-y-8">
-          {/* Dates */}
-          {(memorial.birthday || memorial.placeOfDeath) && (
-            <Card>
-              <h2 className="font-heading text-lg font-semibold text-warm-800">
-                {t("details")}
-              </h2>
-              <dl className="mt-4 space-y-3 text-sm">
-                {memorial.birthday && (
-                  <div>
-                    <dt className="font-medium text-warm-600">{t("born")}</dt>
-                    <dd className="mt-0.5 text-warm-800">
-                      {formatDate(memorial.birthday, locale)}
-                    </dd>
-                  </div>
-                )}
+          {/* Details */}
+          <Card>
+            <h2 className="font-heading text-lg font-semibold text-warm-800">
+              {t("details")}
+            </h2>
+            <dl className="mt-4 space-y-3 text-sm">
+              {memorial.birthday && (
                 <div>
-                  <dt className="font-medium text-warm-600">{t("passedAway")}</dt>
+                  <dt className="font-medium text-warm-600">{t("born")}</dt>
                   <dd className="mt-0.5 text-warm-800">
-                    {formatDate(memorial.dateOfDeath, locale)}
+                    {formatDate(memorial.birthday, locale)}
                   </dd>
                 </div>
-                {memorial.placeOfDeath && (
-                  <div>
-                    <dt className="font-medium text-warm-600">
-                      {t("placeOfDeath")}
-                    </dt>
-                    <dd className="mt-0.5 text-warm-800">
-                      {memorial.placeOfDeath}
-                    </dd>
-                  </div>
-                )}
-              </dl>
-            </Card>
-          )}
+              )}
+              <div>
+                <dt className="font-medium text-warm-600">{t("passedAway")}</dt>
+                <dd className="mt-0.5 text-warm-800">
+                  {formatDate(memorial.dateOfDeath, locale)}
+                  {" / "}
+                  {getHebrewDeathDate(
+                    memorial.dateOfDeath,
+                    memorial.deathAfterSunset,
+                    locale === "he" ? "he" : "en"
+                  )}
+                </dd>
+              </div>
+              {memorial.placeOfDeath && (
+                <div>
+                  <dt className="font-medium text-warm-600">
+                    {t("placeOfDeath")}
+                  </dt>
+                  <dd className="mt-0.5 text-warm-800">
+                    {memorial.placeOfDeath}
+                  </dd>
+                </div>
+              )}
+            </dl>
+          </Card>
 
           {/* Funeral info */}
           {memorial.funeralInfo && (
