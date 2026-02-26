@@ -1,6 +1,10 @@
+"use client";
+
+import { useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import Card from "@/components/ui/Card";
 import CollapsibleText from "@/components/ui/CollapsibleText";
+import Lightbox from "./Lightbox";
 
 type MemoryCardProps = {
   memory: {
@@ -26,6 +30,7 @@ export default function MemoryCard({ memory }: MemoryCardProps) {
   const t = useTranslations("Memorial");
   const locale = useLocale();
   const displayName = memory.withholdName ? t("anonymous") : memory.name;
+  const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
 
   return (
     <Card>
@@ -34,20 +39,30 @@ export default function MemoryCard({ memory }: MemoryCardProps) {
 
         {memory.images.length > 0 && (
           <div className="mt-3 flex gap-2 overflow-x-auto">
-            {memory.images.map((img) => (
-              <div
+            {memory.images.map((img, idx) => (
+              <button
                 key={img.id}
-                className="size-20 shrink-0 overflow-hidden rounded-lg bg-warm-100"
+                onClick={() => setLightboxIndex(idx)}
+                className="group size-20 shrink-0 overflow-hidden rounded-lg bg-warm-100"
               >
                 <img
                   src={img.thumbUrl}
                   alt={img.caption || t("memoryPhoto")}
-                  className="size-full object-cover"
+                  className="size-full object-cover transition-transform group-hover:scale-105"
                   loading="lazy"
                 />
-              </div>
+              </button>
             ))}
           </div>
+        )}
+
+        {lightboxIndex !== null && (
+          <Lightbox
+            images={memory.images}
+            currentIndex={lightboxIndex}
+            onClose={() => setLightboxIndex(null)}
+            onNavigate={setLightboxIndex}
+          />
         )}
 
         <footer className="mt-4 text-sm">
