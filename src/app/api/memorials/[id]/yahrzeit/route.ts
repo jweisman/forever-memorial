@@ -213,7 +213,7 @@ export async function GET(
 
   // PDF
   const pdfBuffer = await generatePDF(memorial.name, hebrewDeathDate, entries);
-  return new Response(pdfBuffer, {
+  return new Response(new Uint8Array(pdfBuffer), {
     headers: {
       "Content-Type": "application/pdf",
       "Content-Disposition": `attachment; filename="yahrzeit-${safeName}.pdf"`,
