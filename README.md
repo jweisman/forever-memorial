@@ -6,8 +6,9 @@ A memorial website where families can create lasting tribute pages for loved one
 
 - **Memorial pages** — Create a page with a life story, photos, funeral details, and eulogies
 - **Hebrew date (Yahrzeit)** — Automatically displays the Hebrew calendar date of passing alongside the Gregorian date; supports after-sunset adjustment
+- **Yahrzeit calendar** — One-click download of the next 15 yahrzeit dates as an `.ics` calendar import (Apple Calendar, Google Calendar, Outlook) or a printable PDF
 - **Memory submissions** — Anyone with an account can submit memories; the page owner reviews and approves them
-- **Photo galleries** — Organized into drag-and-drop albums with lightbox viewing
+- **Photo galleries** — Organized into drag-and-drop albums with lightbox viewing; supports keyboard navigation, mobile swipe gestures, and a loading indicator
 - **Eulogies** — Add, edit, and reorder eulogies with speaker attribution; import text directly from a Word (.docx) file
 - **Search** — Fuzzy name search powered by PostgreSQL `pg_trgm`
 - **Admin panel** — Manage all memorials and users, ban/unban, enable/disable
@@ -27,6 +28,7 @@ A memorial website where families can create lasting tribute pages for loved one
 | Email | Nodemailer SMTP (SES, Mailhog, or any SMTP server) |
 | Styling | Tailwind CSS v4 |
 | i18n | next-intl (English + Hebrew with RTL) |
+| PDF generation | pdfkit (server-side, yahrzeit calendar) |
 
 ## Project Structure
 

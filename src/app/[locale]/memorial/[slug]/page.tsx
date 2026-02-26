@@ -18,6 +18,7 @@ import CollapsibleText from "@/components/ui/CollapsibleText";
 import GalleryView from "@/components/memorial/GalleryView";
 import MemoryCard from "@/components/memorial/MemoryCard";
 import MemorySubmissionForm from "@/components/memorial/MemorySubmissionForm";
+import YahrzeitCalendar from "@/components/memorial/YahrzeitCalendar";
 
 export const dynamic = "force-dynamic";
 
@@ -315,7 +316,7 @@ export default async function MemorialPage({ params }: Props) {
               )}
               <div>
                 <dt className="font-medium text-warm-600">{t("passedAway")}</dt>
-                <dd className="mt-0.5 text-warm-800">
+                <dd className="mt-0.5 flex items-center text-warm-800">
                   {formatDate(memorial.dateOfDeath, locale)}
                   {" / "}
                   {getHebrewDeathDate(
@@ -323,6 +324,10 @@ export default async function MemorialPage({ params }: Props) {
                     memorial.deathAfterSunset,
                     locale === "he" ? "he" : "en"
                   )}
+                  <YahrzeitCalendar
+                    memorialId={memorial.id}
+                    memorialName={memorial.name}
+                  />
                 </dd>
               </div>
               {memorial.placeOfDeath && (

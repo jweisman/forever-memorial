@@ -18,6 +18,7 @@ A memorial website where families create tribute pages for loved ones. Features:
 | Email | Nodemailer SMTP (`src/lib/email.ts`) |
 | Styling | Tailwind CSS v4 (CSS-based config via `@theme inline` in `globals.css`) |
 | i18n | next-intl v4 — locales: `en`, `he` (default: `en`) |
+| PDF | pdfkit — server-side PDF generation (yahrzeit calendar); must be in `serverExternalPackages` in `next.config.ts` |
 
 ## Critical Prisma 7 Facts
 
@@ -88,7 +89,7 @@ src/
 │   ├── api/
 │   │   ├── admin/              # Admin-only endpoints (require ADMIN role)
 │   │   ├── eulogies/extract-text/ # POST — extract text from .docx upload (mammoth)
-│   │   ├── memorials/[id]/     # Memorial CRUD + albums/images/eulogies/memories
+│   │   ├── memorials/[id]/     # Memorial CRUD + albums/images/eulogies/memories/yahrzeit
 │   │   ├── search/             # Fuzzy search (pg_trgm, word_similarity)
 │   │   ├── user/               # Profile update, submissions, account delete
 │   │   └── health/             # GET /api/health → DB ping
@@ -96,7 +97,7 @@ src/
 │   └── globals.css             # Tailwind @theme, custom CSS, scrollbar-hide
 ├── components/
 │   ├── ui/                     # Button, Card, SearchBar, Toast, MemorialCard, SectionHeading
-│   ├── memorial/               # GalleryView, Lightbox, ScrollableRow, EulogyList, etc.
+│   ├── memorial/               # GalleryView, Lightbox, ScrollableRow, EulogyList, YahrzeitCalendar, etc.
 │   └── DisableBodyDrop.tsx     # Prevents browser navigation on accidental file drop (in layout)
 ├── generated/prisma/           # Prisma generated output (don't edit manually)
 ├── i18n/
@@ -107,6 +108,7 @@ src/
 │   ├── prisma.ts               # Prisma client singleton (driver adapter)
 │   ├── email.ts                # sendNotification() + 4 email templates
 │   ├── hebrewDate.ts           # getHebrewDeathDate() — Gregorian → Hebrew calendar string
+│   ├── yahrzeit.ts             # getYahrzeitDates() — next N yahrzeit anniversaries (skips past dates)
 │   ├── s3.ts / s3-helpers.ts   # S3 presigned URL helpers
 │   ├── rate-limit.ts           # In-memory sliding-window rate limiter
 │   ├── admin.ts                # requireAdmin() helper for API routes
@@ -204,3 +206,4 @@ npm run dev
 5. **`@/i18n/navigation` not `next/link`** — Using `next/link` directly breaks locale-aware navigation for non-default locales
 6. **Prisma 7 import paths** — Client: `@/generated/prisma/client`, Enums: `@/generated/prisma/enums`
 7. **Rate limiter is per-instance** — In-memory, so limits apply per Vercel function instance, not globally. Acceptable for the current scale
+8. **pdfkit font paths break when bundled** — `pdfkit` must be listed in `serverExternalPackages` in `next.config.ts` (alongside `pg`). Without this, Next.js bundles it and the built-in Helvetica `.afm` font files cannot be found at runtime (`ENOENT: .../pdfkit/js/data/Helvetica.afm`)

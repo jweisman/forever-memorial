@@ -79,7 +79,14 @@
     "lightboxNext": "Next image",
     "galleryImage": "Gallery image",
     "disabledTitle": "Memorial Unavailable",
-    "disabledMessage": "This memorial page has been temporarily disabled by an administrator. If you believe this is an error, please contact support."
+    "disabledMessage": "This memorial page has been temporarily disabled by an administrator. If you believe this is an error, please contact support.",
+    "yahrzeitTooltip": "Download yahrzeit calendar",
+    "yahrzeitDialogTitle": "Yahrzeit Calendar",
+    "yahrzeitDialogDesc": "Download the yahrzeit dates for {name} for the next 15 years.",
+    "yahrzeitIcsTitle": "Calendar import (.ics)",
+    "yahrzeitIcsDesc": "Add to Apple Calendar, Google Calendar, or Outlook",
+    "yahrzeitPdfTitle": "Printable PDF",
+    "yahrzeitPdfDesc": "A formatted list of dates you can print or save"
   },
   "SignIn": {
     "title": "Welcome to Forever",

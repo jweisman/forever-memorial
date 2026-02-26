@@ -79,7 +79,14 @@
     "lightboxNext": "התמונה הבאה",
     "galleryImage": "תמונת גלריה",
     "disabledTitle": "האנדרטה אינה זמינה",
-    "disabledMessage": "דף הנצחה זה הושבת באופן זמני על ידי מנהל המערכת. אם אתם סבורים שמדובר בטעות, אנא פנו לתמיכה."
+    "disabledMessage": "דף הנצחה זה הושבת באופן זמני על ידי מנהל המערכת. אם אתם סבורים שמדובר בטעות, אנא פנו לתמיכה.",
+    "yahrzeitTooltip": "הורדת לוח יארצייט",
+    "yahrzeitDialogTitle": "לוח יארצייט",
+    "yahrzeitDialogDesc": "הורידו את תאריכי היארצייט של {name} לשנים הקרובות.",
+    "yahrzeitIcsTitle": "ייבוא ליומן (.ics)",
+    "yahrzeitIcsDesc": "הוסיפו ל-Apple Calendar, Google Calendar או Outlook",
+    "yahrzeitPdfTitle": "PDF להדפסה",
+    "yahrzeitPdfDesc": "רשימה מסודרת של תאריכים להדפסה או שמירה"
   },
   "SignIn": {
     "title": "ברוכים הבאים ל-Forever",
