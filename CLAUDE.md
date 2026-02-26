@@ -134,6 +134,10 @@ src/
 - Rate limiting: `rateLimit({ key, limit, windowMs })` from `src/lib/rate-limit.ts` — in-memory, per-instance (fine for Vercel)
 - Email notifications are fire-and-forget: call `sendNotification(...)` without `await`
 - S3 uploads use presigned URLs: client requests URL → uploads directly → calls `/confirm` endpoint
+- **Email templates**: always use `escapeHtml()` (defined in `email.ts`) for any user-supplied values interpolated into HTML — `memorialName`, `submitterName`, `returnMessage`, etc.
+- **Reorder endpoints**: include the ownership relation in the Prisma `where` clause to prevent IDOR — e.g. `where: { id: albumId, memorialId: id }` for albums, `where: { id: imageId, album: { memorialId: id } }` for images. Wrap the `$transaction` in try/catch and return 403 on error.
+- **S3 key validation in `/confirm` routes**: validate the client-supplied `s3Key` against a regex anchored to the memorial's `id` before writing it to the DB.
+- **Image uploads**: allowed MIME types are in `ALLOWED_TYPES` and allowed extensions in `ALLOWED_EXTENSIONS` (both in `src/lib/s3-helpers.ts`) — update both if adding new image formats.
 
 ## Database Schema Summary
 

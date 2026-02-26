@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useCallback, useRef } from "react";
+import { useEffect, useCallback, useRef, useState } from "react";
 import { useTranslations } from "next-intl";
 
 type LightboxImage = {
@@ -28,6 +28,32 @@ export default function Lightbox({
   const dialogRef = useRef<HTMLDivElement>(null);
   const closeRef = useRef<HTMLButtonElement>(null);
   const triggerRef = useRef<Element | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const touchStartX = useRef<number | null>(null);
+  const touchStartY = useRef<number | null>(null);
+
+  useEffect(() => {
+    setIsLoading(true);
+  }, [currentIndex]);
+
+  const handleTouchStart = useCallback((e: React.TouchEvent) => {
+    touchStartX.current = e.touches[0].clientX;
+    touchStartY.current = e.touches[0].clientY;
+  }, []);
+
+  const handleTouchEnd = useCallback(
+    (e: React.TouchEvent) => {
+      if (touchStartX.current === null || touchStartY.current === null) return;
+      const deltaX = e.changedTouches[0].clientX - touchStartX.current;
+      const deltaY = e.changedTouches[0].clientY - touchStartY.current;
+      touchStartX.current = null;
+      touchStartY.current = null;
+      if (Math.abs(deltaX) < 50 || Math.abs(deltaX) < Math.abs(deltaY)) return;
+      if (deltaX < 0 && hasNext) onNavigate(currentIndex + 1);
+      if (deltaX > 0 && hasPrev) onNavigate(currentIndex - 1);
+    },
+    [currentIndex, hasPrev, hasNext, onNavigate]
+  );
 
   const handleKeyDown = useCallback(
     (e: KeyboardEvent) => {
@@ -78,6 +104,8 @@ export default function Lightbox({
       ref={dialogRef}
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/80"
       onClick={onClose}
+      onTouchStart={handleTouchStart}
+      onTouchEnd={handleTouchEnd}
       role="dialog"
       aria-modal="true"
       aria-label={t("lightboxTitle")}
@@ -161,11 +189,37 @@ export default function Lightbox({
         className="flex max-h-[90vh] max-w-[90vw] flex-col items-center"
         onClick={(e) => e.stopPropagation()}
       >
-        <img
-          src={image.url}
-          alt={image.caption || t("galleryImage")}
-          className="max-h-[80vh] max-w-full object-contain"
-        />
+        <div className="relative flex items-center justify-center">
+          {isLoading && (
+            <div className="absolute inset-0 flex items-center justify-center">
+              <svg
+                className="size-10 animate-spin text-white/70"
+                fill="none"
+                viewBox="0 0 24 24"
+              >
+                <circle
+                  className="opacity-25"
+                  cx="12"
+                  cy="12"
+                  r="10"
+                  stroke="currentColor"
+                  strokeWidth="4"
+                />
+                <path
+                  className="opacity-75"
+                  fill="currentColor"
+                  d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"
+                />
+              </svg>
+            </div>
+          )}
+          <img
+            src={image.url}
+            alt={image.caption || t("galleryImage")}
+            className={`max-h-[80vh] max-w-full object-contain transition-opacity duration-200 ${isLoading ? "opacity-0" : "opacity-100"}`}
+            onLoad={() => setIsLoading(false)}
+          />
+        </div>
         {image.caption && (
           <p className="mt-3 text-center text-sm text-white/80">
             {image.caption}
