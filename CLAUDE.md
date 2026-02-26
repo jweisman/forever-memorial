@@ -87,15 +87,17 @@ src/
 │   │   └── not-found.tsx       # 404 page
 │   ├── api/
 │   │   ├── admin/              # Admin-only endpoints (require ADMIN role)
+│   │   ├── eulogies/extract-text/ # POST — extract text from .docx upload (mammoth)
 │   │   ├── memorials/[id]/     # Memorial CRUD + albums/images/eulogies/memories
-│   │   ├── search/             # Fuzzy search (pg_trgm)
+│   │   ├── search/             # Fuzzy search (pg_trgm, word_similarity)
 │   │   ├── user/               # Profile update, submissions, account delete
 │   │   └── health/             # GET /api/health → DB ping
 │   ├── global-error.tsx        # Root error boundary (inline styles only)
 │   └── globals.css             # Tailwind @theme, custom CSS, scrollbar-hide
 ├── components/
 │   ├── ui/                     # Button, Card, SearchBar, Toast, MemorialCard, SectionHeading
-│   └── memorial/               # GalleryView, Lightbox, ScrollableRow, EulogyList, etc.
+│   ├── memorial/               # GalleryView, Lightbox, ScrollableRow, EulogyList, etc.
+│   └── DisableBodyDrop.tsx     # Prevents browser navigation on accidental file drop (in layout)
 ├── generated/prisma/           # Prisma generated output (don't edit manually)
 ├── i18n/
 │   ├── routing.ts              # defineRouting({ locales, defaultLocale })
@@ -104,6 +106,7 @@ src/
 │   ├── auth.ts                 # NextAuth config
 │   ├── prisma.ts               # Prisma client singleton (driver adapter)
 │   ├── email.ts                # sendNotification() + 4 email templates
+│   ├── hebrewDate.ts           # getHebrewDeathDate() — Gregorian → Hebrew calendar string
 │   ├── s3.ts / s3-helpers.ts   # S3 presigned URL helpers
 │   ├── rate-limit.ts           # In-memory sliding-window rate limiter
 │   ├── admin.ts                # requireAdmin() helper for API routes
@@ -143,7 +146,9 @@ Key relationships:
 - `Memory` → submitted by `User`, belongs to `Memorial`, has `MemoryImage[]`
 - `Memory.status`: `PENDING | ACCEPTED | IGNORED | RETURNED`
 
-Fuzzy search requires: `CREATE EXTENSION IF NOT EXISTS pg_trgm;` (run once per DB).
+Notable `Memorial` fields: `deathAfterSunset Boolean @default(false)` — when true, Hebrew date is calculated as the next day (sunset = start of next Jewish day). See `src/lib/hebrewDate.ts`.
+
+Fuzzy search requires: `CREATE EXTENSION IF NOT EXISTS pg_trgm;` (run once per DB). Search uses `word_similarity(query, name) > 0.4` (not `similarity`) to avoid false positives from names that share a common prefix.
 
 ## Environment Variables
 

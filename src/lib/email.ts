@@ -14,6 +14,15 @@ function getTransport() {
 
 const from = process.env.FROM_EMAIL || "Forever <noreply@forever.local>";
 
+function escapeHtml(text: string): string {
+  return text
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+}
+
 /**
  * Fire-and-forget email send. Logs errors but never throws.
  */
@@ -74,7 +83,7 @@ export function newSubmissionEmail({
     subject: `New memory submitted for ${memorialName}`,
     html: wrap(`
       <h2 style="font-family:Lora,Georgia,serif;margin:0 0 16px;">New Memory Submission</h2>
-      <p><strong>${submitterName}</strong> has submitted a memory for <strong>${memorialName}</strong>.</p>
+      <p><strong>${escapeHtml(submitterName)}</strong> has submitted a memory for <strong>${escapeHtml(memorialName)}</strong>.</p>
       <p>Please review it on your dashboard:</p>
       <p style="margin-top:24px;"><a href="${dashboardUrl}" style="${buttonStyle}">Review Submissions</a></p>
     `),
@@ -92,7 +101,7 @@ export function memoryAcceptedEmail({
     subject: `Your memory for ${memorialName} was published`,
     html: wrap(`
       <h2 style="font-family:Lora,Georgia,serif;margin:0 0 16px;">Memory Published</h2>
-      <p>Your memory for <strong>${memorialName}</strong> has been accepted and is now visible on the memorial page.</p>
+      <p>Your memory for <strong>${escapeHtml(memorialName)}</strong> has been accepted and is now visible on the memorial page.</p>
       <p style="margin-top:24px;"><a href="${memorialUrl}" style="${buttonStyle}">View Memorial</a></p>
     `),
   };
@@ -111,9 +120,9 @@ export function memoryReturnedEmail({
     subject: `Your memory for ${memorialName} needs changes`,
     html: wrap(`
       <h2 style="font-family:Lora,Georgia,serif;margin:0 0 16px;">Changes Requested</h2>
-      <p>The owner of <strong>${memorialName}</strong>'s memorial page has requested changes to your memory submission.</p>
+      <p>The owner of <strong>${escapeHtml(memorialName)}</strong>'s memorial page has requested changes to your memory submission.</p>
       <div style="background:#faf6f0;border-left:4px solid #b8860b;padding:12px 16px;margin:16px 0;border-radius:4px;">
-        <p style="margin:0;font-style:italic;">${returnMessage}</p>
+        <p style="margin:0;font-style:italic;">${escapeHtml(returnMessage)}</p>
       </div>
       <p>You can edit and resubmit your memory from your dashboard:</p>
       <p style="margin-top:24px;"><a href="${dashboardUrl}" style="${buttonStyle}">Edit Memory</a></p>
@@ -134,7 +143,7 @@ export function memoryResubmittedEmail({
     subject: `A memory for ${memorialName} was resubmitted`,
     html: wrap(`
       <h2 style="font-family:Lora,Georgia,serif;margin:0 0 16px;">Memory Resubmitted</h2>
-      <p><strong>${submitterName}</strong> has updated and resubmitted their memory for <strong>${memorialName}</strong>.</p>
+      <p><strong>${escapeHtml(submitterName)}</strong> has updated and resubmitted their memory for <strong>${escapeHtml(memorialName)}</strong>.</p>
       <p>Please review the updated submission on your dashboard:</p>
       <p style="margin-top:24px;"><a href="${dashboardUrl}" style="${buttonStyle}">Review Submissions</a></p>
     `),

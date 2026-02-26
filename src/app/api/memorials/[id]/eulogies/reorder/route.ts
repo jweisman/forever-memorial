@@ -40,14 +40,26 @@ export async function PATCH(
     );
   }
 
-  await prisma.$transaction(
-    eulogyIds.map((eulogyId: string, index: number) =>
-      prisma.eulogy.update({
-        where: { id: eulogyId },
-        data: { order: index },
-      })
-    )
-  );
+  if (eulogyIds.length > 500) {
+    return NextResponse.json({ error: "Too many items" }, { status: 400 });
+  }
+
+  if (!eulogyIds.every((eid: unknown) => typeof eid === "string" && eid.length > 0)) {
+    return NextResponse.json({ error: "Invalid eulogyIds" }, { status: 400 });
+  }
+
+  try {
+    await prisma.$transaction(
+      eulogyIds.map((eulogyId: string, index: number) =>
+        prisma.eulogy.update({
+          where: { id: eulogyId, memorialId: id },
+          data: { order: index },
+        })
+      )
+    );
+  } catch {
+    return NextResponse.json({ error: "Invalid eulogyIds" }, { status: 403 });
+  }
 
   return NextResponse.json({ success: true });
 }

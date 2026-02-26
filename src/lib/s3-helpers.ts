@@ -12,9 +12,11 @@ export function isAllowedImageType(contentType: string): boolean {
   return ALLOWED_TYPES.includes(contentType);
 }
 
+const ALLOWED_EXTENSIONS = new Set(["jpg", "jpeg", "png", "webp", "gif"]);
+
 export function getExtFromFileName(fileName: string): string {
   const ext = fileName.split(".").pop()?.toLowerCase() || "jpg";
-  return ext;
+  return ALLOWED_EXTENSIONS.has(ext) ? ext : "jpg";
 }
 
 export async function generateUploadUrl(

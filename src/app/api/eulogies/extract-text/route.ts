@@ -34,6 +34,13 @@ export async function POST(request: NextRequest) {
   }
 
   const arrayBuffer = await file.arrayBuffer();
+
+  // Verify ZIP/DOCX magic bytes: PK\x03\x04
+  const magic = new Uint8Array(arrayBuffer, 0, 4);
+  if (magic[0] !== 0x50 || magic[1] !== 0x4b || magic[2] !== 0x03 || magic[3] !== 0x04) {
+    return NextResponse.json({ error: "Only Word (.docx) files are supported" }, { status: 400 });
+  }
+
   const result = await mammoth.extractRawText({ buffer: Buffer.from(arrayBuffer) });
   const text = result.value.trim();
 

@@ -7,6 +7,7 @@ import {
   memoryAcceptedEmail,
   memoryReturnedEmail,
 } from "@/lib/email";
+import { rateLimit, getClientIp } from "@/lib/rate-limit";
 
 type Params = { id: string; memoryId: string };
 
@@ -15,6 +16,13 @@ export async function POST(
   { params }: { params: Promise<Params> }
 ) {
   const { id, memoryId } = await params;
+
+  const ip = getClientIp(request);
+  const { success } = rateLimit({ key: `review:${ip}`, limit: 60, windowMs: 60_000 });
+  if (!success) {
+    return NextResponse.json({ error: "Too many requests" }, { status: 429 });
+  }
+
   const session = await auth();
   if (!session?.user?.id) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });

@@ -5,9 +5,10 @@ A memorial website where families can create lasting tribute pages for loved one
 ## Features
 
 - **Memorial pages** — Create a page with a life story, photos, funeral details, and eulogies
+- **Hebrew date (Yahrzeit)** — Automatically displays the Hebrew calendar date of passing alongside the Gregorian date; supports after-sunset adjustment
 - **Memory submissions** — Anyone with an account can submit memories; the page owner reviews and approves them
 - **Photo galleries** — Organized into drag-and-drop albums with lightbox viewing
-- **Eulogies** — Add, edit, and reorder eulogies with speaker attribution
+- **Eulogies** — Add, edit, and reorder eulogies with speaker attribution; import text directly from a Word (.docx) file
 - **Search** — Fuzzy name search powered by PostgreSQL `pg_trgm`
 - **Admin panel** — Manage all memorials and users, ban/unban, enable/disable
 - **Email notifications** — Owners are notified of new submissions; submitters are notified of review decisions

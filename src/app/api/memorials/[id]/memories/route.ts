@@ -135,9 +135,23 @@ export async function POST(
     );
   }
 
+  if (name.length > 200) {
+    return NextResponse.json(
+      { error: "Name must be 200 characters or fewer" },
+      { status: 400 }
+    );
+  }
+
   if (!text) {
     return NextResponse.json(
       { error: "Memory text is required" },
+      { status: 400 }
+    );
+  }
+
+  if (text.length > 50_000) {
+    return NextResponse.json(
+      { error: "Memory text must be 50,000 characters or fewer" },
       { status: 400 }
     );
   }

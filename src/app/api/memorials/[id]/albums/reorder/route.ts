@@ -40,14 +40,26 @@ export async function PATCH(
     );
   }
 
-  await prisma.$transaction(
-    albumIds.map((albumId: string, index: number) =>
-      prisma.album.update({
-        where: { id: albumId },
-        data: { order: index },
-      })
-    )
-  );
+  if (albumIds.length > 500) {
+    return NextResponse.json({ error: "Too many items" }, { status: 400 });
+  }
+
+  if (!albumIds.every((aid: unknown) => typeof aid === "string" && aid.length > 0)) {
+    return NextResponse.json({ error: "Invalid albumIds" }, { status: 400 });
+  }
+
+  try {
+    await prisma.$transaction(
+      albumIds.map((albumId: string, index: number) =>
+        prisma.album.update({
+          where: { id: albumId, memorialId: id },
+          data: { order: index },
+        })
+      )
+    );
+  } catch {
+    return NextResponse.json({ error: "Invalid albumIds" }, { status: 403 });
+  }
 
   return NextResponse.json({ success: true });
 }

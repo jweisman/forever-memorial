@@ -38,6 +38,14 @@ export async function POST(
     return NextResponse.json({ error: "s3Key is required" }, { status: 400 });
   }
 
+  // Validate the key belongs to this memorial and matches expected naming
+  const validKeyPattern = new RegExp(
+    `^memorials/${id}/memorial-picture(_thumb|_full)?\\.(webp|jpg|jpeg|png|gif)$`
+  );
+  if (!validKeyPattern.test(s3Key)) {
+    return NextResponse.json({ error: "Invalid s3Key" }, { status: 400 });
+  }
+
   // Delete old memorial picture from S3 if it exists and differs from the new key
   // (same key means the upload already overwrote it — deleting would cause 404)
   if (memorial.memorialPicture && memorial.memorialPicture !== s3Key) {
