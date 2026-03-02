@@ -1,7 +1,7 @@
 import path from "path";
 import fs from "fs";
 import { NextResponse } from "next/server";
-import chromium from "@sparticuz/chromium";
+import chromium from "@sparticuz/chromium-min";
 import puppeteer from "puppeteer-core";
 import { prisma } from "@/lib/prisma";
 import { getYahrzeitDates, type YahrzeitEntry } from "@/lib/yahrzeit";
@@ -185,11 +185,15 @@ const MAC_CHROME =
 async function generatePDF(html: string): Promise<Uint8Array> {
   const isVercel = !!process.env.VERCEL;
 
+  // chromium-min downloads the binary from a URL at runtime (keeps function bundle small)
+  const CHROMIUM_REMOTE_URL =
+    "https://github.com/Sparticuz/chromium/releases/download/v143.0.4/chromium-v143.0.4-pack.tar";
+
   const executablePath =
     process.env.PUPPETEER_EXECUTABLE_PATH ??
     (!isVercel && process.platform === "darwin" && fs.existsSync(MAC_CHROME)
       ? MAC_CHROME
-      : await chromium.executablePath());
+      : await chromium.executablePath(CHROMIUM_REMOTE_URL));
 
   const browser = await puppeteer.launch({
     executablePath,
