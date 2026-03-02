@@ -14,7 +14,8 @@ export type YahrzeitEntry = {
 export function getYahrzeitDates(
   dateOfDeath: Date,
   afterSunset: boolean,
-  count = 15
+  count = 15,
+  locale = "en"
 ): YahrzeitEntry[] {
   let hd = new HDate(new Date(dateOfDeath));
   if (afterSunset) hd = hd.next();
@@ -34,7 +35,7 @@ export function getYahrzeitDates(
     if (gregorianDate >= today) {
       results.push({
         hebrewYear: year,
-        hebrewDate: yahrzeitHDate.render("en"),
+        hebrewDate: yahrzeitHDate.render(locale),
         gregorianDate,
       });
     }
