@@ -86,7 +86,8 @@
     "yahrzeitIcsTitle": "Calendar import (.ics)",
     "yahrzeitIcsDesc": "Add to Apple Calendar, Google Calendar, or Outlook",
     "yahrzeitPdfTitle": "Printable PDF",
-    "yahrzeitPdfDesc": "A formatted list of dates you can print or save"
+    "yahrzeitPdfDesc": "A formatted list of dates you can print or save",
+    "posterTooltip": "Download memorial poster"
   },
   "SignIn": {
     "title": "Welcome to Forever",

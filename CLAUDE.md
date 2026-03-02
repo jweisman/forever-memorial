@@ -18,7 +18,7 @@ A memorial website where families create tribute pages for loved ones. Features:
 | Email | Nodemailer SMTP (`src/lib/email.ts`) |
 | Styling | Tailwind CSS v4 (CSS-based config via `@theme inline` in `globals.css`) |
 | i18n | next-intl v4 — locales: `en`, `he` (default: `en`) |
-| PDF | pdfkit — server-side PDF generation (yahrzeit calendar); must be in `serverExternalPackages` in `next.config.ts` |
+| PDF | pdfkit — server-side PDF generation (yahrzeit calendar + QR poster); must be in `serverExternalPackages` in `next.config.ts` |
 
 ## Critical Prisma 7 Facts
 
@@ -139,7 +139,7 @@ src/
 - **Email templates**: always use `escapeHtml()` (defined in `email.ts`) for any user-supplied values interpolated into HTML — `memorialName`, `submitterName`, `returnMessage`, etc.
 - **Reorder endpoints**: include the ownership relation in the Prisma `where` clause to prevent IDOR — e.g. `where: { id: albumId, memorialId: id }` for albums, `where: { id: imageId, album: { memorialId: id } }` for images. Wrap the `$transaction` in try/catch and return 403 on error.
 - **S3 key validation in `/confirm` routes**: validate the client-supplied `s3Key` against a regex anchored to the memorial's `id` before writing it to the DB.
-- **Image uploads**: allowed MIME types are in `ALLOWED_TYPES` and allowed extensions in `ALLOWED_EXTENSIONS` (both in `src/lib/s3-helpers.ts`) — update both if adding new image formats.
+- **Media uploads**: allowed MIME types are split into `ALLOWED_IMAGE_TYPES` and `ALLOWED_VIDEO_TYPES` (combined as `ALLOWED_TYPES`) in `src/lib/s3-helpers.ts`; use `isVideoType(mimeType)` to branch logic. Video uploads get a single presigned URL; image uploads get separate thumb + full presigned URLs. Update both lists if adding new formats.
 
 ## Database Schema Summary
 
@@ -151,6 +151,12 @@ Key relationships:
 - `Album` → has `Image[]`
 - `Memory` → submitted by `User`, belongs to `Memorial`, has `MemoryImage[]`
 - `Memory.status`: `PENDING | ACCEPTED | IGNORED | RETURNED`
+
+`MediaType` enum (`IMAGE | VIDEO`) is on both `Image` and `MemoryImage` with `@default(IMAGE)`. Storage differs by type:
+- **IMAGE**: `s3Key` is a base key; thumbnail = `thumbKeyFromBase(s3Key)`, full = `fullKeyFromBase(s3Key)`
+- **VIDEO**: `s3Key` is the direct file; `thumbUrl` and `url` are both the same presigned URL for that key; client-side Canvas resize is skipped; 50 MB limit (vs 15 MB for images)
+
+All URL-generation code (API routes and the public memorial page server component) must check `mediaType` before calling `thumbKeyFromBase`/`fullKeyFromBase`.
 
 Notable `Memorial` fields: `deathAfterSunset Boolean @default(false)` — when true, Hebrew date is calculated as the next day (sunset = start of next Jewish day). See `src/lib/hebrewDate.ts`.
 
@@ -207,3 +213,7 @@ npm run dev
 6. **Prisma 7 import paths** — Client: `@/generated/prisma/client`, Enums: `@/generated/prisma/enums`
 7. **Rate limiter is per-instance** — In-memory, so limits apply per Vercel function instance, not globally. Acceptable for the current scale
 8. **pdfkit font paths break when bundled** — `pdfkit` must be listed in `serverExternalPackages` in `next.config.ts` (alongside `pg`). Without this, Next.js bundles it and the built-in Helvetica `.afm` font files cannot be found at runtime (`ENOENT: .../pdfkit/js/data/Helvetica.afm`)
+9. **pdfkit Hebrew: use static TTF, not variable** — The `google/fonts` GitHub repo only ships the variable font (`NotoSansHebrew[wdth,wght].ttf`). Variable fonts cause garbled glyph rendering in pdfkit/fontkit. Download the static Bold weight from `googlefonts/noto-fonts` instead: `https://github.com/googlefonts/noto-fonts/raw/main/hinted/ttf/NotoSansHebrew/NotoSansHebrew-Bold.ttf`. Stored at `public/fonts/NotoSansHebrew-Bold.ttf`.
+10. **pdfkit Hebrew: pass `features: []` to fix multi-word BiDi** — pdfkit's `layout()` splits text at spaces and processes each chunk through fontkit's BiDi separately. For multi-word Hebrew text this leaves words in LTR order (wrong). Fix: pass `features: []` as a text option — this truthy value triggers the `layoutRun` code path which passes the entire string to fontkit at once, giving the BiDi algorithm full context. Applies to all Hebrew `doc.text()` calls.
+11. **pdfkit font is not reset between text calls** — Always set `.font("Helvetica")` (or whichever font) explicitly before each text call. After rendering Hebrew with `NotoHebrew`, the next call still uses `NotoHebrew` — which has no Latin glyphs, producing squares for URLs and other Latin text.
+12. **pdfkit: NotoSansHebrew-Bold has no Latin glyphs** — It is a Hebrew-only font. Never pass mixed Hebrew+Latin strings to it. Split bilingual text into separate `doc.text()` calls: one with `NotoHebrew` for the Hebrew portion, one with `Helvetica` for the Latin portion.

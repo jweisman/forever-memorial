@@ -86,7 +86,8 @@
     "yahrzeitIcsTitle": "ייבוא ליומן (.ics)",
     "yahrzeitIcsDesc": "הוסיפו ל-Apple Calendar, Google Calendar או Outlook",
     "yahrzeitPdfTitle": "PDF להדפסה",
-    "yahrzeitPdfDesc": "רשימה מסודרת של תאריכים להדפסה או שמירה"
+    "yahrzeitPdfDesc": "רשימה מסודרת של תאריכים להדפסה או שמירה",
+    "posterTooltip": "הורד פוסטר"
   },
   "SignIn": {
     "title": "ברוכים הבאים ל-Forever",

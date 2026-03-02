@@ -19,6 +19,7 @@ import GalleryView from "@/components/memorial/GalleryView";
 import MemoryCard from "@/components/memorial/MemoryCard";
 import MemorySubmissionForm from "@/components/memorial/MemorySubmissionForm";
 import YahrzeitCalendar from "@/components/memorial/YahrzeitCalendar";
+import PosterDownload from "@/components/memorial/PosterDownload";
 
 export const dynamic = "force-dynamic";
 
@@ -341,6 +342,7 @@ export default async function MemorialPage({ params }: Props) {
                     memorialId={memorial.id}
                     memorialName={memorial.name}
                   />
+                  <PosterDownload memorialId={memorial.id} />
                 </dd>
               </div>
               {memorial.placeOfDeath && (
