@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef, useCallback } from "react";
-import { useTranslations, useLocale } from "next-intl";
+import { useTranslations } from "next-intl";
 
 type Props = {
   memorialId: string;
@@ -10,7 +10,6 @@ type Props = {
 
 export default function YahrzeitCalendar({ memorialId, memorialName }: Props) {
   const t = useTranslations("Memorial");
-  const locale = useLocale();
   const [open, setOpen] = useState(false);
   const dialogRef = useRef<HTMLDivElement>(null);
   const triggerRef = useRef<HTMLButtonElement>(null);
@@ -32,7 +31,7 @@ export default function YahrzeitCalendar({ memorialId, memorialName }: Props) {
   }, [open, close]);
 
   const icsUrl = `/api/memorials/${memorialId}/yahrzeit?format=ics`;
-  const pdfUrl = `/api/memorials/${memorialId}/yahrzeit?format=pdf&locale=${locale}`;
+  const pdfUrl = `/api/memorials/${memorialId}/yahrzeit?format=pdf`;
 
   return (
     <>

@@ -28,7 +28,7 @@ A memorial website where families can create lasting tribute pages for loved one
 | Email | Nodemailer SMTP (SES, Mailhog, or any SMTP server) |
 | Styling | Tailwind CSS v4 |
 | i18n | next-intl (English + Hebrew with RTL) |
-| PDF generation | puppeteer-core + @sparticuz/chromium (server-side, yahrzeit calendar, Hebrew RTL) |
+| PDF generation | pdfkit (server-side, yahrzeit calendar) |
 
 ## Project Structure
 
