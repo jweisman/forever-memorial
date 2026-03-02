@@ -6,6 +6,7 @@ import {
   thumbKeyFromBase,
   fullKeyFromBase,
 } from "@/lib/s3-helpers";
+import { MediaType } from "@/generated/prisma/enums";
 import { isUserDisabled } from "@/lib/admin";
 
 export async function POST(
@@ -36,7 +37,9 @@ export async function POST(
   }
 
   const body = await request.json();
-  const { imageId, s3Key, albumId, caption } = body;
+  const { imageId, s3Key, albumId, caption, mediaType: rawMediaType } = body;
+  const mediaType: MediaType =
+    rawMediaType === "VIDEO" ? MediaType.VIDEO : MediaType.IMAGE;
 
   if (!imageId || !s3Key || !albumId) {
     return NextResponse.json(
@@ -79,13 +82,21 @@ export async function POST(
       s3Key,
       caption: caption?.trim() || null,
       order: nextOrder,
+      mediaType,
     },
   });
 
-  const [thumbUrl, url] = await Promise.all([
-    generateViewUrl(thumbKeyFromBase(s3Key)),
-    generateViewUrl(fullKeyFromBase(s3Key)),
-  ]);
+  let thumbUrl: string;
+  let url: string;
+  if (mediaType === MediaType.VIDEO) {
+    url = await generateViewUrl(s3Key);
+    thumbUrl = url;
+  } else {
+    [thumbUrl, url] = await Promise.all([
+      generateViewUrl(thumbKeyFromBase(s3Key)),
+      generateViewUrl(fullKeyFromBase(s3Key)),
+    ]);
+  }
 
   return NextResponse.json({ ...image, thumbUrl, url }, { status: 201 });
 }

@@ -12,6 +12,7 @@ type ImageRecord = {
   albumId: string;
   caption: string | null;
   order: number;
+  mediaType: "IMAGE" | "VIDEO";
   thumbUrl: string;
   url: string;
 };
@@ -223,13 +224,32 @@ export default function AlbumSection({
                     dragIndex === index ? "opacity-50" : ""
                   } ${dropIndex === index ? "ring-2 ring-accent" : ""}`}
                 >
-                  <img
-                    src={image.thumbUrl}
-                    alt={image.caption || t("galleryImage")}
-                    className="size-full cursor-grab object-cover active:cursor-grabbing"
-                    loading="lazy"
-                    draggable={false}
-                  />
+                  {image.mediaType === "VIDEO" ? (
+                    <video
+                      src={image.thumbUrl}
+                      className="size-full cursor-grab object-cover active:cursor-grabbing"
+                      muted
+                      preload="metadata"
+                      draggable={false}
+                    />
+                  ) : (
+                    <img
+                      src={image.thumbUrl}
+                      alt={image.caption || t("galleryImage")}
+                      className="size-full cursor-grab object-cover active:cursor-grabbing"
+                      loading="lazy"
+                      draggable={false}
+                    />
+                  )}
+                  {image.mediaType === "VIDEO" && (
+                    <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
+                      <div className="rounded-full bg-black/50 p-1.5">
+                        <svg className="size-4 text-white" viewBox="0 0 16 16" fill="currentColor">
+                          <path d="M4 2l10 6-10 6z" />
+                        </svg>
+                      </div>
+                    </div>
+                  )}
 
                   {/* Actions overlay */}
                   <div className="absolute inset-x-0 top-0 flex justify-end gap-1 bg-gradient-to-b from-black/50 to-transparent p-1 opacity-0 transition-opacity group-hover:opacity-100">

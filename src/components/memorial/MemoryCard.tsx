@@ -14,7 +14,7 @@ type MemoryCardProps = {
     relation: string | null;
     text: string;
     createdAt: string;
-    images: { id: string; thumbUrl: string; url: string; caption: string | null }[];
+    images: { id: string; thumbUrl: string; url: string; caption: string | null; mediaType: "IMAGE" | "VIDEO" }[];
   };
 };
 
@@ -43,14 +43,32 @@ export default function MemoryCard({ memory }: MemoryCardProps) {
               <button
                 key={img.id}
                 onClick={() => setLightboxIndex(idx)}
-                className="group size-20 shrink-0 overflow-hidden rounded-lg bg-warm-100"
+                className="group relative size-20 shrink-0 overflow-hidden rounded-lg bg-warm-100"
               >
-                <img
-                  src={img.thumbUrl}
-                  alt={img.caption || t("memoryPhoto")}
-                  className="size-full object-cover transition-transform group-hover:scale-105"
-                  loading="lazy"
-                />
+                {img.mediaType === "VIDEO" ? (
+                  <video
+                    src={img.thumbUrl}
+                    className="size-full object-cover transition-transform group-hover:scale-105"
+                    muted
+                    preload="metadata"
+                  />
+                ) : (
+                  <img
+                    src={img.thumbUrl}
+                    alt={img.caption || t("memoryPhoto")}
+                    className="size-full object-cover transition-transform group-hover:scale-105"
+                    loading="lazy"
+                  />
+                )}
+                {img.mediaType === "VIDEO" && (
+                  <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
+                    <div className="rounded-full bg-black/50 p-1.5">
+                      <svg className="size-4 text-white" viewBox="0 0 16 16" fill="currentColor">
+                        <path d="M4 2l10 6-10 6z" />
+                      </svg>
+                    </div>
+                  </div>
+                )}
               </button>
             ))}
           </div>

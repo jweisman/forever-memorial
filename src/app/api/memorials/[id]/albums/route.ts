@@ -28,11 +28,17 @@ export async function GET(
     albums.map(async (album) => ({
       ...album,
       images: await Promise.all(
-        album.images.map(async (img) => ({
-          ...img,
-          thumbUrl: await generateViewUrl(thumbKeyFromBase(img.s3Key)),
-          url: await generateViewUrl(fullKeyFromBase(img.s3Key)),
-        }))
+        album.images.map(async (img) => {
+          if (img.mediaType === "VIDEO") {
+            const url = await generateViewUrl(img.s3Key);
+            return { ...img, thumbUrl: url, url };
+          }
+          return {
+            ...img,
+            thumbUrl: await generateViewUrl(thumbKeyFromBase(img.s3Key)),
+            url: await generateViewUrl(fullKeyFromBase(img.s3Key)),
+          };
+        })
       ),
     }))
   );

@@ -16,7 +16,7 @@ type MySubmissionCardProps = {
     status: string;
     returnMessage: string | null;
     createdAt: string;
-    images: { id: string; thumbUrl: string; url: string; caption: string | null }[];
+    images: { id: string; thumbUrl: string; url: string; caption: string | null; mediaType: "IMAGE" | "VIDEO" }[];
     memorial: { id: string; name: string; slug: string };
   };
   onChanged: () => void;
@@ -242,9 +242,27 @@ export default function MySubmissionCard({
           {memory.images.map((img) => (
             <div
               key={img.id}
-              className="size-10 overflow-hidden rounded bg-warm-100"
+              className="relative size-10 overflow-hidden rounded bg-warm-100"
             >
-              <img src={img.thumbUrl} alt="" className="size-full object-cover" />
+              {img.mediaType === "VIDEO" ? (
+                <video
+                  src={img.thumbUrl}
+                  className="size-full object-cover"
+                  muted
+                  preload="metadata"
+                />
+              ) : (
+                <img src={img.thumbUrl} alt="" className="size-full object-cover" />
+              )}
+              {img.mediaType === "VIDEO" && (
+                <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
+                  <div className="rounded-full bg-black/50 p-1">
+                    <svg className="size-3 text-white" viewBox="0 0 16 16" fill="currentColor">
+                      <path d="M4 2l10 6-10 6z" />
+                    </svg>
+                  </div>
+                </div>
+              )}
             </div>
           ))}
         </div>

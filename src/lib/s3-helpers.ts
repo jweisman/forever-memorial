@@ -6,17 +6,29 @@ import {
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import { s3, S3_BUCKET } from "./s3";
 
-const ALLOWED_TYPES = ["image/jpeg", "image/png", "image/webp", "image/gif"];
+const ALLOWED_IMAGE_TYPES = ["image/jpeg", "image/png", "image/webp", "image/gif"];
+const ALLOWED_VIDEO_TYPES = ["video/mp4", "video/webm", "video/quicktime"];
+const ALLOWED_TYPES = [...ALLOWED_IMAGE_TYPES, ...ALLOWED_VIDEO_TYPES];
 
 export function isAllowedImageType(contentType: string): boolean {
+  return ALLOWED_IMAGE_TYPES.includes(contentType);
+}
+
+export function isVideoType(contentType: string): boolean {
+  return ALLOWED_VIDEO_TYPES.includes(contentType);
+}
+
+export function isAllowedMediaType(contentType: string): boolean {
   return ALLOWED_TYPES.includes(contentType);
 }
 
-const ALLOWED_EXTENSIONS = new Set(["jpg", "jpeg", "png", "webp", "gif"]);
+const ALLOWED_IMAGE_EXTENSIONS = new Set(["jpg", "jpeg", "png", "webp", "gif"]);
+const ALLOWED_VIDEO_EXTENSIONS = new Set(["mp4", "webm", "mov"]);
+const ALLOWED_EXTENSIONS = new Set([...ALLOWED_IMAGE_EXTENSIONS, ...ALLOWED_VIDEO_EXTENSIONS]);
 
-export function getExtFromFileName(fileName: string): string {
-  const ext = fileName.split(".").pop()?.toLowerCase() || "jpg";
-  return ALLOWED_EXTENSIONS.has(ext) ? ext : "jpg";
+export function getExtFromFileName(fileName: string, fallback = "jpg"): string {
+  const ext = fileName.split(".").pop()?.toLowerCase() || fallback;
+  return ALLOWED_EXTENSIONS.has(ext) ? ext : fallback;
 }
 
 export async function generateUploadUrl(

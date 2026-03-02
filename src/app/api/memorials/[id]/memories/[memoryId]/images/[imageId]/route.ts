@@ -48,8 +48,12 @@ export async function DELETE(
     return NextResponse.json({ error: "Not found" }, { status: 404 });
   }
 
-  // Delete variant S3 objects (thumb + full)
-  for (const key of [thumbKeyFromBase(image.s3Key), fullKeyFromBase(image.s3Key)]) {
+  // Delete S3 objects — videos have a single key; images have thumb + full variants
+  const keysToDelete =
+    image.mediaType === "VIDEO"
+      ? [image.s3Key]
+      : [thumbKeyFromBase(image.s3Key), fullKeyFromBase(image.s3Key)];
+  for (const key of keysToDelete) {
     try {
       await deleteS3Object(key);
     } catch {

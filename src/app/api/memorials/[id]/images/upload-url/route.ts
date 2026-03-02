@@ -3,7 +3,8 @@ import crypto from "crypto";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import {
-  isAllowedImageType,
+  isAllowedMediaType,
+  isVideoType,
   getExtFromFileName,
   generateUploadUrl,
   buildImageS3Key,
@@ -42,9 +43,9 @@ export async function POST(
   const body = await request.json();
   const { fileName, contentType, albumId } = body;
 
-  if (!contentType || !isAllowedImageType(contentType)) {
+  if (!contentType || !isAllowedMediaType(contentType)) {
     return NextResponse.json(
-      { error: "Only JPEG, PNG, WebP, and GIF images are allowed" },
+      { error: "Only JPEG, PNG, WebP, GIF images and MP4, WebM, MOV videos are allowed" },
       { status: 400 }
     );
   }
@@ -87,8 +88,22 @@ export async function POST(
   }
 
   const imageId = crypto.randomUUID();
-  const ext = getExtFromFileName(fileName || "image.jpg");
+  const isVideo = isVideoType(contentType);
+  const fallbackExt = isVideo ? "mp4" : "jpg";
+  const ext = getExtFromFileName(fileName || `file.${fallbackExt}`, fallbackExt);
   const s3Key = buildImageS3Key(id, imageId, ext);
+
+  if (isVideo) {
+    const uploadUrl = await generateUploadUrl(s3Key, contentType);
+    return NextResponse.json({
+      uploadUrl,
+      s3Key,
+      imageId,
+      albumId: resolvedAlbumId,
+      mediaType: "VIDEO",
+    });
+  }
+
   const thumbS3Key = thumbKeyFromBase(s3Key);
   const fullS3Key = fullKeyFromBase(s3Key);
 
@@ -105,5 +120,6 @@ export async function POST(
     fullS3Key,
     imageId,
     albumId: resolvedAlbumId,
+    mediaType: "IMAGE",
   });
 }

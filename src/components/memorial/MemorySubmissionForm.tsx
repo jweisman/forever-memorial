@@ -4,7 +4,13 @@ import { useState, useRef } from "react";
 import { useSession } from "next-auth/react";
 import { useTranslations } from "next-intl";
 import Button from "@/components/ui/Button";
-import { validateImageFile, uploadMemoryImage } from "@/lib/upload";
+import {
+  validateImageFile,
+  validateVideoFile,
+  isVideoFile,
+  uploadMemoryImage,
+  uploadMemoryVideo,
+} from "@/lib/upload";
 
 type MemorySubmissionFormProps = {
   memorialId: string;
@@ -57,7 +63,11 @@ export default function MemorySubmissionForm({
       const memory = await res.json();
 
       for (const file of files) {
-        await uploadMemoryImage(memorialId, memory.id, file);
+        if (isVideoFile(file)) {
+          await uploadMemoryVideo(memorialId, memory.id, file);
+        } else {
+          await uploadMemoryImage(memorialId, memory.id, file);
+        }
       }
 
       setSuccess(true);
@@ -83,7 +93,9 @@ export default function MemorySubmissionForm({
     }
 
     for (const file of selected) {
-      const validationError = validateImageFile(file);
+      const validationError = isVideoFile(file)
+        ? validateVideoFile(file)
+        : validateImageFile(file);
       if (validationError) {
         setError(validationError);
         return;
@@ -199,11 +211,20 @@ export default function MemorySubmissionForm({
                 key={index}
                 className="relative size-20 overflow-hidden rounded-lg bg-warm-100"
               >
-                <img
-                  src={URL.createObjectURL(file)}
-                  alt=""
-                  className="size-full object-cover"
-                />
+                {isVideoFile(file) ? (
+                  <video
+                    src={URL.createObjectURL(file)}
+                    className="size-full object-cover"
+                    muted
+                    preload="metadata"
+                  />
+                ) : (
+                  <img
+                    src={URL.createObjectURL(file)}
+                    alt=""
+                    className="size-full object-cover"
+                  />
+                )}
                 <button
                   type="button"
                   onClick={() => removeFile(index)}
@@ -220,7 +241,7 @@ export default function MemorySubmissionForm({
             <input
               ref={inputRef}
               type="file"
-              accept="image/jpeg,image/png,image/webp,image/gif"
+              accept="image/jpeg,image/png,image/webp,image/gif,video/mp4,video/webm,video/quicktime"
               multiple
               onChange={handleFileChange}
               className="hidden"

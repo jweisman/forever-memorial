@@ -40,11 +40,17 @@ export async function GET(
   }
 
   const images = await Promise.all(
-    memory.images.map(async (img) => ({
-      ...img,
-      thumbUrl: await generateViewUrl(thumbKeyFromBase(img.s3Key)),
-      url: await generateViewUrl(fullKeyFromBase(img.s3Key)),
-    }))
+    memory.images.map(async (img) => {
+      if (img.mediaType === "VIDEO") {
+        const url = await generateViewUrl(img.s3Key);
+        return { ...img, thumbUrl: url, url };
+      }
+      return {
+        ...img,
+        thumbUrl: await generateViewUrl(thumbKeyFromBase(img.s3Key)),
+        url: await generateViewUrl(fullKeyFromBase(img.s3Key)),
+      };
+    })
   );
 
   return NextResponse.json({ ...memory, images });
@@ -161,9 +167,13 @@ export async function DELETE(
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 
-  // Clean up S3 variant objects (thumb + full for each image)
+  // Clean up S3 objects for each media item
   for (const img of memory.images) {
-    for (const key of [thumbKeyFromBase(img.s3Key), fullKeyFromBase(img.s3Key)]) {
+    const keys =
+      img.mediaType === "VIDEO"
+        ? [img.s3Key]
+        : [thumbKeyFromBase(img.s3Key), fullKeyFromBase(img.s3Key)];
+    for (const key of keys) {
       try {
         await deleteS3Object(key);
       } catch {

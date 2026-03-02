@@ -51,11 +51,17 @@ export async function GET(
         ...memory,
         memorial: { name: memorial.name, slug: memorial.slug },
         images: await Promise.all(
-          memory.images.map(async (img) => ({
-            ...img,
-            thumbUrl: await generateViewUrl(thumbKeyFromBase(img.s3Key)),
-            url: await generateViewUrl(fullKeyFromBase(img.s3Key)),
-          }))
+          memory.images.map(async (img) => {
+            if (img.mediaType === "VIDEO") {
+              const url = await generateViewUrl(img.s3Key);
+              return { ...img, thumbUrl: url, url };
+            }
+            return {
+              ...img,
+              thumbUrl: await generateViewUrl(thumbKeyFromBase(img.s3Key)),
+              url: await generateViewUrl(fullKeyFromBase(img.s3Key)),
+            };
+          })
         ),
       }))
     );
@@ -75,11 +81,17 @@ export async function GET(
       ...memory,
       name: memory.withholdName ? "Anonymous" : memory.name,
       images: await Promise.all(
-        memory.images.map(async (img) => ({
-          ...img,
-          thumbUrl: await generateViewUrl(thumbKeyFromBase(img.s3Key)),
-          url: await generateViewUrl(fullKeyFromBase(img.s3Key)),
-        }))
+        memory.images.map(async (img) => {
+          if (img.mediaType === "VIDEO") {
+            const url = await generateViewUrl(img.s3Key);
+            return { ...img, thumbUrl: url, url };
+          }
+          return {
+            ...img,
+            thumbUrl: await generateViewUrl(thumbKeyFromBase(img.s3Key)),
+            url: await generateViewUrl(fullKeyFromBase(img.s3Key)),
+          };
+        })
       ),
     }))
   );

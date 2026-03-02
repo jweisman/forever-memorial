@@ -2,7 +2,13 @@
 
 import { useState, useRef } from "react";
 import { useTranslations } from "next-intl";
-import { validateImageFile, uploadImage } from "@/lib/upload";
+import {
+  validateImageFile,
+  validateVideoFile,
+  isVideoFile,
+  uploadImage,
+  uploadVideo,
+} from "@/lib/upload";
 
 type ImageRecord = {
   id: string;
@@ -10,6 +16,7 @@ type ImageRecord = {
   albumId: string;
   caption: string | null;
   order: number;
+  mediaType: "IMAGE" | "VIDEO";
   url: string;
 };
 
@@ -38,7 +45,9 @@ export default function ImageUploader({
     setUploading(true);
 
     for (const file of Array.from(files)) {
-      const validationError = validateImageFile(file);
+      const validationError = isVideoFile(file)
+        ? validateVideoFile(file)
+        : validateImageFile(file);
       if (validationError) {
         setError(validationError);
         setUploading(false);
@@ -46,7 +55,9 @@ export default function ImageUploader({
       }
 
       try {
-        const image = await uploadImage(memorialId, file, { albumId });
+        const image = isVideoFile(file)
+          ? await uploadVideo(memorialId, file, { albumId })
+          : await uploadImage(memorialId, file, { albumId });
         onUploadComplete(image);
       } catch (err) {
         setError(err instanceof Error ? err.message : "Upload failed");
@@ -99,7 +110,7 @@ export default function ImageUploader({
         <input
           ref={inputRef}
           type="file"
-          accept="image/jpeg,image/png,image/webp,image/gif"
+          accept="image/jpeg,image/png,image/webp,image/gif,video/mp4,video/webm,video/quicktime"
           multiple
           onChange={(e) => handleFiles(e.target.files)}
           className="hidden"

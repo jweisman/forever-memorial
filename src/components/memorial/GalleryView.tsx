@@ -9,6 +9,7 @@ type ImageWithUrl = {
   thumbUrl: string;
   url: string;
   caption: string | null;
+  mediaType: "IMAGE" | "VIDEO";
 };
 
 type AlbumWithImages = {
@@ -59,13 +60,32 @@ export default function GalleryView({ albums }: GalleryViewProps) {
                   }
                   className="group relative size-36 shrink-0 overflow-hidden rounded-lg bg-warm-100"
                 >
-                  <img
-                    src={image.thumbUrl}
-                    alt={image.caption || "Gallery image"}
-                    className="size-full object-cover transition-transform group-hover:scale-105"
-                    loading="lazy"
-                    draggable={false}
-                  />
+                  {image.mediaType === "VIDEO" ? (
+                    <video
+                      src={image.thumbUrl}
+                      className="size-full object-cover transition-transform group-hover:scale-105"
+                      muted
+                      preload="metadata"
+                      draggable={false}
+                    />
+                  ) : (
+                    <img
+                      src={image.thumbUrl}
+                      alt={image.caption || "Gallery image"}
+                      className="size-full object-cover transition-transform group-hover:scale-105"
+                      loading="lazy"
+                      draggable={false}
+                    />
+                  )}
+                  {image.mediaType === "VIDEO" && (
+                    <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
+                      <div className="rounded-full bg-black/50 p-1.5">
+                        <svg className="size-4 text-white" viewBox="0 0 16 16" fill="currentColor">
+                          <path d="M4 2l10 6-10 6z" />
+                        </svg>
+                      </div>
+                    </div>
+                  )}
                   {image.caption && (
                     <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/60 to-transparent p-2 opacity-0 transition-opacity group-hover:opacity-100">
                       <p className="truncate text-xs text-white">

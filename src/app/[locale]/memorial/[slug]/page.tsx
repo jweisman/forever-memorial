@@ -70,11 +70,17 @@ async function getMemorial(slug: string) {
     memorial.albums.map(async (album) => ({
       ...album,
       images: await Promise.all(
-        album.images.map(async (img) => ({
-          ...img,
-          thumbUrl: await generateViewUrl(thumbKeyFromBase(img.s3Key)),
-          url: await generateViewUrl(fullKeyFromBase(img.s3Key)),
-        }))
+        album.images.map(async (img) => {
+          if (img.mediaType === "VIDEO") {
+            const url = await generateViewUrl(img.s3Key);
+            return { ...img, thumbUrl: url, url };
+          }
+          return {
+            ...img,
+            thumbUrl: await generateViewUrl(thumbKeyFromBase(img.s3Key)),
+            url: await generateViewUrl(fullKeyFromBase(img.s3Key)),
+          };
+        })
       ),
     }))
   );
@@ -84,11 +90,17 @@ async function getMemorial(slug: string) {
       ...memory,
       createdAt: memory.createdAt.toISOString(),
       images: await Promise.all(
-        memory.images.map(async (img) => ({
-          ...img,
-          thumbUrl: await generateViewUrl(thumbKeyFromBase(img.s3Key)),
-          url: await generateViewUrl(fullKeyFromBase(img.s3Key)),
-        }))
+        memory.images.map(async (img) => {
+          if (img.mediaType === "VIDEO") {
+            const url = await generateViewUrl(img.s3Key);
+            return { ...img, thumbUrl: url, url };
+          }
+          return {
+            ...img,
+            thumbUrl: await generateViewUrl(thumbKeyFromBase(img.s3Key)),
+            url: await generateViewUrl(fullKeyFromBase(img.s3Key)),
+          };
+        })
       ),
     }))
   );
@@ -213,6 +225,7 @@ export default async function MemorialPage({ params }: Props) {
         thumbUrl: img.thumbUrl,
         url: img.url,
         caption: img.caption,
+        mediaType: img.mediaType as "IMAGE" | "VIDEO",
       })),
     }));
 

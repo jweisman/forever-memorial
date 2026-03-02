@@ -14,7 +14,7 @@ type MemoryReviewCardProps = {
     text: string;
     status: string;
     createdAt: string;
-    images: { id: string; thumbUrl: string; url: string; caption: string | null }[];
+    images: { id: string; thumbUrl: string; url: string; caption: string | null; mediaType: "IMAGE" | "VIDEO" }[];
   };
   onReviewed: () => void;
 };
@@ -96,14 +96,32 @@ export default function MemoryReviewCard({
           {memory.images.map((img) => (
             <div
               key={img.id}
-              className="size-16 shrink-0 overflow-hidden rounded-lg bg-warm-100"
+              className="relative size-16 shrink-0 overflow-hidden rounded-lg bg-warm-100"
             >
-              <img
-                src={img.thumbUrl}
-                alt={img.caption || t("memoryPhoto")}
-                className="size-full object-cover"
-                loading="lazy"
-              />
+              {img.mediaType === "VIDEO" ? (
+                <video
+                  src={img.thumbUrl}
+                  className="size-full object-cover"
+                  muted
+                  preload="metadata"
+                />
+              ) : (
+                <img
+                  src={img.thumbUrl}
+                  alt={img.caption || t("memoryPhoto")}
+                  className="size-full object-cover"
+                  loading="lazy"
+                />
+              )}
+              {img.mediaType === "VIDEO" && (
+                <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
+                  <div className="rounded-full bg-black/50 p-1">
+                    <svg className="size-3 text-white" viewBox="0 0 16 16" fill="currentColor">
+                      <path d="M4 2l10 6-10 6z" />
+                    </svg>
+                  </div>
+                </div>
+              )}
             </div>
           ))}
         </div>

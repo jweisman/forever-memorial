@@ -26,11 +26,17 @@ export async function GET() {
     memories.map(async (memory) => ({
       ...memory,
       images: await Promise.all(
-        memory.images.map(async (img) => ({
-          ...img,
-          thumbUrl: await generateViewUrl(thumbKeyFromBase(img.s3Key)),
-          url: await generateViewUrl(fullKeyFromBase(img.s3Key)),
-        }))
+        memory.images.map(async (img) => {
+          if (img.mediaType === "VIDEO") {
+            const url = await generateViewUrl(img.s3Key);
+            return { ...img, thumbUrl: url, url };
+          }
+          return {
+            ...img,
+            thumbUrl: await generateViewUrl(thumbKeyFromBase(img.s3Key)),
+            url: await generateViewUrl(fullKeyFromBase(img.s3Key)),
+          };
+        })
       ),
     }))
   );
