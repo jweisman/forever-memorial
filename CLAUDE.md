@@ -215,6 +215,36 @@ Use `vi.resetAllMocks()` in `beforeEach` and re-establish happy-path defaults ea
 
 **CI:** `.github/workflows/ci.yml` runs `npm test` on every push and pull request. Set `test` as a required status check in GitHub branch protection to block merges on failure.
 
+## E2E Testing
+
+**Runner:** Playwright — `playwright.config.ts` at the repo root. Chromium only, `workers: 1` (sequential — tests share the same database).
+
+```bash
+npm run test:e2e          # run all E2E tests
+npx playwright test e2e/memorial-page.spec.ts   # run one file
+```
+
+**Prerequisites:** Docker services running (`docker compose up -d`) and the dev server running (`npm run dev`) in a separate terminal. Playwright reuses an existing `:3000` server locally via `reuseExistingServer`.
+
+**E2E spec files** (`e2e/`):
+- `memorial-page.spec.ts` — public memorial page (unauthenticated)
+- `signin.spec.ts` — sign-in page UI (unauthenticated)
+- `create-memorial.spec.ts` — create memorial flow (authenticated)
+- `submit-memory.spec.ts` — submit a memory (authenticated)
+- `review-memory.spec.ts` — owner approves a pending memory (authenticated)
+
+**Auth in E2E:** `e2e/global-setup.ts` seeds a test user + memorial + pending memory via raw SQL, then mints a JWT cookie using `encode` from `@auth/core/jwt` with `salt: "authjs.session-token"` (the HTTP dev cookie name). The cookie is saved to `e2e/.auth/user.json` (gitignored) and loaded by Playwright's `storageState`. For tests that must be unauthenticated, add at the top of the file:
+
+```ts
+test.use({ storageState: { cookies: [], origins: [] } });
+```
+
+**Test data constants** (IDs, slug, name): `e2e/test-ids.ts` — imported by setup, teardown, and spec files.
+
+**DB access in `e2e/`:** Use raw `pg.Pool` SQL — **do not import the Prisma client** in `globalSetup`/`globalTeardown`. Playwright loads these files in a Node.js context where the generated Prisma client (an ES module) causes an `exports is not defined` error. Table names: `users`, `memorials`, `memories`. camelCase column names require quoting in SQL (e.g. `"ownerId"`, `"updatedAt"`).
+
+**CI:** `.github/workflows/e2e.yml` runs only on push to `main` and `workflow_dispatch` (not on every PR). It starts Docker services, waits for Postgres, runs `prisma migrate deploy`, then `npm run test:e2e`. The Playwright report is uploaded as an artifact on failure.
+
 ## Local Development
 
 ```bash
