@@ -180,6 +180,41 @@ See `.env.example` for full docs. Required in production:
 | `S3_REGION` | e.g. `us-east-1` |
 | `S3_ENDPOINT` | Omit for real S3; set to MinIO URL locally |
 
+## Testing
+
+**Runner:** Vitest (node environment) — `vitest.config.ts` at the repo root.
+
+```bash
+npm test                  # single run (used in CI)
+npm run test:watch        # watch mode during development
+npm run test:coverage     # coverage report
+```
+
+**Test locations:**
+- Pure lib functions → `src/lib/__tests__/*.test.ts`
+- API route handlers → co-located `__tests__/route.test.ts` next to each `route.ts`
+
+**Standard mock pattern for API route tests:**
+
+```ts
+vi.mock("@/lib/auth", () => ({ auth: vi.fn() }))
+vi.mock("@/lib/prisma", () => ({ prisma: { memory: { findUnique: vi.fn(), update: vi.fn() } } }))
+vi.mock("@/lib/admin", () => ({ isUserDisabled: vi.fn() }))
+vi.mock("@/lib/email", () => ({ sendNotification: vi.fn(), /* template fns */ }))
+vi.mock("@/lib/rate-limit", () => ({ rateLimit: vi.fn(), getClientIp: vi.fn() }))
+```
+
+Prisma methods have complex Prisma types — cast them with a local helper to call mock methods:
+
+```ts
+const m = (fn: unknown) => fn as ReturnType<typeof vi.fn>
+m(prisma.memory.findUnique).mockResolvedValue(mockMemory)
+```
+
+Use `vi.resetAllMocks()` in `beforeEach` and re-establish happy-path defaults each test.
+
+**CI:** `.github/workflows/ci.yml` runs `npm test` on every push and pull request. Set `test` as a required status check in GitHub branch protection to block merges on failure.
+
 ## Local Development
 
 ```bash
@@ -217,3 +252,4 @@ npm run dev
 10. **pdfkit Hebrew: pass `features: []` to fix multi-word BiDi** — pdfkit's `layout()` splits text at spaces and processes each chunk through fontkit's BiDi separately. For multi-word Hebrew text this leaves words in LTR order (wrong). Fix: pass `features: []` as a text option — this truthy value triggers the `layoutRun` code path which passes the entire string to fontkit at once, giving the BiDi algorithm full context. Applies to all Hebrew `doc.text()` calls.
 11. **pdfkit font is not reset between text calls** — Always set `.font("Helvetica")` (or whichever font) explicitly before each text call. After rendering Hebrew with `NotoHebrew`, the next call still uses `NotoHebrew` — which has no Latin glyphs, producing squares for URLs and other Latin text.
 12. **pdfkit: NotoSansHebrew-Bold has no Latin glyphs** — It is a Hebrew-only font. Never pass mixed Hebrew+Latin strings to it. Split bilingual text into separate `doc.text()` calls: one with `NotoHebrew` for the Hebrew portion, one with `Helvetica` for the Latin portion.
+13. **`vi.mocked(auth).mockResolvedValue(null as never)` in tests** — `auth` from next-auth v5 is overloaded; TypeScript resolves the `NextMiddleware` overload and rejects `null`. Use `as never` for both `null` and session objects: `mockResolvedValue(null as never)` / `mockResolvedValue(makeSession(id) as never)`.
