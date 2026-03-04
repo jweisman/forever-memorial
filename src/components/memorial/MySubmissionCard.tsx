@@ -1,9 +1,24 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import Button from "@/components/ui/Button";
+import {
+  isVideoFile,
+  validateImageFile,
+  validateVideoFile,
+  uploadMemoryImage,
+  uploadMemoryVideo,
+} from "@/lib/upload";
+
+type MemoryImage = {
+  id: string;
+  thumbUrl: string;
+  url: string;
+  caption: string | null;
+  mediaType: "IMAGE" | "VIDEO";
+};
 
 type MySubmissionCardProps = {
   memory: {
@@ -16,7 +31,7 @@ type MySubmissionCardProps = {
     status: string;
     returnMessage: string | null;
     createdAt: string;
-    images: { id: string; thumbUrl: string; url: string; caption: string | null; mediaType: "IMAGE" | "VIDEO" }[];
+    images: MemoryImage[];
     memorial: { id: string; name: string; slug: string };
   };
   onChanged: () => void;
@@ -46,6 +61,11 @@ export default function MySubmissionCard({
   const [withholdName, setWithholdName] = useState(memory.withholdName);
   const [saving, setSaving] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
+  const [existingImages, setExistingImages] = useState<MemoryImage[]>(memory.images);
+  const [pendingRemovals, setPendingRemovals] = useState<string[]>([]);
+  const [newFiles, setNewFiles] = useState<File[]>([]);
+  const [mediaError, setMediaError] = useState("");
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const statusLabels: Record<string, { label: string; className: string }> = {
     PENDING: {
@@ -58,7 +78,7 @@ export default function MySubmissionCard({
     },
     RETURNED: {
       label: t("returned"),
-      className: "bg-red-100 text-red-700",
+      className: "bg-blue-100 text-blue-700",
     },
     IGNORED: {
       label: t("underReview"),
@@ -68,9 +88,63 @@ export default function MySubmissionCard({
 
   const status = statusLabels[memory.status] ?? statusLabels.PENDING;
 
+  function startEditing() {
+    setName(memory.name);
+    setRelation(memory.relation || "");
+    setText(memory.text);
+    setWithholdName(memory.withholdName);
+    setExistingImages(memory.images);
+    setPendingRemovals([]);
+    setNewFiles([]);
+    setMediaError("");
+    setEditing(true);
+  }
+
+  function removeExistingImage(id: string) {
+    setExistingImages((prev) => prev.filter((img) => img.id !== id));
+    setPendingRemovals((prev) => [...prev, id]);
+  }
+
+  function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const selected = Array.from(e.target.files || []);
+    const totalCount = existingImages.length + newFiles.length + selected.length;
+    if (totalCount > 5) {
+      setMediaError(t("maxPhotos"));
+      return;
+    }
+    for (const file of selected) {
+      const validationError = isVideoFile(file)
+        ? validateVideoFile(file)
+        : validateImageFile(file);
+      if (validationError) {
+        setMediaError(validationError);
+        return;
+      }
+    }
+    setMediaError("");
+    setNewFiles((prev) => [...prev, ...selected]);
+    if (fileInputRef.current) fileInputRef.current.value = "";
+  }
+
   async function handleSaveAndResubmit() {
     if (!name.trim() || !text.trim()) return;
     setSaving(true);
+
+    for (const imageId of pendingRemovals) {
+      await fetch(
+        `/api/memorials/${memory.memorialId}/memories/${memory.id}/images/${imageId}`,
+        { method: "DELETE" }
+      );
+    }
+
+    for (const file of newFiles) {
+      if (isVideoFile(file)) {
+        await uploadMemoryVideo(memory.memorialId, memory.id, file);
+      } else {
+        await uploadMemoryImage(memory.memorialId, memory.id, file);
+      }
+    }
+
     const res = await fetch(
       `/api/memorials/${memory.memorialId}/memories/${memory.id}`,
       {
@@ -101,6 +175,8 @@ export default function MySubmissionCard({
     }
   }
 
+  const totalMediaCount = existingImages.length + newFiles.length;
+
   if (editing) {
     return (
       <div className="rounded-lg border border-border p-4">
@@ -119,11 +195,11 @@ export default function MySubmissionCard({
         </div>
 
         {memory.returnMessage && (
-          <div className="mb-4 rounded-lg bg-red-50 p-3">
-            <p className="text-xs font-medium text-red-700">
+          <div className="mb-4 rounded-lg bg-blue-50 p-3">
+            <p className="text-xs font-medium text-blue-700">
               {t("ownerFeedback")}
             </p>
-            <p className="mt-1 text-sm text-red-600">
+            <p className="mt-1 text-sm text-blue-600">
               {memory.returnMessage}
             </p>
           </div>
@@ -177,6 +253,97 @@ export default function MySubmissionCard({
             />
           </div>
 
+          {/* Media management */}
+          <div>
+            <label className="block text-sm font-medium text-warm-700">
+              {t("photosLabel")}
+            </label>
+            {(existingImages.length > 0 || newFiles.length > 0) && (
+              <div className="mt-2 flex flex-wrap gap-2">
+                {existingImages.map((img) => (
+                  <div
+                    key={img.id}
+                    className="relative size-20 overflow-hidden rounded-lg bg-warm-100"
+                  >
+                    {img.mediaType === "VIDEO" ? (
+                      <video
+                        src={img.thumbUrl}
+                        className="size-full object-cover"
+                        muted
+                        preload="metadata"
+                      />
+                    ) : (
+                      <img
+                        src={img.thumbUrl}
+                        alt=""
+                        className="size-full object-cover"
+                      />
+                    )}
+                    <button
+                      type="button"
+                      onClick={() => removeExistingImage(img.id)}
+                      className="absolute end-0.5 top-0.5 flex size-5 items-center justify-center rounded-full bg-black/60 text-xs text-white hover:bg-black/80"
+                    >
+                      &times;
+                    </button>
+                  </div>
+                ))}
+                {newFiles.map((file, index) => (
+                  <div
+                    key={`new-${index}`}
+                    className="relative size-20 overflow-hidden rounded-lg bg-warm-100"
+                  >
+                    {isVideoFile(file) ? (
+                      <video
+                        src={URL.createObjectURL(file)}
+                        className="size-full object-cover"
+                        muted
+                        preload="metadata"
+                      />
+                    ) : (
+                      <img
+                        src={URL.createObjectURL(file)}
+                        alt=""
+                        className="size-full object-cover"
+                      />
+                    )}
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setNewFiles((prev) => prev.filter((_, i) => i !== index))
+                      }
+                      className="absolute end-0.5 top-0.5 flex size-5 items-center justify-center rounded-full bg-black/60 text-xs text-white hover:bg-black/80"
+                    >
+                      &times;
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+            {totalMediaCount < 5 && (
+              <div className="mt-2">
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/jpeg,image/png,image/webp,image/gif,video/mp4,video/webm,video/quicktime"
+                  multiple
+                  onChange={handleFileChange}
+                  className="hidden"
+                />
+                <button
+                  type="button"
+                  onClick={() => fileInputRef.current?.click()}
+                  className="rounded-lg border-2 border-dashed border-warm-300 px-4 py-2 text-sm text-warm-500 hover:border-accent hover:text-accent"
+                >
+                  {t("addPhotos")}
+                </button>
+              </div>
+            )}
+            {mediaError && (
+              <p className="mt-1 text-sm text-red-600">{mediaError}</p>
+            )}
+          </div>
+
           <div className="flex gap-2">
             <Button
               variant="primary"
@@ -189,13 +356,7 @@ export default function MySubmissionCard({
             <Button
               variant="ghost"
               size="sm"
-              onClick={() => {
-                setName(memory.name);
-                setRelation(memory.relation || "");
-                setText(memory.text);
-                setWithholdName(memory.withholdName);
-                setEditing(false);
-              }}
+              onClick={() => setEditing(false)}
             >
               {t("cancel")}
             </Button>
@@ -227,11 +388,11 @@ export default function MySubmissionCard({
       </div>
 
       {memory.status === "RETURNED" && memory.returnMessage && (
-        <div className="mt-3 rounded-lg bg-red-50 p-3">
-          <p className="text-xs font-medium text-red-700">
+        <div className="mt-3 rounded-lg bg-blue-50 p-3">
+          <p className="text-xs font-medium text-blue-700">
             {t("ownerFeedback")}
           </p>
-          <p className="mt-1 text-sm text-red-600">{memory.returnMessage}</p>
+          <p className="mt-1 text-sm text-blue-600">{memory.returnMessage}</p>
         </div>
       )}
 
@@ -270,7 +431,7 @@ export default function MySubmissionCard({
 
       <div className="mt-3 flex gap-2">
         {memory.status === "RETURNED" && (
-          <Button variant="primary" size="sm" onClick={() => setEditing(true)}>
+          <Button variant="primary" size="sm" onClick={startEditing}>
             {t("editResubmit")}
           </Button>
         )}
