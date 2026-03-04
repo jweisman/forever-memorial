@@ -165,7 +165,7 @@ The app is designed for Vercel with a managed PostgreSQL provider (Neon, Supabas
 
 ## License
 
-MIT
+This app is covered by the MIT license.
 
 ## Coding
 
