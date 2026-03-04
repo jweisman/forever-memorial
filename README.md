@@ -160,6 +160,10 @@ The app is designed for Vercel with a managed PostgreSQL provider (Neon, Supabas
 | `npm run build` | Production build |
 | `npm run start` | Start production server |
 | `npm run lint` | Run ESLint |
+| `npm test` | Run all unit tests (Vitest) |
+| `npm run test:watch` | Run unit tests in watch mode |
+| `npm run test:coverage` | Run unit tests with coverage report |
+| `npm run test:e2e` | Run E2E tests (Playwright, requires dev server + Docker) |
 | `npx prisma migrate dev` | Run database migrations |
 | `npx prisma studio` | Open Prisma Studio (DB browser) |
 

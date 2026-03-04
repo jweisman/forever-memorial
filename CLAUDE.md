@@ -180,6 +180,71 @@ See `.env.example` for full docs. Required in production:
 | `S3_REGION` | e.g. `us-east-1` |
 | `S3_ENDPOINT` | Omit for real S3; set to MinIO URL locally |
 
+## Testing
+
+**Runner:** Vitest (node environment) — `vitest.config.ts` at the repo root.
+
+```bash
+npm test                  # single run (used in CI)
+npm run test:watch        # watch mode during development
+npm run test:coverage     # coverage report
+```
+
+**Test locations:**
+- Pure lib functions → `src/lib/__tests__/*.test.ts`
+- API route handlers → co-located `__tests__/route.test.ts` next to each `route.ts`
+
+**Standard mock pattern for API route tests:**
+
+```ts
+vi.mock("@/lib/auth", () => ({ auth: vi.fn() }))
+vi.mock("@/lib/prisma", () => ({ prisma: { memory: { findUnique: vi.fn(), update: vi.fn() } } }))
+vi.mock("@/lib/admin", () => ({ isUserDisabled: vi.fn() }))
+vi.mock("@/lib/email", () => ({ sendNotification: vi.fn(), /* template fns */ }))
+vi.mock("@/lib/rate-limit", () => ({ rateLimit: vi.fn(), getClientIp: vi.fn() }))
+```
+
+Prisma methods have complex Prisma types — cast them with a local helper to call mock methods:
+
+```ts
+const m = (fn: unknown) => fn as ReturnType<typeof vi.fn>
+m(prisma.memory.findUnique).mockResolvedValue(mockMemory)
+```
+
+Use `vi.resetAllMocks()` in `beforeEach` and re-establish happy-path defaults each test.
+
+**CI:** `.github/workflows/ci.yml` runs `npm test` on every push and pull request. Set `test` as a required status check in GitHub branch protection to block merges on failure.
+
+## E2E Testing
+
+**Runner:** Playwright — `playwright.config.ts` at the repo root. Chromium only, `workers: 1` (sequential — tests share the same database).
+
+```bash
+npm run test:e2e          # run all E2E tests
+npx playwright test e2e/memorial-page.spec.ts   # run one file
+```
+
+**Prerequisites:** Docker services running (`docker compose up -d`) and the dev server running (`npm run dev`) in a separate terminal. Playwright reuses an existing `:3000` server locally via `reuseExistingServer`.
+
+**E2E spec files** (`e2e/`):
+- `memorial-page.spec.ts` — public memorial page (unauthenticated)
+- `signin.spec.ts` — sign-in page UI (unauthenticated)
+- `create-memorial.spec.ts` — create memorial flow (authenticated)
+- `submit-memory.spec.ts` — submit a memory (authenticated)
+- `review-memory.spec.ts` — owner approves a pending memory (authenticated)
+
+**Auth in E2E:** `e2e/global-setup.ts` seeds a test user + memorial + pending memory via raw SQL, then mints a JWT cookie using `encode` from `@auth/core/jwt` with `salt: "authjs.session-token"` (the HTTP dev cookie name). The cookie is saved to `e2e/.auth/user.json` (gitignored) and loaded by Playwright's `storageState`. For tests that must be unauthenticated, add at the top of the file:
+
+```ts
+test.use({ storageState: { cookies: [], origins: [] } });
+```
+
+**Test data constants** (IDs, slug, name): `e2e/test-ids.ts` — imported by setup, teardown, and spec files.
+
+**DB access in `e2e/`:** Use raw `pg.Pool` SQL — **do not import the Prisma client** in `globalSetup`/`globalTeardown`. Playwright loads these files in a Node.js context where the generated Prisma client (an ES module) causes an `exports is not defined` error. Table names: `users`, `memorials`, `memories`. camelCase column names require quoting in SQL (e.g. `"ownerId"`, `"updatedAt"`).
+
+**CI:** `.github/workflows/e2e.yml` runs only on push to `main` and `workflow_dispatch` (not on every PR). It starts Docker services, waits for Postgres, runs `prisma migrate deploy`, then `npm run test:e2e`. The Playwright report is uploaded as an artifact on failure.
+
 ## Local Development
 
 ```bash
@@ -217,3 +282,4 @@ npm run dev
 10. **pdfkit Hebrew: pass `features: []` to fix multi-word BiDi** — pdfkit's `layout()` splits text at spaces and processes each chunk through fontkit's BiDi separately. For multi-word Hebrew text this leaves words in LTR order (wrong). Fix: pass `features: []` as a text option — this truthy value triggers the `layoutRun` code path which passes the entire string to fontkit at once, giving the BiDi algorithm full context. Applies to all Hebrew `doc.text()` calls.
 11. **pdfkit font is not reset between text calls** — Always set `.font("Helvetica")` (or whichever font) explicitly before each text call. After rendering Hebrew with `NotoHebrew`, the next call still uses `NotoHebrew` — which has no Latin glyphs, producing squares for URLs and other Latin text.
 12. **pdfkit: NotoSansHebrew-Bold has no Latin glyphs** — It is a Hebrew-only font. Never pass mixed Hebrew+Latin strings to it. Split bilingual text into separate `doc.text()` calls: one with `NotoHebrew` for the Hebrew portion, one with `Helvetica` for the Latin portion.
+13. **`vi.mocked(auth).mockResolvedValue(null as never)` in tests** — `auth` from next-auth v5 is overloaded; TypeScript resolves the `NextMiddleware` overload and rejects `null`. Use `as never` for both `null` and session objects: `mockResolvedValue(null as never)` / `mockResolvedValue(makeSession(id) as never)`.
