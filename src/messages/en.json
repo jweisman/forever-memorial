@@ -281,6 +281,9 @@
     "saving": "Saving...",
     "cancel": "Cancel",
     "editResubmit": "Edit & Resubmit",
+    "photosLabel": "Photos & videos",
+    "addPhotos": "Add photos or videos",
+    "maxPhotos": "Maximum 5 photos/videos allowed",
     "delete": "Delete",
     "confirmDelete": "Confirm delete"
   },
