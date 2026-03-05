@@ -174,6 +174,7 @@ See `.env.example` for full docs. Required in production:
 | `GOOGLE_CLIENT_ID/SECRET` | OAuth — optional if only using magic link |
 | `EMAIL_SERVER` | SMTP connection string — required in prod, falls back to Mailhog locally |
 | `FROM_EMAIL` | Sender address |
+| `EMAIL_CUSTOM_HEADER` | Optional. Injects a single custom header into every outgoing email. Format: `"Header-Name: value"` (e.g. `"X-SES-CONFIGURATION-SET: smtp-logging"`) |
 | `ADMIN_EMAIL` | Auto-promoted to ADMIN on sign-in |
 | `S3_BUCKET` | Upload bucket |
 | `S3_ACCESS_KEY/SECRET` | AWS or MinIO credentials |
