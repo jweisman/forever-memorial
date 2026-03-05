@@ -3,6 +3,7 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { isUserDisabled } from "@/lib/admin";
 import { sendNotification } from "@/lib/email";
+import { deleteS3Object, generateViewUrl, thumbKeyFromBase, fullKeyFromBase } from "@/lib/s3-helpers";
 
 vi.mock("@/lib/auth", () => ({ auth: vi.fn() }));
 vi.mock("@/lib/prisma", () => ({
@@ -22,7 +23,7 @@ vi.mock("@/lib/s3-helpers", () => ({
   fullKeyFromBase: vi.fn((k: string) => k.replace(/\.[^.]+$/, "_full.webp")),
 }));
 
-import { PATCH, DELETE } from "../route";
+import { GET, PATCH, DELETE } from "../route";
 
 // ---------------------------------------------------------------------------
 // Fixtures
@@ -61,6 +62,12 @@ function makeMemory(overrides?: Record<string, unknown>) {
   };
 }
 
+function makeGetRequest() {
+  return new Request(
+    `http://localhost/api/memorials/${MEMORIAL_ID}/memories/${MEMORY_ID}`
+  );
+}
+
 function makePatchRequest(body: Record<string, unknown> = {}) {
   return new Request(
     `http://localhost/api/memorials/${MEMORIAL_ID}/memories/${MEMORY_ID}`,
@@ -84,6 +91,87 @@ function makeParams(overrides?: Partial<{ id: string; memoryId: string }>) {
     params: Promise.resolve({ id: MEMORIAL_ID, memoryId: MEMORY_ID, ...overrides }),
   };
 }
+
+// ---------------------------------------------------------------------------
+// GET tests
+// ---------------------------------------------------------------------------
+
+describe("GET /api/memorials/[id]/memories/[memoryId]", () => {
+  beforeEach(() => {
+    vi.resetAllMocks();
+    vi.mocked(auth).mockResolvedValue(makeSession(OWNER_ID) as never);
+    vi.mocked(generateViewUrl).mockResolvedValue("https://s3.example.com/view");
+    vi.mocked(thumbKeyFromBase).mockImplementation((k: string) =>
+      k.replace(/\.[^.]+$/, "_thumb.webp")
+    );
+    vi.mocked(fullKeyFromBase).mockImplementation((k: string) =>
+      k.replace(/\.[^.]+$/, "_full.webp")
+    );
+    m(prisma.memory.findUnique).mockResolvedValue(makeMemory());
+  });
+
+  it("returns 401 when unauthenticated", async () => {
+    vi.mocked(auth).mockResolvedValue(null as never);
+    const res = await GET(makeGetRequest(), makeParams());
+    expect(res.status).toBe(401);
+  });
+
+  it("returns 404 when memory not found", async () => {
+    m(prisma.memory.findUnique).mockResolvedValue(null);
+    const res = await GET(makeGetRequest(), makeParams());
+    expect(res.status).toBe(404);
+  });
+
+  it("returns 404 when memory belongs to a different memorial", async () => {
+    m(prisma.memory.findUnique).mockResolvedValue(
+      makeMemory({ memorialId: "other-memorial" })
+    );
+    const res = await GET(makeGetRequest(), makeParams());
+    expect(res.status).toBe(404);
+  });
+
+  it("returns 403 when user is neither owner nor submitter", async () => {
+    vi.mocked(auth).mockResolvedValue(makeSession(OTHER_ID) as never);
+    const res = await GET(makeGetRequest(), makeParams());
+    expect(res.status).toBe(403);
+  });
+
+  it("returns 200 for the memorial owner", async () => {
+    const res = await GET(makeGetRequest(), makeParams());
+    expect(res.status).toBe(200);
+    const data = await res.json();
+    expect(data.id).toBe(MEMORY_ID);
+  });
+
+  it("returns 200 for the memory submitter", async () => {
+    vi.mocked(auth).mockResolvedValue(makeSession(SUBMITTER_ID) as never);
+    const res = await GET(makeGetRequest(), makeParams());
+    expect(res.status).toBe(200);
+  });
+
+  it("resolves IMAGE presigned URLs via thumb and full keys", async () => {
+    m(prisma.memory.findUnique).mockResolvedValue(
+      makeMemory({ images: [{ id: "img-1", s3Key: "key/image.jpg", mediaType: "IMAGE" }] })
+    );
+    const res = await GET(makeGetRequest(), makeParams());
+    expect(res.status).toBe(200);
+    const data = await res.json();
+    expect(data.images[0].thumbUrl).toBe("https://s3.example.com/view");
+    expect(data.images[0].url).toBe("https://s3.example.com/view");
+    expect(vi.mocked(thumbKeyFromBase)).toHaveBeenCalledWith("key/image.jpg");
+    expect(vi.mocked(fullKeyFromBase)).toHaveBeenCalledWith("key/image.jpg");
+  });
+
+  it("uses the same presigned URL for thumbUrl and url on VIDEO images", async () => {
+    m(prisma.memory.findUnique).mockResolvedValue(
+      makeMemory({ images: [{ id: "vid-1", s3Key: "key/video.mp4", mediaType: "VIDEO" }] })
+    );
+    const res = await GET(makeGetRequest(), makeParams());
+    const data = await res.json();
+    expect(data.images[0].thumbUrl).toBe("https://s3.example.com/view");
+    expect(data.images[0].url).toBe("https://s3.example.com/view");
+  });
+});
 
 // ---------------------------------------------------------------------------
 // PATCH tests
@@ -187,6 +275,33 @@ describe("PATCH /api/memorials/[id]/memories/[memoryId]", () => {
     expect(res.status).toBe(200);
     expect(vi.mocked(sendNotification)).not.toHaveBeenCalled();
   });
+
+  it("updates name when a non-empty string is provided", async () => {
+    await PATCH(makePatchRequest({ name: "  Alice Smith  " }), makeParams());
+    expect(m(prisma.memory.update)).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({ name: "Alice Smith" }),
+      })
+    );
+  });
+
+  it("updates relation and withholdName when provided", async () => {
+    await PATCH(makePatchRequest({ relation: "Sister", withholdName: true }), makeParams());
+    expect(m(prisma.memory.update)).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({ relation: "Sister", withholdName: true }),
+      })
+    );
+  });
+
+  it("sets relation to null when an empty string is provided", async () => {
+    await PATCH(makePatchRequest({ relation: "" }), makeParams());
+    expect(m(prisma.memory.update)).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({ relation: null }),
+      })
+    );
+  });
 });
 
 // ---------------------------------------------------------------------------
@@ -242,5 +357,44 @@ describe("DELETE /api/memorials/[id]/memories/[memoryId]", () => {
 
     const res = await DELETE(makeDeleteRequest(), makeParams());
     expect(res.status).toBe(403);
+  });
+
+  it("deletes thumb and full S3 objects for IMAGE type before deleting the memory", async () => {
+    m(prisma.memory.findUnique).mockResolvedValue(
+      makeMemory({
+        status: "ACCEPTED",
+        images: [{ id: "img-1", s3Key: "memorials/m1/img1.jpg", mediaType: "IMAGE" }],
+      })
+    );
+    const res = await DELETE(makeDeleteRequest(), makeParams());
+    expect(res.status).toBe(200);
+    expect(vi.mocked(deleteS3Object)).toHaveBeenCalledTimes(2);
+    expect(vi.mocked(deleteS3Object)).toHaveBeenCalledWith("memorials/m1/img1_thumb.webp");
+    expect(vi.mocked(deleteS3Object)).toHaveBeenCalledWith("memorials/m1/img1_full.webp");
+  });
+
+  it("deletes a single S3 object for VIDEO type before deleting the memory", async () => {
+    m(prisma.memory.findUnique).mockResolvedValue(
+      makeMemory({
+        status: "ACCEPTED",
+        images: [{ id: "vid-1", s3Key: "memorials/m1/vid1.mp4", mediaType: "VIDEO" }],
+      })
+    );
+    const res = await DELETE(makeDeleteRequest(), makeParams());
+    expect(res.status).toBe(200);
+    expect(vi.mocked(deleteS3Object)).toHaveBeenCalledTimes(1);
+    expect(vi.mocked(deleteS3Object)).toHaveBeenCalledWith("memorials/m1/vid1.mp4");
+  });
+
+  it("does not throw when S3 deletion fails", async () => {
+    vi.mocked(deleteS3Object).mockRejectedValue(new Error("S3 error"));
+    m(prisma.memory.findUnique).mockResolvedValue(
+      makeMemory({
+        status: "ACCEPTED",
+        images: [{ id: "img-1", s3Key: "memorials/m1/img1.jpg", mediaType: "IMAGE" }],
+      })
+    );
+    const res = await DELETE(makeDeleteRequest(), makeParams());
+    expect(res.status).toBe(200);
   });
 });

@@ -105,4 +105,31 @@ describe("rateLimit", () => {
       true
     );
   });
+
+  it("cleanup interval removes entries with no recent timestamps", () => {
+    const key = uniqueKey();
+    rateLimit({ key, limit: 5, windowMs: 60_000 });
+
+    // Advance past the 2-minute stale threshold AND trigger the 5-minute interval
+    vi.advanceTimersByTime(300_001);
+
+    // After cleanup, the key should be removed — a fresh request should succeed
+    expect(rateLimit({ key, limit: 1, windowMs: 60_000 }).success).toBe(true);
+  });
+
+  it("cleanup interval keeps entries that still have recent timestamps", () => {
+    const key = uniqueKey();
+
+    // Add hits at T=200,000ms (3.3 min) — before the 5-min interval fires
+    vi.advanceTimersByTime(200_000);
+    rateLimit({ key, limit: 2, windowMs: 300_000 });
+    rateLimit({ key, limit: 2, windowMs: 300_000 });
+
+    // Advance another 100,001ms → triggers the 5-min interval at T=300,001ms
+    // Cleanup staleness threshold is 120,000ms: 300,001 - 200,000 = 100,001 < 120,000 → KEPT
+    vi.advanceTimersByTime(100_001);
+
+    // Entries should still be present; limit enforced
+    expect(rateLimit({ key, limit: 2, windowMs: 300_000 }).success).toBe(false);
+  });
 });

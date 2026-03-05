@@ -226,6 +226,53 @@ describe("PATCH /api/memorials/[id]", () => {
       })
     );
   });
+
+  it("sets dateOfDeath when a valid date string is provided", async () => {
+    await PATCH(makePatchRequest({ dateOfDeath: "2023-01-15" }), makeParams());
+    expect(m(prisma.memorial.update)).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({ dateOfDeath: new Date("2023-01-15") }),
+      })
+    );
+  });
+
+  it("sets birthday when a valid truthy date string is provided", async () => {
+    await PATCH(makePatchRequest({ birthday: "1945-06-20" }), makeParams());
+    expect(m(prisma.memorial.update)).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({ birthday: new Date("1945-06-20") }),
+      })
+    );
+  });
+
+  it("sets placeOfDeath, funeralInfo, and survivedBy when provided", async () => {
+    await PATCH(
+      makePatchRequest({
+        placeOfDeath: "Chicago",
+        funeralInfo: "Private ceremony",
+        survivedBy: "Her family",
+      }),
+      makeParams()
+    );
+    expect(m(prisma.memorial.update)).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({
+          placeOfDeath: "Chicago",
+          funeralInfo: "Private ceremony",
+          survivedBy: "Her family",
+        }),
+      })
+    );
+  });
+
+  it("sets placeOfDeath to null when an empty string is provided", async () => {
+    await PATCH(makePatchRequest({ placeOfDeath: "" }), makeParams());
+    expect(m(prisma.memorial.update)).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({ placeOfDeath: null }),
+      })
+    );
+  });
 });
 
 // ---------------------------------------------------------------------------
