@@ -137,6 +137,7 @@ See [`.env.example`](.env.example) for the full list with descriptions. Key vari
 | `AUTH_URL` | Yes | App URL (e.g. `https://yourdomain.com`) |
 | `EMAIL_SERVER` | Production | SMTP connection string |
 | `FROM_EMAIL` | Yes | Sender email address |
+| `EMAIL_CUSTOM_HEADER` | No | Custom header injected into every email (e.g. `"X-SES-CONFIGURATION-SET: smtp-logging"`) |
 | `ADMIN_EMAIL` | Yes | Auto-promoted to admin on sign-in |
 
 ## Deployment

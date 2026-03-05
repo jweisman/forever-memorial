@@ -14,6 +14,14 @@ function getTransport() {
 
 const from = process.env.FROM_EMAIL || "Forever <noreply@forever.local>";
 
+function getCustomHeader(): Record<string, string> {
+  const raw = process.env.EMAIL_CUSTOM_HEADER;
+  if (!raw) return {};
+  const sep = raw.indexOf(": ");
+  if (sep === -1) return {};
+  return { [raw.slice(0, sep)]: raw.slice(sep + 2) };
+}
+
 export function escapeHtml(text: string): string {
   return text
     .replace(/&/g, "&amp;")
@@ -35,10 +43,15 @@ export function sendNotification({
   subject: string;
   html: string;
 }) {
+  console.log(`[email] Sending "${subject}" to ${to}`);
+  console.log(`[email] Custom header:`, getCustomHeader());
   getTransport()
-    .sendMail({ from, to, subject, html })
+    .sendMail({ from, to, subject, html, headers: getCustomHeader() })
+    .then(() => {
+      console.log(`[email] Sent "${subject}" to ${to}`);
+    })
     .catch((err) => {
-      console.error(`[email] Failed to send to ${to}:`, err.message);
+      console.error(`[email] Failed to send "${subject}" to ${to}:`, err.message);
     });
 }
 
