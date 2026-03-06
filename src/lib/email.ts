@@ -44,7 +44,6 @@ export function sendNotification({
   html: string;
 }) {
   console.log(`[email] Sending "${subject}" to ${to}`);
-  console.log(`[email] Custom header:`, getCustomHeader());
   getTransport()
     .sendMail({ from, to, subject, html, headers: getCustomHeader() })
     .then(() => {

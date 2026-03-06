@@ -1,4 +1,4 @@
-import { NextResponse } from "next/server";
+import { NextResponse, after } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import {
@@ -130,7 +130,7 @@ export async function PATCH(
       submitterName: memory.name,
       dashboardUrl,
     });
-    sendNotification({ to: memory.memorial.owner.email, ...email });
+    after(() => sendNotification({ to: memory.memorial.owner.email, ...email }));
   }
 
   return NextResponse.json(updated);

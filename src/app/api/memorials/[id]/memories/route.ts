@@ -1,4 +1,4 @@
-import { NextResponse } from "next/server";
+import { NextResponse, after } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import {
@@ -187,7 +187,7 @@ export async function POST(
       submitterName: name,
       dashboardUrl,
     });
-    sendNotification({ to: memorial.owner.email, ...email });
+    after(() => sendNotification({ to: memorial.owner.email, ...email }));
   }
 
   return NextResponse.json(memory, { status: 201 });

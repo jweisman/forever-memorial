@@ -21,6 +21,10 @@ vi.mock("@/lib/s3-helpers", () => ({
   thumbKeyFromBase: vi.fn((k: string) => k.replace(/\.[^.]+$/, "_thumb.webp")),
   fullKeyFromBase: vi.fn((k: string) => k.replace(/\.[^.]+$/, "_full.webp")),
 }));
+vi.mock("next/server", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("next/server")>();
+  return { ...actual, after: vi.fn((fn: () => void) => fn()) };
+});
 
 import { PATCH, DELETE } from "../route";
 
