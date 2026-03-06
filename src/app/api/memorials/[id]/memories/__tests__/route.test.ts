@@ -21,6 +21,10 @@ vi.mock("@/lib/rate-limit", () => ({
   rateLimit: vi.fn(),
   getClientIp: vi.fn().mockReturnValue("1.2.3.4"),
 }));
+vi.mock("next/server", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("next/server")>();
+  return { ...actual, after: vi.fn((fn: () => void) => fn()) };
+});
 vi.mock("@/lib/s3-helpers", () => ({
   generateViewUrl: vi.fn().mockResolvedValue("https://s3.example.com/view"),
   thumbKeyFromBase: vi.fn((k: string) => k.replace(/\.[^.]+$/, "_thumb.webp")),
