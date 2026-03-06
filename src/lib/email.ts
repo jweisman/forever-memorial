@@ -32,7 +32,8 @@ export function escapeHtml(text: string): string {
 }
 
 /**
- * Fire-and-forget email send. Logs errors but never throws.
+ * Sends an email. Returns a Promise so callers using after() can await it.
+ * Never throws — errors are caught and logged.
  */
 export function sendNotification({
   to,
@@ -42,9 +43,9 @@ export function sendNotification({
   to: string;
   subject: string;
   html: string;
-}) {
+}): Promise<void> {
   console.log(`[email] Sending "${subject}" to ${to}`);
-  getTransport()
+  return getTransport()
     .sendMail({ from, to, subject, html, headers: getCustomHeader() })
     .then(() => {
       console.log(`[email] Sent "${subject}" to ${to}`);
