@@ -1,4 +1,4 @@
-import { NextResponse } from "next/server";
+import { NextResponse, after } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { isUserDisabled } from "@/lib/admin";
@@ -96,14 +96,14 @@ export async function POST(
         memorialName: memorial.name,
         memorialUrl: `${baseUrl}/memorial/${memorial.slug}`,
       });
-      sendNotification({ to: memory.submitter.email, ...email });
+      after(() => sendNotification({ to: memory.submitter.email, ...email }));
     } else if (action === "return") {
       const email = memoryReturnedEmail({
         memorialName: memorial.name,
         returnMessage: returnMessage.trim(),
         dashboardUrl: `${baseUrl}/dashboard`,
       });
-      sendNotification({ to: memory.submitter.email, ...email });
+      after(() => sendNotification({ to: memory.submitter.email, ...email }));
     }
   }
 
