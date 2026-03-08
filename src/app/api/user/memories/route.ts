@@ -6,8 +6,9 @@ import {
   thumbKeyFromBase,
   fullKeyFromBase,
 } from "@/lib/s3-helpers";
+import { withHandler } from "@/lib/api-error";
 
-export async function GET() {
+export const GET = withHandler(async () => {
   const session = await auth();
   if (!session?.user?.id) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -42,4 +43,4 @@ export async function GET() {
   );
 
   return NextResponse.json(memoriesWithUrls);
-}
+});

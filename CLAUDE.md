@@ -141,6 +141,31 @@ src/
 - **S3 key validation in `/confirm` routes**: validate the client-supplied `s3Key` against a regex anchored to the memorial's `id` before writing it to the DB.
 - **Media uploads**: allowed MIME types are split into `ALLOWED_IMAGE_TYPES` and `ALLOWED_VIDEO_TYPES` (combined as `ALLOWED_TYPES`) in `src/lib/s3-helpers.ts`; use `isVideoType(mimeType)` to branch logic. Video uploads get a single presigned URL; image uploads get separate thumb + full presigned URLs. Update both lists if adding new formats.
 
+## Error Handling & Sentry
+
+All API route handlers are wrapped with `withHandler` from `src/lib/api-error.ts`:
+
+```ts
+export const GET = withHandler(async (request, { params }) => {
+  // handler body
+});
+```
+
+`withHandler` behaviour:
+- `SyntaxError` (malformed JSON body) → 400 `{ error: "Invalid request body" }`
+- Any other unhandled throw → `Sentry.captureException(err)` + 500 `{ error: "Internal server error" }`
+- Skip `src/app/api/auth/[...nextauth]/route.ts` — managed by Auth.js
+
+**Sentry setup files:**
+- `sentry.server.config.ts` — server-side init (`SENTRY_DSN`)
+- `sentry.edge.config.ts` — edge runtime init (`SENTRY_DSN`)
+- `sentry.client.config.ts` — browser init (`NEXT_PUBLIC_SENTRY_DSN`)
+- `src/instrumentation.ts` — **required** for `@sentry/nextjs@8+`; exports `register()` which dynamically imports the server/edge config based on `process.env.NEXT_RUNTIME`
+- `src/app/global-error.tsx` — root error boundary; calls `Sentry.captureException(error)` in a `useEffect`
+- `next.config.ts` — wraps config with `withSentryConfig(...)`
+
+Sentry is disabled when `SENTRY_DSN` / `NEXT_PUBLIC_SENTRY_DSN` are unset (safe for local dev without credentials).
+
 ## Database Schema Summary
 
 Models: `User`, `Account`, `Session`, `VerificationToken` (NextAuth), `Memorial`, `Album`, `Image`, `Eulogy`, `Memory`, `MemoryImage`

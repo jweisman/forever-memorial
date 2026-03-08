@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { generateViewUrl } from "@/lib/s3-helpers";
 import { Prisma } from "@/generated/prisma/client";
 import { rateLimit, getClientIp } from "@/lib/rate-limit";
+import { withHandler } from "@/lib/api-error";
 
 type MemorialRow = {
   id: string;
@@ -14,7 +15,7 @@ type MemorialRow = {
   memorialPicture: string | null;
 };
 
-export async function GET(request: NextRequest) {
+export const GET = withHandler(async (request: NextRequest) => {
   const ip = getClientIp(request);
   const { success } = rateLimit({ key: `search:${ip}`, limit: 30, windowMs: 60_000 });
   if (!success) {
@@ -56,4 +57,4 @@ export async function GET(request: NextRequest) {
   );
 
   return NextResponse.json(results);
-}
+});

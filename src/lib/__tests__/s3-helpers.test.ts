@@ -1,4 +1,21 @@
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, vi } from "vitest";
+
+// vi.mock factories are hoisted before const declarations — use vi.hoisted() so
+// the mock variables exist before the factory runs.
+const { mockSend, mockGetSignedUrl } = vi.hoisted(() => ({
+  mockSend: vi.fn(),
+  mockGetSignedUrl: vi.fn().mockResolvedValue("https://signed.example.com/url"),
+}));
+
+vi.mock("@/lib/s3", () => ({ s3: { send: mockSend }, S3_BUCKET: "test-bucket" }));
+vi.mock("@aws-sdk/s3-request-presigner", () => ({ getSignedUrl: mockGetSignedUrl }));
+// Arrow functions cannot be used as constructors (new Foo()), so use plain vi.fn()
+vi.mock("@aws-sdk/client-s3", () => ({
+  PutObjectCommand: vi.fn(),
+  GetObjectCommand: vi.fn(),
+  DeleteObjectCommand: vi.fn(),
+}));
+
 import {
   isAllowedImageType,
   isVideoType,
@@ -9,6 +26,9 @@ import {
   buildImageS3Key,
   buildMemorialPictureS3Key,
   buildMemoryImageS3Key,
+  generateUploadUrl,
+  generateViewUrl,
+  deleteS3Object,
 } from "@/lib/s3-helpers";
 
 describe("isAllowedImageType", () => {
@@ -163,5 +183,67 @@ describe("buildMemoryImageS3Key", () => {
     expect(buildMemoryImageS3Key("mem1", "mry1", "img1", "jpg")).toBe(
       "memorials/mem1/memories/mry1/img1.jpg"
     );
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Async S3 functions (mocked AWS SDK)
+// ---------------------------------------------------------------------------
+
+describe("generateUploadUrl", () => {
+  it("returns the signed URL from getSignedUrl", async () => {
+    const url = await generateUploadUrl("memorials/m1/images/i1.jpg", "image/jpeg");
+    expect(url).toBe("https://signed.example.com/url");
+  });
+
+  it("passes a PutObjectCommand with the correct Bucket and Key", async () => {
+    const { PutObjectCommand } = await import("@aws-sdk/client-s3");
+    await generateUploadUrl("memorials/m1/images/i1.jpg", "image/jpeg");
+    expect(PutObjectCommand).toHaveBeenCalledWith(
+      expect.objectContaining({ Bucket: "test-bucket", Key: "memorials/m1/images/i1.jpg" })
+    );
+  });
+
+  it("passes the content type to the PutObjectCommand", async () => {
+    const { PutObjectCommand } = await import("@aws-sdk/client-s3");
+    vi.mocked(PutObjectCommand).mockClear();
+    await generateUploadUrl("some/key.mp4", "video/mp4");
+    expect(PutObjectCommand).toHaveBeenCalledWith(
+      expect.objectContaining({ ContentType: "video/mp4" })
+    );
+  });
+});
+
+describe("generateViewUrl", () => {
+  it("returns the signed URL from getSignedUrl", async () => {
+    const url = await generateViewUrl("memorials/m1/images/i1_full.webp");
+    expect(url).toBe("https://signed.example.com/url");
+  });
+
+  it("passes a GetObjectCommand with the correct Bucket and Key", async () => {
+    const { GetObjectCommand } = await import("@aws-sdk/client-s3");
+    vi.mocked(GetObjectCommand).mockClear();
+    await generateViewUrl("memorials/m1/images/i1_full.webp");
+    expect(GetObjectCommand).toHaveBeenCalledWith(
+      expect.objectContaining({ Bucket: "test-bucket", Key: "memorials/m1/images/i1_full.webp" })
+    );
+  });
+});
+
+describe("deleteS3Object", () => {
+  it("calls s3.send with a DeleteObjectCommand", async () => {
+    const { DeleteObjectCommand } = await import("@aws-sdk/client-s3");
+    vi.mocked(DeleteObjectCommand).mockClear();
+    mockSend.mockResolvedValue({});
+    await deleteS3Object("memorials/m1/images/i1.jpg");
+    expect(DeleteObjectCommand).toHaveBeenCalledWith(
+      expect.objectContaining({ Bucket: "test-bucket", Key: "memorials/m1/images/i1.jpg" })
+    );
+    expect(mockSend).toHaveBeenCalled();
+  });
+
+  it("resolves without a return value on success", async () => {
+    mockSend.mockResolvedValue({});
+    await expect(deleteS3Object("some/key.jpg")).resolves.toBeUndefined();
   });
 });

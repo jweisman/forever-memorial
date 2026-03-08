@@ -6,11 +6,12 @@ import {
   thumbKeyFromBase,
   fullKeyFromBase,
 } from "@/lib/s3-helpers";
+import { withHandler } from "@/lib/api-error";
 
-export async function DELETE(
+export const DELETE = withHandler(async (
   _request: Request,
   { params }: { params: Promise<{ memoryId: string }> }
-) {
+) => {
   const { error } = await requireAdmin();
   if (error) return error;
   const { memoryId } = await params;
@@ -40,4 +41,4 @@ export async function DELETE(
   await prisma.memory.delete({ where: { id: memoryId } });
 
   return NextResponse.json({ success: true });
-}
+});

@@ -3,8 +3,9 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { buildSlug } from "@/lib/slug";
 import { isUserDisabled } from "@/lib/admin";
+import { withHandler } from "@/lib/api-error";
 
-export async function GET() {
+export const GET = withHandler(async () => {
   const session = await auth();
   if (!session?.user?.id) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -26,9 +27,9 @@ export async function GET() {
   });
 
   return NextResponse.json(memorials);
-}
+});
 
-export async function POST(request: Request) {
+export const POST = withHandler(async (request: Request) => {
   const session = await auth();
   if (!session?.user?.id) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -98,4 +99,4 @@ export async function POST(request: Request) {
   });
 
   return NextResponse.json(updated, { status: 201 });
-}
+});

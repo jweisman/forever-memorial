@@ -2,8 +2,9 @@ import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { isUserDisabled } from "@/lib/admin";
+import { withHandler } from "@/lib/api-error";
 
-export async function DELETE() {
+export const DELETE = withHandler(async () => {
   const session = await auth();
   if (!session?.user?.id) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -19,4 +20,4 @@ export async function DELETE() {
   });
 
   return NextResponse.json({ success: true });
-}
+});

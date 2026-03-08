@@ -2,10 +2,11 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { isUserDisabled } from "@/lib/admin";
 import mammoth from "mammoth";
+import { withHandler } from "@/lib/api-error";
 
 const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
 
-export async function POST(request: NextRequest) {
+export const POST = withHandler(async (request: NextRequest) => {
   const session = await auth();
   if (!session?.user?.id) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -49,4 +50,4 @@ export async function POST(request: NextRequest) {
   }
 
   return NextResponse.json({ text });
-}
+});

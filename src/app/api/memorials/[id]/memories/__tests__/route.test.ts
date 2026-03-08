@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { isUserDisabled } from "@/lib/admin";
 import { sendNotification } from "@/lib/email";
 import { rateLimit } from "@/lib/rate-limit";
+import { generateViewUrl, thumbKeyFromBase, fullKeyFromBase } from "@/lib/s3-helpers";
 
 vi.mock("@/lib/auth", () => ({ auth: vi.fn() }));
 vi.mock("@/lib/prisma", () => ({
@@ -31,13 +32,14 @@ vi.mock("@/lib/s3-helpers", () => ({
   fullKeyFromBase: vi.fn((k: string) => k.replace(/\.[^.]+$/, "_full.webp")),
 }));
 
-import { POST } from "../route";
+import { GET, POST } from "../route";
 
 // ---------------------------------------------------------------------------
 // Fixtures
 // ---------------------------------------------------------------------------
 
 const USER_ID = "user-001";
+const OWNER_ID = "owner-001";
 const MEMORIAL_ID = "memorial-001";
 const MEMORY_ID = "memory-001";
 
@@ -78,6 +80,184 @@ function makeParams() {
 }
 
 const validBody = { name: "Alice", text: "She was kind." };
+
+const mockAcceptedMemory = {
+  id: MEMORY_ID,
+  memorialId: MEMORIAL_ID,
+  submitterId: USER_ID,
+  name: "Alice",
+  text: "She was kind.",
+  withholdName: false,
+  status: "ACCEPTED",
+  images: [],
+};
+
+function makeGetRequest(query?: string) {
+  return new Request(
+    `http://localhost/api/memorials/${MEMORIAL_ID}/memories${query ? `?${query}` : ""}`
+  );
+}
+
+// ---------------------------------------------------------------------------
+// GET tests — public path (no ?status=)
+// ---------------------------------------------------------------------------
+
+describe("GET /api/memorials/[id]/memories — public path", () => {
+  beforeEach(() => {
+    vi.resetAllMocks();
+    vi.mocked(generateViewUrl).mockResolvedValue("https://s3.example.com/view");
+    vi.mocked(thumbKeyFromBase).mockImplementation((k: string) =>
+      k.replace(/\.[^.]+$/, "_thumb.webp")
+    );
+    vi.mocked(fullKeyFromBase).mockImplementation((k: string) =>
+      k.replace(/\.[^.]+$/, "_full.webp")
+    );
+    m(prisma.memory.findMany).mockResolvedValue([mockAcceptedMemory]);
+  });
+
+  it("returns accepted memories without authentication", async () => {
+    const res = await GET(makeGetRequest(), makeParams());
+    expect(res.status).toBe(200);
+    const data = await res.json();
+    expect(data).toHaveLength(1);
+    expect(data[0].id).toBe(MEMORY_ID);
+  });
+
+  it("replaces name with 'Anonymous' when withholdName is true", async () => {
+    m(prisma.memory.findMany).mockResolvedValue([
+      { ...mockAcceptedMemory, name: "Real Name", withholdName: true },
+    ]);
+    const res = await GET(makeGetRequest(), makeParams());
+    const data = await res.json();
+    expect(data[0].name).toBe("Anonymous");
+  });
+
+  it("preserves name when withholdName is false", async () => {
+    const res = await GET(makeGetRequest(), makeParams());
+    const data = await res.json();
+    expect(data[0].name).toBe("Alice");
+  });
+
+  it("resolves IMAGE presigned URLs for thumb and full", async () => {
+    m(prisma.memory.findMany).mockResolvedValue([
+      {
+        ...mockAcceptedMemory,
+        images: [{ id: "img-1", s3Key: "key/image.jpg", mediaType: "IMAGE" }],
+      },
+    ]);
+    const res = await GET(makeGetRequest(), makeParams());
+    expect(res.status).toBe(200);
+    const data = await res.json();
+    expect(data[0].images[0].thumbUrl).toBe("https://s3.example.com/view");
+    expect(data[0].images[0].url).toBe("https://s3.example.com/view");
+    expect(vi.mocked(thumbKeyFromBase)).toHaveBeenCalledWith("key/image.jpg");
+    expect(vi.mocked(fullKeyFromBase)).toHaveBeenCalledWith("key/image.jpg");
+  });
+
+  it("uses a single presigned URL for both thumbUrl and url on VIDEO images", async () => {
+    m(prisma.memory.findMany).mockResolvedValue([
+      {
+        ...mockAcceptedMemory,
+        images: [{ id: "vid-1", s3Key: "key/video.mp4", mediaType: "VIDEO" }],
+      },
+    ]);
+    const res = await GET(makeGetRequest(), makeParams());
+    const data = await res.json();
+    expect(data[0].images[0].thumbUrl).toBe("https://s3.example.com/view");
+    expect(data[0].images[0].url).toBe("https://s3.example.com/view");
+  });
+});
+
+// ---------------------------------------------------------------------------
+// GET tests — owner path (?status=)
+// ---------------------------------------------------------------------------
+
+describe("GET /api/memorials/[id]/memories — owner path (?status=)", () => {
+  beforeEach(() => {
+    vi.resetAllMocks();
+    vi.mocked(auth).mockResolvedValue({ user: { id: OWNER_ID } } as never);
+    vi.mocked(generateViewUrl).mockResolvedValue("https://s3.example.com/view");
+    vi.mocked(thumbKeyFromBase).mockImplementation((k: string) =>
+      k.replace(/\.[^.]+$/, "_thumb.webp")
+    );
+    vi.mocked(fullKeyFromBase).mockImplementation((k: string) =>
+      k.replace(/\.[^.]+$/, "_full.webp")
+    );
+    m(prisma.memorial.findUnique).mockResolvedValue({
+      ownerId: OWNER_ID,
+      name: "Jane Doe",
+      slug: "jane-doe",
+    });
+    m(prisma.memory.findMany).mockResolvedValue([]);
+  });
+
+  it("returns 401 when unauthenticated", async () => {
+    vi.mocked(auth).mockResolvedValue(null as never);
+    const res = await GET(makeGetRequest("status=PENDING"), makeParams());
+    expect(res.status).toBe(401);
+  });
+
+  it("returns 404 when memorial not found", async () => {
+    m(prisma.memorial.findUnique).mockResolvedValue(null);
+    const res = await GET(makeGetRequest("status=PENDING"), makeParams());
+    expect(res.status).toBe(404);
+  });
+
+  it("returns 403 when user is not the memorial owner", async () => {
+    vi.mocked(auth).mockResolvedValue({ user: { id: USER_ID } } as never);
+    const res = await GET(makeGetRequest("status=PENDING"), makeParams());
+    expect(res.status).toBe(403);
+  });
+
+  it("returns memories filtered by status with memorial info attached", async () => {
+    m(prisma.memory.findMany).mockResolvedValue([
+      { ...mockAcceptedMemory, status: "PENDING", images: [] },
+    ]);
+    const res = await GET(makeGetRequest("status=PENDING"), makeParams());
+    expect(res.status).toBe(200);
+    const data = await res.json();
+    expect(data).toHaveLength(1);
+    expect(data[0].memorial).toEqual({ name: "Jane Doe", slug: "jane-doe" });
+  });
+
+  it("passes multiple statuses to findMany", async () => {
+    await GET(makeGetRequest("status=PENDING,RETURNED"), makeParams());
+    expect(m(prisma.memory.findMany)).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: expect.objectContaining({
+          status: { in: ["PENDING", "RETURNED"] },
+        }),
+      })
+    );
+  });
+
+  it("resolves IMAGE presigned URLs for thumb and full in authenticated path", async () => {
+    m(prisma.memory.findMany).mockResolvedValue([
+      {
+        ...mockAcceptedMemory,
+        images: [{ id: "img-1", s3Key: "key/image.jpg", mediaType: "IMAGE" }],
+      },
+    ]);
+    const res = await GET(makeGetRequest("status=ACCEPTED"), makeParams());
+    expect(res.status).toBe(200);
+    const data = await res.json();
+    expect(data[0].images[0].thumbUrl).toBe("https://s3.example.com/view");
+    expect(data[0].images[0].url).toBe("https://s3.example.com/view");
+  });
+
+  it("uses a single presigned URL for VIDEO images in authenticated path", async () => {
+    m(prisma.memory.findMany).mockResolvedValue([
+      {
+        ...mockAcceptedMemory,
+        images: [{ id: "vid-1", s3Key: "key/video.mp4", mediaType: "VIDEO" }],
+      },
+    ]);
+    const res = await GET(makeGetRequest("status=ACCEPTED"), makeParams());
+    const data = await res.json();
+    expect(data[0].images[0].thumbUrl).toBe("https://s3.example.com/view");
+    expect(data[0].images[0].url).toBe("https://s3.example.com/view");
+  });
+});
 
 // ---------------------------------------------------------------------------
 // POST tests

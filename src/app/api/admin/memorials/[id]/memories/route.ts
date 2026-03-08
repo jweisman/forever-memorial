@@ -1,11 +1,12 @@
 import { NextResponse } from "next/server";
 import { requireAdmin } from "@/lib/admin";
 import { prisma } from "@/lib/prisma";
+import { withHandler } from "@/lib/api-error";
 
-export async function GET(
+export const GET = withHandler(async (
   _request: Request,
   { params }: { params: Promise<{ id: string }> }
-) {
+) => {
   const { error } = await requireAdmin();
   if (error) return error;
 
@@ -23,4 +24,4 @@ export async function GET(
   });
 
   return NextResponse.json(memories);
-}
+});

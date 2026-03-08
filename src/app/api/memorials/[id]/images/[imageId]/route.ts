@@ -7,6 +7,7 @@ import {
   fullKeyFromBase,
 } from "@/lib/s3-helpers";
 import { isUserDisabled } from "@/lib/admin";
+import { withHandler } from "@/lib/api-error";
 
 async function verifyOwnership(memorialId: string, userId: string) {
   const memorial = await prisma.memorial.findUnique({
@@ -16,10 +17,10 @@ async function verifyOwnership(memorialId: string, userId: string) {
   return memorial?.ownerId === userId;
 }
 
-export async function PATCH(
+export const PATCH = withHandler(async (
   request: Request,
   { params }: { params: Promise<{ id: string; imageId: string }> }
-) {
+) => {
   const { id, imageId } = await params;
   const session = await auth();
   if (!session?.user?.id) {
@@ -50,12 +51,12 @@ export async function PATCH(
   });
 
   return NextResponse.json(updated);
-}
+});
 
-export async function DELETE(
+export const DELETE = withHandler(async (
   _request: Request,
   { params }: { params: Promise<{ id: string; imageId: string }> }
-) {
+) => {
   const { id, imageId } = await params;
   const session = await auth();
   if (!session?.user?.id) {
@@ -95,4 +96,4 @@ export async function DELETE(
   await prisma.image.delete({ where: { id: imageId } });
 
   return NextResponse.json({ success: true });
-}
+});

@@ -1,5 +1,23 @@
-import { describe, it, expect } from "vitest";
-import { validateImageFile, validateVideoFile, isVideoFile } from "@/lib/upload";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+
+// Mock image-resize (DOM/Canvas — not available in Node)
+vi.mock("@/lib/image-resize", () => ({
+  resizeImage: vi.fn().mockResolvedValue(new Blob(["resized"], { type: "image/webp" })),
+  resizeImageSquare: vi.fn().mockResolvedValue(new Blob(["square"], { type: "image/webp" })),
+}));
+
+import {
+  validateImageFile,
+  validateVideoFile,
+  isVideoFile,
+  uploadImage,
+  uploadVideo,
+  uploadMemorialPicture,
+  uploadMemorialPictureBlob,
+  uploadMemoryImage,
+  uploadMemoryVideo,
+} from "@/lib/upload";
+import { resizeImage, resizeImageSquare } from "@/lib/image-resize";
 
 // Node 20+ has File built-in; construct minimal File objects for testing
 function makeFile(name: string, type: string, sizeBytes: number): File {
@@ -102,5 +120,219 @@ describe("isVideoFile", () => {
   it("returns false for an unknown type", () => {
     const file = makeFile("file.bin", "application/octet-stream", 1 * MB);
     expect(isVideoFile(file)).toBe(false);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Async upload functions (fetch + image-resize mocked)
+// ---------------------------------------------------------------------------
+
+const MEMORIAL_ID = "mem-001";
+const MEMORY_ID = "mem-memory-001";
+
+function makeImageFile(name = "photo.jpg", type = "image/jpeg") {
+  return new File(["x"], name, { type });
+}
+
+function makeFetch(responses: Array<{ ok: boolean; data: unknown }>) {
+  let call = 0;
+  return vi.fn().mockImplementation(async () => {
+    const r = responses[Math.min(call++, responses.length - 1)];
+    return { ok: r.ok, json: async () => r.data };
+  });
+}
+
+const uploadUrlImageResponse = {
+  thumbUploadUrl: "https://s3.example.com/thumb-url",
+  fullUploadUrl: "https://s3.example.com/full-url",
+  s3Key: "memorials/mem-001/images/img-001",
+  imageId: "img-001",
+  albumId: "album-001",
+};
+
+const confirmImageResponse = {
+  id: "img-001",
+  albumId: "album-001",
+  s3Key: "memorials/mem-001/images/img-001",
+  caption: null,
+  order: 0,
+  mediaType: "IMAGE",
+  thumbUrl: "https://s3.example.com/thumb",
+  url: "https://s3.example.com/full",
+};
+
+describe("uploadImage", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    vi.mocked(resizeImage).mockResolvedValue(new Blob(["resized"], { type: "image/webp" }));
+  });
+
+  afterEach(() => vi.unstubAllGlobals());
+
+  it("resizes to thumb and full variants then returns the confirmed record", async () => {
+    vi.stubGlobal("fetch", makeFetch([
+      { ok: true, data: uploadUrlImageResponse },  // upload-url
+      { ok: true, data: {} },                       // S3 PUT thumb
+      { ok: true, data: {} },                       // S3 PUT full
+      { ok: true, data: confirmImageResponse },     // confirm
+    ]));
+
+    const result = await uploadImage(MEMORIAL_ID, makeImageFile(), { albumId: "album-001" });
+    expect(result.id).toBe("img-001");
+    expect(result.mediaType).toBe("IMAGE");
+    expect(vi.mocked(resizeImage)).toHaveBeenCalledTimes(2);
+  });
+
+  it("throws when the upload-url request fails", async () => {
+    vi.stubGlobal("fetch", makeFetch([
+      { ok: false, data: { error: "Forbidden" } },
+    ]));
+    await expect(uploadImage(MEMORIAL_ID, makeImageFile())).rejects.toThrow("Forbidden");
+  });
+
+  it("throws when the confirm request fails", async () => {
+    vi.stubGlobal("fetch", makeFetch([
+      { ok: true, data: uploadUrlImageResponse },
+      { ok: true, data: {} },
+      { ok: true, data: {} },
+      { ok: false, data: { error: "Limit reached" } },
+    ]));
+    await expect(uploadImage(MEMORIAL_ID, makeImageFile())).rejects.toThrow("Limit reached");
+  });
+});
+
+describe("uploadVideo", () => {
+  beforeEach(() => vi.clearAllMocks());
+  afterEach(() => vi.unstubAllGlobals());
+
+  const uploadUrlVideoResponse = {
+    uploadUrl: "https://s3.example.com/video-url",
+    s3Key: "memorials/mem-001/images/vid-001.mp4",
+    imageId: "vid-001",
+    albumId: "album-001",
+  };
+
+  const confirmVideoResponse = {
+    id: "vid-001",
+    albumId: "album-001",
+    s3Key: "memorials/mem-001/images/vid-001.mp4",
+    caption: null,
+    order: 0,
+    mediaType: "VIDEO",
+    url: "https://s3.example.com/video",
+  };
+
+  it("does not resize and returns the confirmed record", async () => {
+    vi.stubGlobal("fetch", makeFetch([
+      { ok: true, data: uploadUrlVideoResponse },
+      { ok: true, data: {} },            // S3 PUT
+      { ok: true, data: confirmVideoResponse },
+    ]));
+
+    const result = await uploadVideo(MEMORIAL_ID, makeImageFile("clip.mp4", "video/mp4"));
+    expect(result.id).toBe("vid-001");
+    expect(result.mediaType).toBe("VIDEO");
+    expect(vi.mocked(resizeImage)).not.toHaveBeenCalled();
+  });
+
+  it("throws when the upload-url request fails", async () => {
+    vi.stubGlobal("fetch", makeFetch([{ ok: false, data: { error: "Server error" } }]));
+    await expect(uploadVideo(MEMORIAL_ID, makeImageFile("clip.mp4", "video/mp4"))).rejects.toThrow("Server error");
+  });
+});
+
+describe("uploadMemorialPicture", () => {
+  beforeEach(() => vi.clearAllMocks());
+  afterEach(() => vi.unstubAllGlobals());
+
+  const uploadUrlPictureResponse = {
+    thumbUploadUrl: "https://s3.example.com/picture-thumb-url",
+    thumbS3Key: "memorials/mem-001/memorial-picture.webp",
+  };
+
+  it("resizes to a square and returns the confirmed URL", async () => {
+    vi.stubGlobal("fetch", makeFetch([
+      { ok: true, data: uploadUrlPictureResponse },
+      { ok: true, data: {} },
+      { ok: true, data: { url: "https://s3.example.com/picture" } },
+    ]));
+
+    const url = await uploadMemorialPicture(MEMORIAL_ID, makeImageFile());
+    expect(url).toBe("https://s3.example.com/picture");
+    expect(vi.mocked(resizeImageSquare)).toHaveBeenCalledTimes(1);
+  });
+
+  it("throws when the upload-url request fails", async () => {
+    vi.stubGlobal("fetch", makeFetch([{ ok: false, data: { error: "Not found" } }]));
+    await expect(uploadMemorialPicture(MEMORIAL_ID, makeImageFile())).rejects.toThrow("Not found");
+  });
+});
+
+describe("uploadMemorialPictureBlob", () => {
+  beforeEach(() => vi.clearAllMocks());
+  afterEach(() => vi.unstubAllGlobals());
+
+  it("skips resize and returns the confirmed URL", async () => {
+    vi.stubGlobal("fetch", makeFetch([
+      { ok: true, data: { thumbUploadUrl: "https://s3.example.com/u", thumbS3Key: "key" } },
+      { ok: true, data: {} },
+      { ok: true, data: { url: "https://s3.example.com/pic" } },
+    ]));
+
+    const url = await uploadMemorialPictureBlob(MEMORIAL_ID, new Blob(["img"]));
+    expect(url).toBe("https://s3.example.com/pic");
+    expect(vi.mocked(resizeImageSquare)).not.toHaveBeenCalled();
+  });
+});
+
+describe("uploadMemoryImage", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    vi.mocked(resizeImage).mockResolvedValue(new Blob(["resized"], { type: "image/webp" }));
+  });
+  afterEach(() => vi.unstubAllGlobals());
+
+  it("resizes to thumb and full then returns the confirmed record", async () => {
+    vi.stubGlobal("fetch", makeFetch([
+      { ok: true, data: { thumbUploadUrl: "https://s3/t", fullUploadUrl: "https://s3/f", s3Key: "key", imageId: "i1" } },
+      { ok: true, data: {} },
+      { ok: true, data: {} },
+      { ok: true, data: { id: "i1", s3Key: "key", caption: null, mediaType: "IMAGE", url: "https://s3/full" } },
+    ]));
+
+    const result = await uploadMemoryImage(MEMORIAL_ID, MEMORY_ID, makeImageFile());
+    expect(result.id).toBe("i1");
+    expect(vi.mocked(resizeImage)).toHaveBeenCalledTimes(2);
+  });
+
+  it("throws when the upload-url request fails", async () => {
+    vi.stubGlobal("fetch", makeFetch([{ ok: false, data: { error: "Memory not found" } }]));
+    await expect(uploadMemoryImage(MEMORIAL_ID, MEMORY_ID, makeImageFile())).rejects.toThrow("Memory not found");
+  });
+});
+
+describe("uploadMemoryVideo", () => {
+  beforeEach(() => vi.clearAllMocks());
+  afterEach(() => vi.unstubAllGlobals());
+
+  it("does not resize and returns the confirmed record", async () => {
+    vi.stubGlobal("fetch", makeFetch([
+      { ok: true, data: { uploadUrl: "https://s3/v", s3Key: "key", imageId: "v1" } },
+      { ok: true, data: {} },
+      { ok: true, data: { id: "v1", s3Key: "key", caption: null, mediaType: "VIDEO", url: "https://s3/vid" } },
+    ]));
+
+    const result = await uploadMemoryVideo(MEMORIAL_ID, MEMORY_ID, makeImageFile("clip.mp4", "video/mp4"));
+    expect(result.id).toBe("v1");
+    expect(vi.mocked(resizeImage)).not.toHaveBeenCalled();
+  });
+
+  it("throws when the confirm request fails", async () => {
+    vi.stubGlobal("fetch", makeFetch([
+      { ok: true, data: { uploadUrl: "https://s3/v", s3Key: "key", imageId: "v1" } },
+      { ok: true, data: {} },
+      { ok: false, data: { error: "Confirm failed" } },
+    ]));
+    await expect(uploadMemoryVideo(MEMORIAL_ID, MEMORY_ID, makeImageFile("clip.mp4", "video/mp4"))).rejects.toThrow("Confirm failed");
   });
 });

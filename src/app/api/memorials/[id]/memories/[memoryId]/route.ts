@@ -9,13 +9,14 @@ import {
 } from "@/lib/s3-helpers";
 import { isUserDisabled } from "@/lib/admin";
 import { sendNotification, memoryResubmittedEmail } from "@/lib/email";
+import { withHandler } from "@/lib/api-error";
 
 type Params = { id: string; memoryId: string };
 
-export async function GET(
+export const GET = withHandler(async (
   _request: Request,
   { params }: { params: Promise<Params> }
-) {
+) => {
   const { id, memoryId } = await params;
   const session = await auth();
   if (!session?.user?.id) {
@@ -54,12 +55,12 @@ export async function GET(
   );
 
   return NextResponse.json({ ...memory, images });
-}
+});
 
-export async function PATCH(
+export const PATCH = withHandler(async (
   request: Request,
   { params }: { params: Promise<Params> }
-) {
+) => {
   const { id, memoryId } = await params;
   const session = await auth();
   if (!session?.user?.id) {
@@ -134,12 +135,12 @@ export async function PATCH(
   }
 
   return NextResponse.json(updated);
-}
+});
 
-export async function DELETE(
+export const DELETE = withHandler(async (
   _request: Request,
   { params }: { params: Promise<Params> }
-) {
+) => {
   const { id, memoryId } = await params;
   const session = await auth();
   if (!session?.user?.id) {
@@ -185,4 +186,4 @@ export async function DELETE(
   await prisma.memory.delete({ where: { id: memoryId } });
 
   return NextResponse.json({ success: true });
-}
+});

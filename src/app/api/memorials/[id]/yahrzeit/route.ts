@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import PDFDocument from "pdfkit";
 import { prisma } from "@/lib/prisma";
 import { getYahrzeitDates } from "@/lib/yahrzeit";
+import { withHandler } from "@/lib/api-error";
 
 type Params = { id: string };
 
@@ -159,10 +160,10 @@ function generatePDF(
   });
 }
 
-export async function GET(
+export const GET = withHandler(async (
   request: Request,
   { params }: { params: Promise<Params> }
-) {
+) => {
   const { id } = await params;
   const { searchParams } = new URL(request.url);
   const format = searchParams.get("format");
@@ -219,4 +220,4 @@ export async function GET(
       "Content-Disposition": `attachment; filename="yahrzeit-${safeName}.pdf"`,
     },
   });
-}
+});

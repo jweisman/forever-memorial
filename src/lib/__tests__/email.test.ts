@@ -1,6 +1,17 @@
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, vi, beforeEach } from "vitest";
+
+// vi.mock factories are hoisted before const declarations — use vi.hoisted() so
+// the mock variables exist before the factory runs.
+const { mockSendMail, mockCreateTransport } = vi.hoisted(() => {
+  const mockSendMail = vi.fn().mockResolvedValue({});
+  const mockCreateTransport = vi.fn().mockReturnValue({ sendMail: mockSendMail });
+  return { mockSendMail, mockCreateTransport };
+});
+vi.mock("nodemailer", () => ({ default: { createTransport: mockCreateTransport } }));
+
 import {
   escapeHtml,
+  sendNotification,
   newSubmissionEmail,
   memoryAcceptedEmail,
   memoryReturnedEmail,
@@ -167,5 +178,75 @@ describe("memoryResubmittedEmail", () => {
   it("includes the submitter name in the body", () => {
     const { html } = memoryResubmittedEmail(params);
     expect(html).toContain("Bob Smith");
+  });
+});
+
+// ---------------------------------------------------------------------------
+// sendNotification
+// ---------------------------------------------------------------------------
+
+describe("sendNotification", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    delete process.env.EMAIL_SERVER;
+    delete process.env.EMAIL_CUSTOM_HEADER;
+    mockSendMail.mockResolvedValue({});
+  });
+
+  it("calls sendMail with the correct to/subject/html", async () => {
+    sendNotification({ to: "user@example.com", subject: "Hello", html: "<p>Hi</p>" });
+    // sendMail is called synchronously (fire-and-forget starts the promise)
+    expect(mockSendMail).toHaveBeenCalledWith(
+      expect.objectContaining({
+        to: "user@example.com",
+        subject: "Hello",
+        html: "<p>Hi</p>",
+      })
+    );
+  });
+
+  it("uses SMTP transport when EMAIL_SERVER is set", () => {
+    process.env.EMAIL_SERVER = "smtp://localhost:1025";
+    sendNotification({ to: "a@b.com", subject: "S", html: "" });
+    expect(mockCreateTransport).toHaveBeenCalledWith("smtp://localhost:1025");
+  });
+
+  it("falls back to Mailhog when EMAIL_SERVER is not set", () => {
+    sendNotification({ to: "a@b.com", subject: "S", html: "" });
+    expect(mockCreateTransport).toHaveBeenCalledWith(
+      expect.objectContaining({ host: "localhost", port: 1025 })
+    );
+  });
+
+  it("includes a custom header when EMAIL_CUSTOM_HEADER is set", () => {
+    process.env.EMAIL_CUSTOM_HEADER = "X-SES-CONFIG: my-set";
+    sendNotification({ to: "a@b.com", subject: "S", html: "" });
+    expect(mockSendMail).toHaveBeenCalledWith(
+      expect.objectContaining({
+        headers: { "X-SES-CONFIG": "my-set" },
+      })
+    );
+  });
+
+  it("sends no custom headers when EMAIL_CUSTOM_HEADER is not set", () => {
+    sendNotification({ to: "a@b.com", subject: "S", html: "" });
+    expect(mockSendMail).toHaveBeenCalledWith(
+      expect.objectContaining({ headers: {} })
+    );
+  });
+
+  it("sends no custom headers when EMAIL_CUSTOM_HEADER has no ': ' separator", () => {
+    process.env.EMAIL_CUSTOM_HEADER = "malformed-header";
+    sendNotification({ to: "a@b.com", subject: "S", html: "" });
+    expect(mockSendMail).toHaveBeenCalledWith(
+      expect.objectContaining({ headers: {} })
+    );
+  });
+
+  it("does not throw when sendMail rejects (fire-and-forget)", async () => {
+    mockSendMail.mockRejectedValue(new Error("SMTP down"));
+    expect(() =>
+      sendNotification({ to: "a@b.com", subject: "S", html: "" })
+    ).not.toThrow();
   });
 });

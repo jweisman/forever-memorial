@@ -4,6 +4,7 @@ import QRCode from "qrcode";
 import path from "path";
 import { prisma } from "@/lib/prisma";
 import { rateLimit, getClientIp } from "@/lib/rate-limit";
+import { withHandler } from "@/lib/api-error";
 
 type Params = { id: string };
 
@@ -139,10 +140,10 @@ async function generatePosterPDF(
   });
 }
 
-export async function GET(
+export const GET = withHandler(async (
   request: Request,
   { params }: { params: Promise<Params> }
-) {
+) => {
   const ip = getClientIp(request);
   const { success } = rateLimit({
     key: `poster:${ip}`,
@@ -194,4 +195,4 @@ export async function GET(
       "Content-Disposition": `attachment; filename="memorial-poster-${safeName}.pdf"`,
     },
   });
-}
+});
