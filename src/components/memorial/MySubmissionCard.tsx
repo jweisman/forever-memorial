@@ -4,6 +4,7 @@ import { useState, useRef } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import Button from "@/components/ui/Button";
+import VideoThumbnail from "./VideoThumbnail";
 import {
   isVideoFile,
   validateImageFile,
@@ -266,11 +267,9 @@ export default function MySubmissionCard({
                     className="relative size-20 overflow-hidden rounded-lg bg-warm-100"
                   >
                     {img.mediaType === "VIDEO" ? (
-                      <video
+                      <VideoThumbnail
                         src={img.thumbUrl}
                         className="size-full object-cover"
-                        muted
-                        preload="metadata"
                       />
                     ) : (
                       <img
@@ -294,11 +293,9 @@ export default function MySubmissionCard({
                     className="relative size-20 overflow-hidden rounded-lg bg-warm-100"
                   >
                     {isVideoFile(file) ? (
-                      <video
+                      <VideoThumbnail
                         src={URL.createObjectURL(file)}
                         className="size-full object-cover"
-                        muted
-                        preload="metadata"
                       />
                     ) : (
                       <img
@@ -406,11 +403,9 @@ export default function MySubmissionCard({
               className="relative size-10 overflow-hidden rounded bg-warm-100"
             >
               {img.mediaType === "VIDEO" ? (
-                <video
+                <VideoThumbnail
                   src={img.thumbUrl}
                   className="size-full object-cover"
-                  muted
-                  preload="metadata"
                 />
               ) : (
                 <img src={img.thumbUrl} alt="" className="size-full object-cover" />
