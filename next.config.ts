@@ -59,8 +59,6 @@ export default withSentryConfig(withNextIntl(nextConfig), {
   silent: !process.env.CI,
   // Only upload source maps when SENTRY_AUTH_TOKEN is set
   authToken: process.env.SENTRY_AUTH_TOKEN,
-  // Keep source maps out of the client bundle
-  hideSourceMaps: true,
   // Remove Sentry debug logging from the bundle (replaces deprecated disableLogger)
   webpack: {
     treeshake: {
