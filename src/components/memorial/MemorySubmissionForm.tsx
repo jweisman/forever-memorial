@@ -4,6 +4,7 @@ import { useState, useRef } from "react";
 import { useSession } from "next-auth/react";
 import { useTranslations } from "next-intl";
 import Button from "@/components/ui/Button";
+import VideoThumbnail from "./VideoThumbnail";
 import {
   validateImageFile,
   validateVideoFile,
@@ -212,11 +213,9 @@ export default function MemorySubmissionForm({
                 className="relative size-20 overflow-hidden rounded-lg bg-warm-100"
               >
                 {isVideoFile(file) ? (
-                  <video
+                  <VideoThumbnail
                     src={URL.createObjectURL(file)}
                     className="size-full object-cover"
-                    muted
-                    preload="metadata"
                   />
                 ) : (
                   <img

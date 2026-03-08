@@ -5,6 +5,7 @@ import { useLocale, useTranslations } from "next-intl";
 import Card from "@/components/ui/Card";
 import CollapsibleText from "@/components/ui/CollapsibleText";
 import Lightbox from "./Lightbox";
+import VideoThumbnail from "./VideoThumbnail";
 
 type MemoryCardProps = {
   memory: {
@@ -46,11 +47,9 @@ export default function MemoryCard({ memory }: MemoryCardProps) {
                 className="group relative size-20 shrink-0 overflow-hidden rounded-lg bg-warm-100"
               >
                 {img.mediaType === "VIDEO" ? (
-                  <video
+                  <VideoThumbnail
                     src={img.thumbUrl}
                     className="size-full object-cover transition-transform group-hover:scale-105"
-                    muted
-                    preload="metadata"
                   />
                 ) : (
                   <img

@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useTranslations } from "next-intl";
 import Button from "@/components/ui/Button";
+import VideoThumbnail from "./VideoThumbnail";
 
 type MemoryEditCardProps = {
   memory: {
@@ -126,11 +127,9 @@ export default function MemoryEditCard({
                     className="group relative size-16 overflow-hidden rounded-lg bg-warm-100"
                   >
                     {img.mediaType === "VIDEO" ? (
-                      <video
+                      <VideoThumbnail
                         src={img.thumbUrl}
                         className="size-full object-cover"
-                        muted
-                        preload="metadata"
                       />
                     ) : (
                       <img
@@ -197,11 +196,9 @@ export default function MemoryEditCard({
               className="relative size-10 overflow-hidden rounded bg-warm-100"
             >
               {img.mediaType === "VIDEO" ? (
-                <video
+                <VideoThumbnail
                   src={img.thumbUrl}
                   className="size-full object-cover"
-                  muted
-                  preload="metadata"
                 />
               ) : (
                 <img

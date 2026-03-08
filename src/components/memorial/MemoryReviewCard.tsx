@@ -3,6 +3,8 @@
 import { useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import Button from "@/components/ui/Button";
+import Lightbox from "@/components/memorial/Lightbox";
+import VideoThumbnail from "@/components/memorial/VideoThumbnail";
 
 type MemoryReviewCardProps = {
   memory: {
@@ -36,6 +38,7 @@ export default function MemoryReviewCard({
   const [showReturnForm, setShowReturnForm] = useState(false);
   const [returnMessage, setReturnMessage] = useState("");
   const [acting, setActing] = useState(false);
+  const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
 
   async function handleAction(action: "accept" | "ignore" | "return") {
     if (action === "return" && !returnMessage.trim()) return;
@@ -93,17 +96,16 @@ export default function MemoryReviewCard({
 
       {memory.images.length > 0 && (
         <div className="mt-3 flex gap-2 overflow-x-auto">
-          {memory.images.map((img) => (
-            <div
+          {memory.images.map((img, idx) => (
+            <button
               key={img.id}
+              onClick={() => setLightboxIndex(idx)}
               className="relative size-16 shrink-0 overflow-hidden rounded-lg bg-warm-100"
             >
               {img.mediaType === "VIDEO" ? (
-                <video
+                <VideoThumbnail
                   src={img.thumbUrl}
                   className="size-full object-cover"
-                  muted
-                  preload="metadata"
                 />
               ) : (
                 <img
@@ -122,9 +124,18 @@ export default function MemoryReviewCard({
                   </div>
                 </div>
               )}
-            </div>
+            </button>
           ))}
         </div>
+      )}
+
+      {lightboxIndex !== null && (
+        <Lightbox
+          images={memory.images}
+          currentIndex={lightboxIndex}
+          onClose={() => setLightboxIndex(null)}
+          onNavigate={setLightboxIndex}
+        />
       )}
 
       {/* Return message form */}
