@@ -9,11 +9,12 @@ import {
 import { isUserDisabled } from "@/lib/admin";
 import { sendNotification, newSubmissionEmail } from "@/lib/email";
 import { rateLimit, getClientIp } from "@/lib/rate-limit";
+import { withHandler } from "@/lib/api-error";
 
-export async function GET(
+export const GET = withHandler(async (
   request: Request,
   { params }: { params: Promise<{ id: string }> }
-) {
+) => {
   const { id } = await params;
   const url = new URL(request.url);
   const statusParam = url.searchParams.get("status");
@@ -97,12 +98,12 @@ export async function GET(
   );
 
   return NextResponse.json(memoriesWithUrls);
-}
+});
 
-export async function POST(
+export const POST = withHandler(async (
   request: Request,
   { params }: { params: Promise<{ id: string }> }
-) {
+) => {
   const { id } = await params;
 
   const ip = getClientIp(request);
@@ -191,4 +192,4 @@ export async function POST(
   }
 
   return NextResponse.json(memory, { status: 201 });
-}
+});

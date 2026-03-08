@@ -1,11 +1,12 @@
 import { NextResponse } from "next/server";
 import { requireAdmin } from "@/lib/admin";
 import { prisma } from "@/lib/prisma";
+import { withHandler } from "@/lib/api-error";
 
-export async function PATCH(
+export const PATCH = withHandler(async (
   _request: Request,
   { params }: { params: Promise<{ id: string }> }
-) {
+) => {
   const { error } = await requireAdmin();
   if (error) return error;
   const { id } = await params;
@@ -24,4 +25,4 @@ export async function PATCH(
   });
 
   return NextResponse.json({ id: updated.id, disabled: updated.disabled });
-}
+});

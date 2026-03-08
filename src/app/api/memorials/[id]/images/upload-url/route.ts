@@ -12,11 +12,12 @@ import {
   fullKeyFromBase,
 } from "@/lib/s3-helpers";
 import { isUserDisabled } from "@/lib/admin";
+import { withHandler } from "@/lib/api-error";
 
-export async function POST(
+export const POST = withHandler(async (
   request: Request,
   { params }: { params: Promise<{ id: string }> }
-) {
+) => {
   const { id } = await params;
   const session = await auth();
   if (!session?.user?.id) {
@@ -122,4 +123,4 @@ export async function POST(
     albumId: resolvedAlbumId,
     mediaType: "IMAGE",
   });
-}
+});

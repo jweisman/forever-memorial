@@ -8,13 +8,14 @@ import {
   memoryReturnedEmail,
 } from "@/lib/email";
 import { rateLimit, getClientIp } from "@/lib/rate-limit";
+import { withHandler } from "@/lib/api-error";
 
 type Params = { id: string; memoryId: string };
 
-export async function POST(
+export const POST = withHandler(async (
   request: Request,
   { params }: { params: Promise<Params> }
-) {
+) => {
   const { id, memoryId } = await params;
 
   const ip = getClientIp(request);
@@ -108,4 +109,4 @@ export async function POST(
   }
 
   return NextResponse.json(updated);
-}
+});

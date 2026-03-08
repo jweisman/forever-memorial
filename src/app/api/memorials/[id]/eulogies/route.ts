@@ -2,11 +2,12 @@ import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { isUserDisabled } from "@/lib/admin";
+import { withHandler } from "@/lib/api-error";
 
-export async function GET(
+export const GET = withHandler(async (
   _request: Request,
   { params }: { params: Promise<{ id: string }> }
-) {
+) => {
   const { id } = await params;
 
   const eulogies = await prisma.eulogy.findMany({
@@ -15,12 +16,12 @@ export async function GET(
   });
 
   return NextResponse.json(eulogies);
-}
+});
 
-export async function POST(
+export const POST = withHandler(async (
   request: Request,
   { params }: { params: Promise<{ id: string }> }
-) {
+) => {
   const { id } = await params;
   const session = await auth();
   if (!session?.user?.id) {
@@ -81,4 +82,4 @@ export async function POST(
   });
 
   return NextResponse.json(eulogy, { status: 201 });
-}
+});

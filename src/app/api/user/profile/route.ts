@@ -2,8 +2,9 @@ import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { isUserDisabled } from "@/lib/admin";
+import { withHandler } from "@/lib/api-error";
 
-export async function PATCH(request: Request) {
+export const PATCH = withHandler(async (request: Request) => {
   const session = await auth();
   if (!session?.user?.id) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -30,4 +31,4 @@ export async function PATCH(request: Request) {
   });
 
   return NextResponse.json(user);
-}
+});
