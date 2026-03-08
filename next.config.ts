@@ -4,6 +4,29 @@ import { withSentryConfig } from "@sentry/nextjs";
 
 const withNextIntl = createNextIntlPlugin("./src/i18n/request.ts");
 
+// Fonts are self-hosted via next/font/google (no external CDN at runtime).
+// S3 presigned URLs are HTTPS but on a variable hostname, so img/media/connect
+// use 'https:' rather than a hardcoded origin. Script and style sources are kept
+// strict; 'unsafe-inline' is required by Next.js App Router hydration scripts.
+// In development, MinIO runs on http://localhost:9000 so http://localhost:* is added.
+const isDev = process.env.NODE_ENV === "development";
+const CSP = [
+  "default-src 'self'",
+  "script-src 'self' 'unsafe-inline'",
+  "style-src 'self' 'unsafe-inline'",
+  `img-src 'self' data: blob: https:${isDev ? " http://localhost:*" : ""}`,
+  "font-src 'self' data:",
+  `media-src 'self' blob: https:${isDev ? " http://localhost:*" : ""}`,
+  // 'self' for API routes; https: covers S3 presigned uploads and Sentry
+  `connect-src 'self' https:${isDev ? " http://localhost:*" : ""}`,
+  "frame-src 'none'",
+  "frame-ancestors 'none'",
+  "object-src 'none'",
+  "base-uri 'self'",
+  // Google OAuth sign-in posts to accounts.google.com
+  "form-action 'self' https://accounts.google.com",
+].join("; ");
+
 const nextConfig: NextConfig = {
   serverExternalPackages: ["pg", "pdfkit"],
   async headers() {
@@ -11,6 +34,7 @@ const nextConfig: NextConfig = {
       {
         source: "/(.*)",
         headers: [
+          { key: "Content-Security-Policy", value: CSP },
           { key: "X-Frame-Options", value: "DENY" },
           { key: "X-Content-Type-Options", value: "nosniff" },
           { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
