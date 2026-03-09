@@ -44,6 +44,12 @@ export default function SignInPage() {
           </div>
         )}
 
+        {errorParam === "OAuthAccountNotLinked" && (
+          <div className="mt-6 rounded-lg bg-amber-50 p-4 text-center text-sm text-amber-800">
+            {t("oauthNotLinked")}
+          </div>
+        )}
+
         {emailSent ? (
           <div className="mt-8 rounded-lg bg-warm-50 p-6 text-center">
             <svg

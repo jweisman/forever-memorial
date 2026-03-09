@@ -93,6 +93,7 @@
     "title": "Welcome to Forever",
     "subtitle": "Sign in to create memorials and share memories",
     "accountDisabled": "Your account has been disabled. Please contact support if you believe this is an error.",
+    "oauthNotLinked": "This email is already registered. Please sign in using the magic link option below.",
     "google": "Continue with Google",
     "orEmail": "or continue with email",
     "emailLabel": "Email address",
