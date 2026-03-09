@@ -273,6 +273,24 @@ describe("PATCH /api/memorials/[id]", () => {
       })
     );
   });
+
+  it("sets projects when provided", async () => {
+    await PATCH(makePatchRequest({ projects: "Memorial fund at example.org" }), makeParams());
+    expect(m(prisma.memorial.update)).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({ projects: "Memorial fund at example.org" }),
+      })
+    );
+  });
+
+  it("sets projects to null when an empty string is provided", async () => {
+    await PATCH(makePatchRequest({ projects: "" }), makeParams());
+    expect(m(prisma.memorial.update)).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({ projects: null }),
+      })
+    );
+  });
 });
 
 // ---------------------------------------------------------------------------

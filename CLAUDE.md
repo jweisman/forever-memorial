@@ -89,7 +89,7 @@ src/
 │   ├── api/
 │   │   ├── admin/              # Admin-only endpoints (require ADMIN role)
 │   │   ├── eulogies/extract-text/ # POST — extract text from .docx upload (mammoth)
-│   │   ├── memorials/[id]/     # Memorial CRUD + albums/images/eulogies/memories/yahrzeit
+│   │   ├── memorials/[id]/     # Memorial CRUD + albums/images/eulogies/memories/yahrzeit/links
 │   │   ├── search/             # Fuzzy search (pg_trgm, word_similarity)
 │   │   ├── user/               # Profile update, submissions, account delete
 │   │   └── health/             # GET /api/health → DB ping
@@ -168,14 +168,15 @@ Sentry is disabled when `SENTRY_DSN` / `NEXT_PUBLIC_SENTRY_DSN` are unset (safe 
 
 ## Database Schema Summary
 
-Models: `User`, `Account`, `Session`, `VerificationToken` (NextAuth), `Memorial`, `Album`, `Image`, `Eulogy`, `Memory`, `MemoryImage`
+Models: `User`, `Account`, `Session`, `VerificationToken` (NextAuth), `Memorial`, `Album`, `Image`, `Eulogy`, `Memory`, `MemoryImage`, `MemorialLink`
 
 Key relationships:
 - `User` → owns many `Memorial`s
-- `Memorial` → has `Album[]`, `Eulogy[]`, `Memory[]`
+- `Memorial` → has `Album[]`, `Eulogy[]`, `Memory[]`, `MemorialLink[]`
 - `Album` → has `Image[]`
 - `Memory` → submitted by `User`, belongs to `Memorial`, has `MemoryImage[]`
 - `Memory.status`: `PENDING | ACCEPTED | IGNORED | RETURNED`
+- `MemorialLink` → belongs to `Memorial`; stores `url`, `title`, `description?`, `imageUrl?` (from OG scrape on save), `order`
 
 `MediaType` enum (`IMAGE | VIDEO`) is on both `Image` and `MemoryImage` with `@default(IMAGE)`. Storage differs by type:
 - **IMAGE**: `s3Key` is a base key; thumbnail = `thumbKeyFromBase(s3Key)`, full = `fullKeyFromBase(s3Key)`
@@ -183,7 +184,9 @@ Key relationships:
 
 All URL-generation code (API routes and the public memorial page server component) must check `mediaType` before calling `thumbKeyFromBase`/`fullKeyFromBase`.
 
-Notable `Memorial` fields: `deathAfterSunset Boolean @default(false)` — when true, Hebrew date is calculated as the next day (sunset = start of next Jewish day). See `src/lib/hebrewDate.ts`.
+Notable `Memorial` fields:
+- `deathAfterSunset Boolean @default(false)` — when true, Hebrew date is calculated as the next day (sunset = start of next Jewish day). See `src/lib/hebrewDate.ts`.
+- `projects String?` — free-text "Memorial projects & charities" section shown after Life Story on the public page.
 
 Fuzzy search requires: `CREATE EXTENSION IF NOT EXISTS pg_trgm;` (run once per DB). Search uses `word_similarity(query, name) > 0.4` (not `similarity`) to avoid false positives from names that share a common prefix.
 

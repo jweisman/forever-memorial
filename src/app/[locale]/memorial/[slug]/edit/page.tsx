@@ -39,6 +39,15 @@ type Album = {
   images: ImageRecord[];
 };
 
+type MemorialLink = {
+  id: string;
+  url: string;
+  title: string;
+  description: string | null;
+  imageUrl: string | null;
+  order: number;
+};
+
 type Memorial = {
   id: string;
   slug: string;
@@ -49,6 +58,7 @@ type Memorial = {
   funeralInfo: string | null;
   survivedBy: string | null;
   lifeStory: string | null;
+  projects: string | null;
   deathAfterSunset: boolean;
   memorialPicture: string | null;
   ownerId: string;
@@ -88,7 +98,15 @@ export default function MemorialEditPage({
   const [funeralInfo, setFuneralInfo] = useState("");
   const [survivedBy, setSurvivedBy] = useState("");
   const [lifeStory, setLifeStory] = useState("");
+  const [projects, setProjects] = useState("");
   const [deathAfterSunset, setDeathAfterSunset] = useState(false);
+
+  // Links state
+  const [links, setLinks] = useState<MemorialLink[]>([]);
+  const [newLinkTitle, setNewLinkTitle] = useState("");
+  const [newLinkUrl, setNewLinkUrl] = useState("");
+  const [addingLink, setAddingLink] = useState(false);
+  const [linkError, setLinkError] = useState("");
 
   // Memorial picture
   const [memorialPictureUrl, setMemorialPictureUrl] = useState<string | null>(
@@ -135,6 +153,7 @@ export default function MemorialEditPage({
     setFuneralInfo(data.funeralInfo ?? "");
     setSurvivedBy(data.survivedBy ?? "");
     setLifeStory(data.lifeStory ?? "");
+    setProjects(data.projects ?? "");
     setDeathAfterSunset(data.deathAfterSunset);
     setMemorialPictureUrl(data.memorialPicture);
     setEulogies(data.eulogies);
@@ -173,11 +192,19 @@ export default function MemorialEditPage({
     }
   }, [memorialId]);
 
+  const fetchLinks = useCallback(async () => {
+    const res = await fetch(`/api/memorials/${memorialId}/links`);
+    if (res.ok) {
+      setLinks(await res.json());
+    }
+  }, [memorialId]);
+
   useEffect(() => {
     fetchMemorial();
     fetchAlbums();
     fetchMemories();
-  }, [fetchMemorial, fetchAlbums, fetchMemories]);
+    fetchLinks();
+  }, [fetchMemorial, fetchAlbums, fetchMemories, fetchLinks]);
 
   // Check ownership
   if (!loading && memorial && session?.user?.id !== memorial.ownerId) {
@@ -215,6 +242,7 @@ export default function MemorialEditPage({
         funeralInfo,
         survivedBy,
         lifeStory,
+        projects,
         deathAfterSunset,
       }),
     });
@@ -304,6 +332,32 @@ export default function MemorialEditPage({
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ eulogyIds: newEulogies.map((e) => e.id) }),
     });
+  }
+
+  async function handleAddLink(e: React.FormEvent) {
+    e.preventDefault();
+    setLinkError("");
+    if (!newLinkUrl.trim()) return;
+    setAddingLink(true);
+    const res = await fetch(`/api/memorials/${memorialId}/links`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ url: newLinkUrl.trim(), title: newLinkTitle.trim() }),
+    });
+    if (res.ok) {
+      setNewLinkTitle("");
+      setNewLinkUrl("");
+      fetchLinks();
+    } else {
+      const data = await res.json();
+      setLinkError(data.error || "Failed to add link");
+    }
+    setAddingLink(false);
+  }
+
+  async function handleDeleteLink(linkId: string) {
+    await fetch(`/api/memorials/${memorialId}/links/${linkId}`, { method: "DELETE" });
+    setLinks((prev) => prev.filter((l) => l.id !== linkId));
   }
 
   async function handleCreateAlbum() {
@@ -536,6 +590,23 @@ export default function MemorialEditPage({
               />
             </div>
 
+            <div>
+              <label
+                htmlFor="edit-projects"
+                className="block text-sm font-medium text-warm-700"
+              >
+                {t("projectsLabel")}
+              </label>
+              <textarea
+                id="edit-projects"
+                value={projects}
+                onChange={(e) => setProjects(e.target.value)}
+                rows={4}
+                className={inputClass}
+                placeholder={t("projectsPlaceholder")}
+              />
+            </div>
+
             <div className="flex items-center gap-3">
               <Button
                 type="submit"
@@ -661,6 +732,89 @@ export default function MemorialEditPage({
               </div>
             ))}
           </div>
+        </Card>
+
+        {/* Links */}
+        <Card>
+          <h2 className="font-heading text-lg font-semibold text-warm-800">
+            {t("linksTitle")}
+          </h2>
+
+          {links.length === 0 && (
+            <p className="mt-4 text-sm text-muted">{t("linksNoLinks")}</p>
+          )}
+
+          {links.length > 0 && (
+            <div className="mt-4 space-y-2">
+              {links.map((link) => (
+                <div
+                  key={link.id}
+                  className="flex items-center justify-between gap-3 rounded-lg border border-border p-3"
+                >
+                  <div className="min-w-0">
+                    <p className="truncate text-sm font-medium text-warm-800">
+                      {link.title}
+                    </p>
+                    <p className="truncate text-xs text-warm-400">{link.url}</p>
+                  </div>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="shrink-0 text-red-600 hover:text-red-700"
+                    onClick={() => handleDeleteLink(link.id)}
+                  >
+                    {t("linksDelete")}
+                  </Button>
+                </div>
+              ))}
+            </div>
+          )}
+
+          <form onSubmit={handleAddLink} className="mt-4 space-y-3">
+            <div>
+              <label
+                htmlFor="new-link-title"
+                className="block text-sm font-medium text-warm-700"
+              >
+                {t("linksAddTitle")}
+              </label>
+              <input
+                id="new-link-title"
+                type="text"
+                value={newLinkTitle}
+                onChange={(e) => setNewLinkTitle(e.target.value)}
+                placeholder={t("linksAddTitlePlaceholder")}
+                className={inputClass}
+              />
+            </div>
+            <div>
+              <label
+                htmlFor="new-link-url"
+                className="block text-sm font-medium text-warm-700"
+              >
+                {t("linksAddUrl")}
+              </label>
+              <input
+                id="new-link-url"
+                type="url"
+                value={newLinkUrl}
+                onChange={(e) => setNewLinkUrl(e.target.value)}
+                placeholder={t("linksAddUrlPlaceholder")}
+                className={inputClass}
+              />
+            </div>
+            {linkError && (
+              <p className="text-sm text-red-600">{linkError}</p>
+            )}
+            <Button
+              type="submit"
+              variant="secondary"
+              size="sm"
+              disabled={addingLink || !newLinkUrl.trim()}
+            >
+              {addingLink ? t("linksAdding") : t("linksAdd")}
+            </Button>
+          </form>
         </Card>
 
         {/* Photo Gallery */}

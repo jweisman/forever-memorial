@@ -215,6 +215,11 @@ export default async function MemorialPage({ params }: Props) {
   const session = await auth();
   const isOwner = session?.user?.id === memorial.ownerId;
 
+  const links = await prisma.memorialLink.findMany({
+    where: { memorialId: memorial.id },
+    orderBy: { order: "asc" },
+  });
+
   // Prepare gallery data — only albums with images
   const galleryAlbums = memorial.albums
     .filter((a) => a.images.length > 0)
@@ -257,7 +262,7 @@ export default async function MemorialPage({ params }: Props) {
         {/* Header */}
         <header className="text-center">
           {/* Memorial picture */}
-          <div className="mx-auto mb-6 flex size-28 items-center justify-center overflow-hidden rounded-full bg-warm-200">
+          <div className="mx-auto mb-6 flex size-40 items-center justify-center overflow-hidden rounded-full bg-warm-200">
             {memorial.memorialPictureUrl ? (
               <img
                 src={memorial.memorialPictureUrl}
@@ -266,7 +271,7 @@ export default async function MemorialPage({ params }: Props) {
               />
             ) : (
               <svg
-                className="size-14 text-warm-400"
+                className="size-20 text-warm-400"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -301,7 +306,7 @@ export default async function MemorialPage({ params }: Props) {
           )}
 
           {isOwner && (
-            <div className="mt-6">
+            <div className="mt-6 flex items-center justify-center gap-3">
               <Button
                 href={`/memorial/${memorial.slug}/edit`}
                 variant="secondary"
@@ -309,6 +314,7 @@ export default async function MemorialPage({ params }: Props) {
               >
                 {t("editMemorial")}
               </Button>
+              <PosterDownload memorialId={memorial.id} />
             </div>
           )}
         </header>
@@ -342,7 +348,6 @@ export default async function MemorialPage({ params }: Props) {
                     memorialId={memorial.id}
                     memorialName={memorial.name}
                   />
-                  <PosterDownload memorialId={memorial.id} />
                 </dd>
               </div>
               {memorial.placeOfDeath && (
@@ -392,6 +397,71 @@ export default async function MemorialPage({ params }: Props) {
                 {memorial.lifeStory}
               </p>
             </Card>
+          )}
+
+          {/* Memorial projects & charities */}
+          {memorial.projects && (
+            <Card>
+              <h2 className="font-heading text-lg font-semibold text-warm-800">
+                {t("projects")}
+              </h2>
+              <p className="mt-3 whitespace-pre-wrap text-sm leading-relaxed text-warm-700">
+                {memorial.projects}
+              </p>
+            </Card>
+          )}
+
+          {/* External links */}
+          {links.length > 0 && (
+            <section>
+              <h2 className="font-heading text-xl font-semibold text-warm-800">
+                {t("links")}
+              </h2>
+              <div className="mt-4 grid gap-3 sm:grid-cols-2">
+                {links.map((link) => {
+                  const domain = (() => {
+                    try { return new URL(link.url).hostname.replace(/^www\./, ""); }
+                    catch { return link.url; }
+                  })();
+                  return (
+                    <a
+                      key={link.id}
+                      href={link.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-start gap-3 rounded-xl border border-border bg-surface p-4 transition-colors hover:border-accent hover:bg-warm-50"
+                    >
+                      {link.imageUrl ? (
+                        <img
+                          src={link.imageUrl}
+                          alt=""
+                          className="size-12 shrink-0 rounded-lg object-cover"
+                        />
+                      ) : (
+                        <img
+                          src={`https://www.google.com/s2/favicons?domain=${domain}&sz=48`}
+                          alt=""
+                          className="size-12 shrink-0 rounded-lg bg-warm-100 object-contain p-2"
+                        />
+                      )}
+                      <div className="min-w-0">
+                        <p className="truncate font-medium text-warm-800">
+                          {link.title}
+                        </p>
+                        {link.description && (
+                          <p className="mt-0.5 line-clamp-2 text-xs text-warm-500">
+                            {link.description}
+                          </p>
+                        )}
+                        <p className="mt-1 truncate text-xs text-accent">
+                          {domain}
+                        </p>
+                      </div>
+                    </a>
+                  );
+                })}
+              </div>
+            </section>
           )}
 
           {/* Photo Gallery */}

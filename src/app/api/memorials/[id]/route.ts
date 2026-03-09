@@ -116,6 +116,9 @@ export const PATCH = withHandler(async (
   if (body.lifeStory !== undefined) {
     data.lifeStory = body.lifeStory?.trim() || null;
   }
+  if (body.projects !== undefined) {
+    data.projects = body.projects?.trim() || null;
+  }
   if (body.deathAfterSunset !== undefined) {
     data.deathAfterSunset = body.deathAfterSunset === true;
   }

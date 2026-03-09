@@ -99,13 +99,15 @@ model Memorial {
   lifeStory        String?
   deathAfterSunset Boolean   @default(false)
   disabled         Boolean   @default(false)
+  projects         String?
   createdAt       DateTime  @default(now())
   updatedAt       DateTime  @updatedAt
 
-  owner    User      @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  owner    User           @relation(fields: [ownerId], references: [id], onDelete: Cascade)
   albums   Album[]
   eulogies Eulogy[]
   memories Memory[]
+  links    MemorialLink[]
 
   @@index([name])
   @@map("memorials")
@@ -171,6 +173,21 @@ model Memory {
   images    MemoryImage[]
 
   @@map("memories")
+}
+
+model MemorialLink {
+  id          String   @id @default(cuid())
+  memorialId  String
+  url         String
+  title       String
+  description String?
+  imageUrl    String?
+  order       Int      @default(0)
+  createdAt   DateTime @default(now())
+
+  memorial Memorial @relation(fields: [memorialId], references: [id], onDelete: Cascade)
+
+  @@map("memorial_links")
 }
 
 model MemoryImage {

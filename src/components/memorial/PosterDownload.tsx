@@ -14,12 +14,10 @@ export default function PosterDownload({ memorialId }: Props) {
     <a
       href={posterUrl}
       download
-      aria-label={t("posterTooltip")}
-      className="group relative ms-1.5 inline-flex shrink-0 cursor-pointer items-center justify-center rounded p-0.5 text-warm-400 transition-colors hover:text-warm-600"
+      className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-surface px-3 py-1.5 text-sm font-medium text-warm-700 transition-colors hover:bg-warm-50 hover:text-warm-900"
     >
-      {/* QR code icon */}
       <svg
-        className="size-4"
+        className="size-4 shrink-0"
         fill="none"
         stroke="currentColor"
         viewBox="0 0 24 24"
@@ -38,10 +36,7 @@ export default function PosterDownload({ memorialId }: Props) {
           d="M7 7h.01M17 7h.01M7 17h.01"
         />
       </svg>
-      {/* Tooltip */}
-      <span className="pointer-events-none absolute bottom-full left-1/2 mb-1.5 -translate-x-1/2 whitespace-nowrap rounded bg-warm-800 px-2 py-0.5 text-xs text-white opacity-0 transition-opacity group-hover:opacity-100">
-        {t("posterTooltip")}
-      </span>
+      {t("posterLabel")}
     </a>
   );
 }
