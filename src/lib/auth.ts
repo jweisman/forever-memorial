@@ -51,11 +51,12 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         token.disabled = dbUser?.disabled ?? false;
         token.checkedAt = Date.now();
 
-        // Auto-promote admin by email
-        if (
-          process.env.ADMIN_EMAIL &&
-          user.email === process.env.ADMIN_EMAIL
-        ) {
+        // Auto-promote admin by email (ADMIN_EMAIL supports comma-separated list)
+        const adminEmails = (process.env.ADMIN_EMAIL ?? "")
+          .split(",")
+          .map((e) => e.trim())
+          .filter(Boolean);
+        if (adminEmails.includes(user.email!)) {
           token.role = "ADMIN";
           await prisma.user.update({
             where: { id: user.id },

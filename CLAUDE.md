@@ -43,7 +43,7 @@ new PrismaClient({ adapter });
 - JWT strategy — token includes `id`, `role`, `disabled`, `checkedAt`
 - `checkedAt`: re-checks `disabled`/`role` from DB every 5 minutes (ban enforcement)
 - Providers: Google OAuth + Nodemailer magic link
-- `ADMIN_EMAIL` env var: user with this email is auto-promoted to `ADMIN` on sign-in
+- `ADMIN_EMAIL` env var: users with matching emails are auto-promoted to `ADMIN` on sign-in; supports comma-separated list (e.g. `"a@x.com,b@x.com"`)
 - Pages: `signIn` → `/auth/signin` (locale-prefixed at runtime by next-intl)
 
 ## Middleware / Proxy
@@ -210,7 +210,7 @@ See `.env.example` for full docs. Required in production:
 | `EMAIL_SERVER` | SMTP connection string — required in prod, falls back to Mailhog locally |
 | `FROM_EMAIL` | Sender address |
 | `EMAIL_CUSTOM_HEADER` | Optional. Injects a single custom header into every outgoing email. Format: `"Header-Name: value"` (e.g. `"X-SES-CONFIGURATION-SET: smtp-logging"`) |
-| `ADMIN_EMAIL` | Auto-promoted to ADMIN on sign-in |
+| `ADMIN_EMAIL` | Auto-promoted to ADMIN on sign-in; supports comma-separated list for multiple admins |
 | `S3_BUCKET` | Upload bucket |
 | `S3_ACCESS_KEY/SECRET` | AWS or MinIO credentials |
 | `S3_REGION` | e.g. `us-east-1` |
