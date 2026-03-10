@@ -180,6 +180,13 @@ export const POST = withHandler(async (
     },
   });
 
+  // Auto-follow the memorial so activity shows up in the submitter's feed
+  await prisma.memorialFollow.upsert({
+    where: { userId_memorialId: { userId: session.user.id, memorialId: id } },
+    create: { userId: session.user.id, memorialId: id },
+    update: {},
+  });
+
   // Notify memorial owner
   if (memorial.owner.email) {
     const dashboardUrl = `${process.env.AUTH_URL || "http://localhost:3000"}/dashboard#pending-reviews`;

@@ -15,7 +15,7 @@ test.describe("Create memorial", () => {
   test("creates a memorial and lands on its page as the owner", async ({ page, request }) => {
     await page.goto("/en/dashboard/create");
 
-    await expect(page.getByRole("heading", { name: "Create a Memorial" })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Create a Legacy Page" })).toBeVisible();
 
     // Fill required fields
     await page.locator("#create-name").fill("Playwright Test Memorial");
@@ -26,7 +26,7 @@ test.describe("Create memorial", () => {
       r.url().includes("/api/memorials") && r.request().method() === "POST"
     );
 
-    await page.getByRole("button", { name: "Create Memorial" }).click();
+    await page.getByRole("button", { name: "Create Legacy Page" }).click();
 
     const response = await responsePromise;
     expect(response.status()).toBe(201);
@@ -38,6 +38,6 @@ test.describe("Create memorial", () => {
     await expect(page.getByRole("heading", { name: "Playwright Test Memorial" })).toBeVisible();
 
     // Owner sees the Edit Memorial link
-    await expect(page.getByRole("link", { name: /edit memorial/i })).toBeVisible();
+    await expect(page.getByRole("link", { name: /edit legacy page/i })).toBeVisible();
   });
 });

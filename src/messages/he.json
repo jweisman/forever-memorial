@@ -357,5 +357,17 @@
     "noMemories": "אין זיכרונות מאושרים.",
     "accessDenied": "אין גישה",
     "loading": "טוען..."
+  },
+  "Feed": {
+    "title": "הפיד שלך",
+    "createLegacyPage": "יצירת דף הנצחה",
+    "recentActivity": "פעילות אחרונה",
+    "noActivity": "אין פעילות אחרונה עדיין. עקבו אחרי דף הנצחה או שתפו זיכרון כדי לראות פעילות כאן.",
+    "loadMore": "טען עוד",
+    "sharedMemory": "שיתף/ה זיכרון על",
+    "anonymous": "מישהו",
+    "latestLegacyPages": "דפי הנצחה אחרונים",
+    "noLegacyPages": "עדיין לא נוצרו דפי הנצחה.",
+    "died": "נ. {year}"
   }
 }

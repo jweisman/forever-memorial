@@ -331,6 +331,18 @@
     "message": "The page you're looking for doesn't exist or has been moved.",
     "backHome": "Back to home"
   },
+  "Feed": {
+    "title": "Your Feed",
+    "createLegacyPage": "Create a Legacy Page",
+    "recentActivity": "Recent Activity",
+    "noActivity": "No recent activity yet. Follow a legacy page or share a memory to see activity here.",
+    "loadMore": "Load more",
+    "sharedMemory": "shared a memory on",
+    "anonymous": "Someone",
+    "latestLegacyPages": "Latest Legacy Pages",
+    "noLegacyPages": "No legacy pages have been created yet.",
+    "died": "d. {year}"
+  },
   "Admin": {
     "title": "Admin Panel",
     "subtitle": "Manage legacy pages and users",

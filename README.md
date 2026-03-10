@@ -9,6 +9,7 @@ A memorial website where families can create lasting tribute pages for loved one
 - **Hebrew date (Yahrzeit)** — Automatically displays the Hebrew calendar date of passing alongside the Gregorian date; supports after-sunset adjustment
 - **Yahrzeit calendar** — One-click download of the next 15 yahrzeit dates as an `.ics` calendar import (Apple Calendar, Google Calendar, Outlook) or a printable PDF
 - **QR code poster** — Download a printable A4 PDF poster with a QR code linking to the memorial page, for use at shiva or condolence visits so guests can submit their own memories
+- **Feed** — Authenticated users land on a personalized feed showing recent accepted memories from pages they own or follow, plus the latest legacy pages; submitting a memory auto-follows that page
 - **Follow legacy pages** — Logged-in users can follow any legacy page they don't own; followed pages appear in the dashboard for easy access
 - **Memory submissions** — Anyone with an account can submit memories with photos or videos; the page owner reviews and approves them
 - **Photo & video galleries** — Organized into drag-and-drop albums with lightbox viewing; supports MP4/WebM/MOV video uploads alongside images, keyboard navigation, mobile swipe gestures, and a loading indicator
@@ -43,11 +44,13 @@ src/
 │   │   ├── dashboard/         # User dashboard + admin panel
 │   │   │   ├── admin/         # Admin: manage memorials & users
 │   │   │   └── create/        # Create new memorial
+│   │   ├── feed/              # Feed page (authenticated home)
 │   │   ├── memorial/[slug]/   # Public memorial page
 │   │   │   └── edit/          # Edit memorial (owner only)
 │   │   └── search/            # Search results
 │   ├── api/                   # API routes
 │   │   ├── admin/             # Admin endpoints
+│   │   ├── feed/              # Feed API: activity + latest legacy pages
 │   │   ├── memorials/[id]/    # Memorial CRUD, albums, images, eulogies, memories, links, follow
 │   │   ├── search/            # Fuzzy search
 │   │   ├── user/              # Profile, submissions, follows, account deletion
