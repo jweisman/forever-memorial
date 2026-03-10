@@ -13,6 +13,7 @@ import {
   uploadMemoryVideo,
 } from "@/lib/upload";
 
+
 type MemoryImage = {
   id: string;
   thumbUrl: string;
@@ -125,6 +126,7 @@ export default function MySubmissionCard({
     setMediaError("");
     setNewFiles((prev) => [...prev, ...selected]);
     if (fileInputRef.current) fileInputRef.current.value = "";
+
   }
 
   async function handleSaveAndResubmit() {
@@ -306,9 +308,9 @@ export default function MySubmissionCard({
                     )}
                     <button
                       type="button"
-                      onClick={() =>
-                        setNewFiles((prev) => prev.filter((_, i) => i !== index))
-                      }
+                      onClick={() => {
+                        setNewFiles((prev) => prev.filter((_, i) => i !== index));
+                      }}
                       className="absolute end-0.5 top-0.5 flex size-5 items-center justify-center rounded-full bg-black/60 text-xs text-white hover:bg-black/80"
                     >
                       &times;

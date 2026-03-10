@@ -273,6 +273,70 @@ describe("PATCH /api/memorials/[id]", () => {
       })
     );
   });
+
+  it("sets projects when provided", async () => {
+    await PATCH(makePatchRequest({ projects: "Memorial fund at example.org" }), makeParams());
+    expect(m(prisma.memorial.update)).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({ projects: "Memorial fund at example.org" }),
+      })
+    );
+  });
+
+  it("sets projects to null when an empty string is provided", async () => {
+    await PATCH(makePatchRequest({ projects: "" }), makeParams());
+    expect(m(prisma.memorial.update)).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({ projects: null }),
+      })
+    );
+  });
+
+  // --- lifeStory sanitization ---
+
+  it("saves plain-text lifeStory unchanged", async () => {
+    await PATCH(makePatchRequest({ lifeStory: "A great life." }), makeParams());
+    expect(m(prisma.memorial.update)).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({ lifeStory: "A great life." }),
+      })
+    );
+  });
+
+  it("saves allowed rich-text tags in lifeStory", async () => {
+    const html = "<h2>Early life</h2><p>Born in <strong>Chicago</strong>.</p><h3>Career</h3><p><em>Dedicated</em> engineer.</p>";
+    await PATCH(makePatchRequest({ lifeStory: html }), makeParams());
+    expect(m(prisma.memorial.update)).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({ lifeStory: html }),
+      })
+    );
+  });
+
+  it("strips disallowed tags from lifeStory", async () => {
+    await PATCH(makePatchRequest({ lifeStory: "<p>Safe</p><script>alert(1)</script>" }), makeParams());
+    expect(m(prisma.memorial.update)).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({ lifeStory: "<p>Safe</p>" }),
+      })
+    );
+  });
+
+  it("strips disallowed attributes from lifeStory", async () => {
+    await PATCH(makePatchRequest({ lifeStory: "<p onclick=\"alert(1)\">Text</p>" }), makeParams());
+    const call = m(prisma.memorial.update).mock.calls[0][0];
+    expect(call.data.lifeStory).not.toContain("onclick");
+    expect(call.data.lifeStory).toContain("Text");
+  });
+
+  it("sets lifeStory to null when empty", async () => {
+    await PATCH(makePatchRequest({ lifeStory: "" }), makeParams());
+    expect(m(prisma.memorial.update)).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({ lifeStory: null }),
+      })
+    );
+  });
 });
 
 // ---------------------------------------------------------------------------

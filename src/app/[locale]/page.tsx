@@ -1,4 +1,6 @@
 import { getTranslations, setRequestLocale } from "next-intl/server";
+import { redirect } from "@/i18n/navigation";
+import { auth } from "@/lib/auth";
 import Button from "@/components/ui/Button";
 import SearchBar from "@/components/ui/SearchBar";
 import SectionHeading from "@/components/ui/SectionHeading";
@@ -26,6 +28,13 @@ export default async function Home({
 }) {
   const { locale } = await params;
   setRequestLocale(locale);
+
+  // Logged-in users go to the feed
+  const session = await auth();
+  if (session?.user?.id) {
+    redirect({ href: "/feed", locale });
+  }
+
   const t = await getTranslations("Home");
 
   const rawMemorials = await prisma.memorial.findMany({

@@ -47,7 +47,7 @@ function makeRequest(query: string, limit?: number) {
 describe("GET /api/search", () => {
   beforeEach(() => {
     vi.resetAllMocks();
-    vi.mocked(rateLimit).mockReturnValue({ success: true });
+    vi.mocked(rateLimit).mockReturnValue({ success: true, remaining: 10 });
     vi.mocked(getClientIp).mockReturnValue("127.0.0.1");
     vi.mocked(generateViewUrl).mockResolvedValue("https://s3.example.com/view");
     m(prisma.$queryRaw).mockResolvedValue([mockRow]);
@@ -56,7 +56,7 @@ describe("GET /api/search", () => {
   // --- Rate limiting ---
 
   it("returns 429 when rate limit is exceeded", async () => {
-    vi.mocked(rateLimit).mockReturnValue({ success: false });
+    vi.mocked(rateLimit).mockReturnValue({ success: false, remaining: 0 });
     const res = await GET(makeRequest("Jane"));
     expect(res.status).toBe(429);
     const data = await res.json();

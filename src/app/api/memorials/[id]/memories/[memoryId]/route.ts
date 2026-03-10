@@ -125,7 +125,7 @@ export const PATCH = withHandler(async (
 
   // Notify memorial owner about resubmission
   if (isResubmission && memory.memorial.owner.email) {
-    const dashboardUrl = `${process.env.AUTH_URL || "http://localhost:3000"}/dashboard`;
+    const dashboardUrl = `${process.env.AUTH_URL || "http://localhost:3000"}/dashboard#pending-reviews`;
     const email = memoryResubmittedEmail({
       memorialName: memory.memorial.name,
       submitterName: memory.name,

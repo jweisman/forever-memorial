@@ -5,16 +5,33 @@ import { PrismaAdapter } from "@auth/prisma-adapter";
 import { prisma } from "@/lib/prisma";
 import type { Role } from "@/generated/prisma/enums";
 
+// Use a unique cookie name to avoid collisions with other Next.js apps running
+// on the same host (cookies are domain-scoped, not port-scoped).
+export const SESSION_COOKIE_NAME = "forever.authjs.session-token";
+export const SECURE_SESSION_COOKIE_NAME = `__Secure-${SESSION_COOKIE_NAME}`;
+
 export const { handlers, auth, signIn, signOut } = NextAuth({
   adapter: PrismaAdapter(prisma),
   session: { strategy: "jwt" },
   pages: {
     signIn: "/auth/signin",
   },
+  cookies: {
+    sessionToken: {
+      name: SESSION_COOKIE_NAME,
+      options: {
+        httpOnly: true,
+        sameSite: "lax",
+        path: "/",
+        secure: process.env.NODE_ENV === "production",
+      },
+    },
+  },
   providers: [
     Google({
       clientId: process.env.GOOGLE_CLIENT_ID,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+      allowDangerousEmailAccountLinking: true,
     }),
     Nodemailer({
       server: process.env.EMAIL_SERVER ?? "smtp://localhost:1025",
@@ -34,11 +51,12 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         token.disabled = dbUser?.disabled ?? false;
         token.checkedAt = Date.now();
 
-        // Auto-promote admin by email
-        if (
-          process.env.ADMIN_EMAIL &&
-          user.email === process.env.ADMIN_EMAIL
-        ) {
+        // Auto-promote admin by email (ADMIN_EMAIL supports comma-separated list)
+        const adminEmails = (process.env.ADMIN_EMAIL ?? "")
+          .split(",")
+          .map((e) => e.trim())
+          .filter(Boolean);
+        if (adminEmails.includes(user.email!)) {
           token.role = "ADMIN";
           await prisma.user.update({
             where: { id: user.id },

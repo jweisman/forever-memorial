@@ -33,10 +33,14 @@ export async function proxy(request: NextRequest) {
   // Check if this is a protected route
   if (isProtected(pathname)) {
     const isSecure = request.nextUrl.protocol === "https:";
+    // Custom cookie name avoids collisions with other Next.js apps on the same
+    // host (cookies are domain-scoped, not port-scoped — localhost:3000 and
+    // localhost:3001 share the same jar). Must match SESSION_COOKIE_NAME in auth.ts.
     const token = await getToken({
       req: request,
       secret: process.env.AUTH_SECRET,
       secureCookie: isSecure,
+      cookieName: "forever.authjs.session-token",
     });
 
     if (!token) {

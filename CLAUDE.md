@@ -43,7 +43,7 @@ new PrismaClient({ adapter });
 - JWT strategy — token includes `id`, `role`, `disabled`, `checkedAt`
 - `checkedAt`: re-checks `disabled`/`role` from DB every 5 minutes (ban enforcement)
 - Providers: Google OAuth + Nodemailer magic link
-- `ADMIN_EMAIL` env var: user with this email is auto-promoted to `ADMIN` on sign-in
+- `ADMIN_EMAIL` env var: users with matching emails are auto-promoted to `ADMIN` on sign-in; supports comma-separated list (e.g. `"a@x.com,b@x.com"`)
 - Pages: `signIn` → `/auth/signin` (locale-prefixed at runtime by next-intl)
 
 ## Middleware / Proxy
@@ -81,6 +81,7 @@ src/
 │   │   ├── dashboard/          # User dashboard (profile, memorials, reviews)
 │   │   │   ├── admin/          # Admin panel (memorials + users management)
 │   │   │   └── create/         # Create memorial wizard
+│   │   ├── feed/               # Feed page — authenticated home; redirected from `/` for logged-in users
 │   │   ├── memorial/[slug]/    # Public memorial page
 │   │   │   └── edit/           # Edit memorial (owner only)
 │   │   ├── search/             # Search results
@@ -89,9 +90,12 @@ src/
 │   ├── api/
 │   │   ├── admin/              # Admin-only endpoints (require ADMIN role)
 │   │   ├── eulogies/extract-text/ # POST — extract text from .docx upload (mammoth)
-│   │   ├── memorials/[id]/     # Memorial CRUD + albums/images/eulogies/memories/yahrzeit
+│   │   ├── feed/
+│   │   │   ├── activity/       # GET — recent ACCEPTED memories from owned/followed pages (auth required)
+│   │   │   └── legacy-pages/   # GET — latest non-disabled legacy pages sorted by updatedAt (public)
+│   │   ├── memorials/[id]/     # Memorial CRUD + albums/images/eulogies/memories/yahrzeit/links/follow
 │   │   ├── search/             # Fuzzy search (pg_trgm, word_similarity)
-│   │   ├── user/               # Profile update, submissions, account delete
+│   │   ├── user/               # Profile update, submissions, follows, account delete
 │   │   └── health/             # GET /api/health → DB ping
 │   ├── global-error.tsx        # Root error boundary (inline styles only)
 │   └── globals.css             # Tailwind @theme, custom CSS, scrollbar-hide
@@ -140,6 +144,8 @@ src/
 - **Reorder endpoints**: include the ownership relation in the Prisma `where` clause to prevent IDOR — e.g. `where: { id: albumId, memorialId: id }` for albums, `where: { id: imageId, album: { memorialId: id } }` for images. Wrap the `$transaction` in try/catch and return 403 on error.
 - **S3 key validation in `/confirm` routes**: validate the client-supplied `s3Key` against a regex anchored to the memorial's `id` before writing it to the DB.
 - **Media uploads**: allowed MIME types are split into `ALLOWED_IMAGE_TYPES` and `ALLOWED_VIDEO_TYPES` (combined as `ALLOWED_TYPES`) in `src/lib/s3-helpers.ts`; use `isVideoType(mimeType)` to branch logic. Video uploads get a single presigned URL; image uploads get separate thumb + full presigned URLs. Update both lists if adding new formats.
+- **Auto-follow on memory submit**: `POST /api/memorials/[id]/memories` calls `prisma.memorialFollow.upsert` after creating the memory so the submitter's feed immediately shows activity on that page. Tests must mock `memorialFollow: { upsert: vi.fn() }` in the prisma mock.
+- **Rich text (Life Story)**: the `lifeStory` field stores sanitized HTML. On save in `PATCH /api/memorials/[id]`, `isomorphic-dompurify` strips everything except `p`, `br`, `strong`, `em`, `h2`, `h3`. Rendered in view mode via `RichTextContent` (`src/components/ui/RichTextContent.tsx`) with `dangerouslySetInnerHTML` (safe — content was sanitized server-side). Edited via `RichTextEditor` (`src/components/ui/RichTextEditor.tsx`) — Tiptap with Bold/Italic/H2/H3 toolbar. Legacy plain-text values are auto-detected (no `<` chars) and handled gracefully in both components.
 
 ## Error Handling & Sentry
 
@@ -168,14 +174,16 @@ Sentry is disabled when `SENTRY_DSN` / `NEXT_PUBLIC_SENTRY_DSN` are unset (safe 
 
 ## Database Schema Summary
 
-Models: `User`, `Account`, `Session`, `VerificationToken` (NextAuth), `Memorial`, `Album`, `Image`, `Eulogy`, `Memory`, `MemoryImage`
+Models: `User`, `Account`, `Session`, `VerificationToken` (NextAuth), `Memorial`, `Album`, `Image`, `Eulogy`, `Memory`, `MemoryImage`, `MemorialLink`, `MemorialFollow`
 
 Key relationships:
-- `User` → owns many `Memorial`s
-- `Memorial` → has `Album[]`, `Eulogy[]`, `Memory[]`
+- `User` → owns many `Memorial`s, follows many via `MemorialFollow`
+- `Memorial` → has `Album[]`, `Eulogy[]`, `Memory[]`, `MemorialLink[]`, `MemorialFollow[]`
 - `Album` → has `Image[]`
 - `Memory` → submitted by `User`, belongs to `Memorial`, has `MemoryImage[]`
 - `Memory.status`: `PENDING | ACCEPTED | IGNORED | RETURNED`
+- `MemorialLink` → belongs to `Memorial`; stores `url`, `title`, `description?`, `imageUrl?` (from OG scrape on save), `order`
+- `MemorialFollow` → composite PK `(userId, memorialId)`; cascade-deletes when either `User` or `Memorial` is deleted
 
 `MediaType` enum (`IMAGE | VIDEO`) is on both `Image` and `MemoryImage` with `@default(IMAGE)`. Storage differs by type:
 - **IMAGE**: `s3Key` is a base key; thumbnail = `thumbKeyFromBase(s3Key)`, full = `fullKeyFromBase(s3Key)`
@@ -183,7 +191,9 @@ Key relationships:
 
 All URL-generation code (API routes and the public memorial page server component) must check `mediaType` before calling `thumbKeyFromBase`/`fullKeyFromBase`.
 
-Notable `Memorial` fields: `deathAfterSunset Boolean @default(false)` — when true, Hebrew date is calculated as the next day (sunset = start of next Jewish day). See `src/lib/hebrewDate.ts`.
+Notable `Memorial` fields:
+- `deathAfterSunset Boolean @default(false)` — when true, Hebrew date is calculated as the next day (sunset = start of next Jewish day). See `src/lib/hebrewDate.ts`.
+- `projects String?` — free-text "Memorial projects & charities" section shown after Life Story on the public page.
 
 Fuzzy search requires: `CREATE EXTENSION IF NOT EXISTS pg_trgm;` (run once per DB). Search uses `word_similarity(query, name) > 0.4` (not `similarity`) to avoid false positives from names that share a common prefix.
 
@@ -200,7 +210,7 @@ See `.env.example` for full docs. Required in production:
 | `EMAIL_SERVER` | SMTP connection string — required in prod, falls back to Mailhog locally |
 | `FROM_EMAIL` | Sender address |
 | `EMAIL_CUSTOM_HEADER` | Optional. Injects a single custom header into every outgoing email. Format: `"Header-Name: value"` (e.g. `"X-SES-CONFIGURATION-SET: smtp-logging"`) |
-| `ADMIN_EMAIL` | Auto-promoted to ADMIN on sign-in |
+| `ADMIN_EMAIL` | Auto-promoted to ADMIN on sign-in; supports comma-separated list for multiple admins |
 | `S3_BUCKET` | Upload bucket |
 | `S3_ACCESS_KEY/SECRET` | AWS or MinIO credentials |
 | `S3_REGION` | e.g. `us-east-1` |
@@ -258,6 +268,7 @@ npx playwright test e2e/memorial-page.spec.ts   # run one file
 - `create-memorial.spec.ts` — create memorial flow (authenticated)
 - `submit-memory.spec.ts` — submit a memory (authenticated)
 - `review-memory.spec.ts` — owner approves a pending memory (authenticated)
+- `feed.spec.ts` — feed page: redirect from `/`, section headings, seeded memorial visible; unauthenticated redirect away
 
 **Auth in E2E:** `e2e/global-setup.ts` seeds a test user + memorial + pending memory via raw SQL, then mints a JWT cookie using `encode` from `@auth/core/jwt` with `salt: "authjs.session-token"` (the HTTP dev cookie name). The cookie is saved to `e2e/.auth/user.json` (gitignored) and loaded by Playwright's `storageState`. For tests that must be unauthenticated, add at the top of the file:
 
@@ -297,7 +308,7 @@ npm run dev
 ## Known Gotchas
 
 1. **`proxy.ts` not `middleware.ts`** — Next.js 16 uses `proxy.ts` as the middleware filename
-2. **`secureCookie` in getToken** — Must pass `secureCookie: isSecure` based on `request.nextUrl.protocol`, otherwise the JWT cookie is not found on HTTPS (production cookie name is `__Secure-authjs.session-token`)
+2. **Custom cookie name** — This app uses `forever.authjs.session-token` instead of the Auth.js default `authjs.session-token`. Reason: cookies are domain-scoped not port-scoped, so two Next.js apps on the same host collide. Configured in `src/lib/auth.ts` (cookies.sessionToken.name = `SESSION_COOKIE_NAME`); `getToken()` in `src/proxy.ts` passes `cookieName: "forever.authjs.session-token"` explicitly; `e2e/global-setup.ts` uses it as both `name` and `salt` (Auth.js uses the cookie name as the HKDF salt for key derivation — salt must always match). `secure` is set to `process.env.NODE_ENV === "production"` in the cookie options.
 3. **No locale prefix on NextAuth redirects** — After login, NextAuth redirects to e.g. `/dashboard` (bare). The proxy must pass these to i18n middleware first, not auth-check them
 4. **Prisma in Edge Runtime** — `src/lib/prisma.ts` cannot be imported in `proxy.ts` (Edge Runtime). Use `getToken()` for lightweight auth checks there
 5. **`@/i18n/navigation` not `next/link`** — Using `next/link` directly breaks locale-aware navigation for non-default locales

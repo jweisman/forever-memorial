@@ -20,6 +20,10 @@ import MemoryCard from "@/components/memorial/MemoryCard";
 import MemorySubmissionForm from "@/components/memorial/MemorySubmissionForm";
 import YahrzeitCalendar from "@/components/memorial/YahrzeitCalendar";
 import PosterDownload from "@/components/memorial/PosterDownload";
+import MemorialNav from "@/components/memorial/MemorialNav";
+import FollowButton from "@/components/memorial/FollowButton";
+import RichTextContent from "@/components/ui/RichTextContent";
+import CollapsibleRichText from "@/components/ui/CollapsibleRichText";
 
 export const dynamic = "force-dynamic";
 
@@ -214,6 +218,22 @@ export default async function MemorialPage({ params }: Props) {
 
   const session = await auth();
   const isOwner = session?.user?.id === memorial.ownerId;
+  const isLoggedIn = !!session?.user?.id;
+
+  const [links, followRecord] = await Promise.all([
+    prisma.memorialLink.findMany({
+      where: { memorialId: memorial.id },
+      orderBy: { order: "asc" },
+    }),
+    isLoggedIn && !isOwner
+      ? prisma.memorialFollow.findUnique({
+          where: { userId_memorialId: { userId: session!.user!.id, memorialId: memorial.id } },
+          select: { userId: true },
+        })
+      : null,
+  ]);
+
+  const isFollowing = !!followRecord;
 
   // Prepare gallery data — only albums with images
   const galleryAlbums = memorial.albums
@@ -246,18 +266,30 @@ export default async function MemorialPage({ params }: Props) {
     }),
   };
 
+  const navSections = [
+    { id: "details", label: t("details") },
+    ...(memorial.funeralInfo ? [{ id: "funeral-info", label: t("funeralInfo") }] : []),
+    ...(memorial.survivedBy ? [{ id: "survived-by", label: t("survivedBy") }] : []),
+    ...(memorial.lifeStory ? [{ id: "life-story", label: t("lifeStory") }] : []),
+    ...(memorial.projects ? [{ id: "projects", label: t("navProjects") }] : []),
+    ...(links.length > 0 ? [{ id: "links", label: t("links") }] : []),
+    ...(galleryAlbums.length > 0 ? [{ id: "photos", label: t("photos") }] : []),
+    ...(memorial.eulogies.length > 0 ? [{ id: "eulogies", label: t("eulogies") }] : []),
+    ...(memorial.memories.length > 0 ? [{ id: "memories", label: t("memories") }] : []),
+    { id: "share-memory", label: t("shareMemory"), isCta: true },
+  ];
+
   return (
     <>
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
-
       <article className="mx-auto max-w-3xl px-4 py-12 sm:px-6 lg:px-8">
         {/* Header */}
         <header className="text-center">
           {/* Memorial picture */}
-          <div className="mx-auto mb-6 flex size-28 items-center justify-center overflow-hidden rounded-full bg-warm-200">
+          <div className="mx-auto mb-6 flex size-40 items-center justify-center overflow-hidden rounded-full bg-warm-200">
             {memorial.memorialPictureUrl ? (
               <img
                 src={memorial.memorialPictureUrl}
@@ -266,7 +298,7 @@ export default async function MemorialPage({ params }: Props) {
               />
             ) : (
               <svg
-                className="size-14 text-warm-400"
+                className="size-20 text-warm-400"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -300,22 +332,35 @@ export default async function MemorialPage({ params }: Props) {
             </p>
           )}
 
-          {isOwner && (
-            <div className="mt-6">
-              <Button
-                href={`/memorial/${memorial.slug}/edit`}
-                variant="secondary"
-                size="sm"
-              >
-                {t("editMemorial")}
-              </Button>
+          {(isOwner || (isLoggedIn && !isOwner)) && (
+            <div className="mt-6 flex items-center justify-center gap-3">
+              {isOwner && (
+                <>
+                  <Button
+                    href={`/memorial/${memorial.slug}/edit`}
+                    variant="secondary"
+                    size="sm"
+                  >
+                    {t("editMemorial")}
+                  </Button>
+                  <PosterDownload memorialId={memorial.id} />
+                </>
+              )}
+              {!isOwner && (
+                <FollowButton
+                  memorialId={memorial.id}
+                  initialFollowing={isFollowing}
+                />
+              )}
             </div>
           )}
         </header>
 
+        <MemorialNav sections={navSections} />
+
         <div className="mt-12 space-y-8">
           {/* Details */}
-          <Card>
+          <Card id="details" className="scroll-mt-14">
             <h2 className="font-heading text-lg font-semibold text-warm-800">
               {t("details")}
             </h2>
@@ -342,7 +387,6 @@ export default async function MemorialPage({ params }: Props) {
                     memorialId={memorial.id}
                     memorialName={memorial.name}
                   />
-                  <PosterDownload memorialId={memorial.id} />
                 </dd>
               </div>
               {memorial.placeOfDeath && (
@@ -360,7 +404,7 @@ export default async function MemorialPage({ params }: Props) {
 
           {/* Funeral info */}
           {memorial.funeralInfo && (
-            <Card>
+            <Card id="funeral-info" className="scroll-mt-14">
               <h2 className="font-heading text-lg font-semibold text-warm-800">
                 {t("funeralInfo")}
               </h2>
@@ -372,7 +416,7 @@ export default async function MemorialPage({ params }: Props) {
 
           {/* Survived by */}
           {memorial.survivedBy && (
-            <Card>
+            <Card id="survived-by" className="scroll-mt-14">
               <h2 className="font-heading text-lg font-semibold text-warm-800">
                 {t("survivedBy")}
               </h2>
@@ -384,19 +428,82 @@ export default async function MemorialPage({ params }: Props) {
 
           {/* Life story */}
           {memorial.lifeStory && (
-            <Card>
+            <Card id="life-story" className="scroll-mt-14">
               <h2 className="font-heading text-lg font-semibold text-warm-800">
                 {t("lifeStory")}
               </h2>
+              <CollapsibleRichText html={memorial.lifeStory} className="mt-3" />
+            </Card>
+          )}
+
+          {/* Memorial projects & charities */}
+          {memorial.projects && (
+            <Card id="projects" className="scroll-mt-14">
+              <h2 className="font-heading text-lg font-semibold text-warm-800">
+                {t("projects")}
+              </h2>
               <p className="mt-3 whitespace-pre-wrap text-sm leading-relaxed text-warm-700">
-                {memorial.lifeStory}
+                {memorial.projects}
               </p>
             </Card>
           )}
 
+          {/* External links */}
+          {links.length > 0 && (
+            <section id="links" className="scroll-mt-14">
+              <h2 className="font-heading text-xl font-semibold text-warm-800">
+                {t("links")}
+              </h2>
+              <div className="mt-4 grid gap-3 sm:grid-cols-2">
+                {links.map((link) => {
+                  const domain = (() => {
+                    try { return new URL(link.url).hostname.replace(/^www\./, ""); }
+                    catch { return link.url; }
+                  })();
+                  return (
+                    <a
+                      key={link.id}
+                      href={link.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex min-w-0 items-start gap-3 overflow-hidden rounded-xl border border-border bg-surface p-4 transition-colors hover:border-accent hover:bg-warm-50"
+                    >
+                      {link.imageUrl ? (
+                        <img
+                          src={link.imageUrl}
+                          alt=""
+                          className="size-12 shrink-0 rounded-lg object-cover"
+                        />
+                      ) : (
+                        <img
+                          src={`https://www.google.com/s2/favicons?domain=${domain}&sz=48`}
+                          alt=""
+                          className="size-12 shrink-0 rounded-lg bg-warm-100 object-contain p-2"
+                        />
+                      )}
+                      <div className="min-w-0">
+                        <p className="truncate font-medium text-warm-800">
+                          {link.title}
+                        </p>
+                        {link.description && (
+                          <p className="mt-0.5 line-clamp-2 text-xs text-warm-500">
+                            {link.description}
+                          </p>
+                        )}
+                        <p className="mt-1 truncate text-xs text-accent">
+                          {domain}
+                        </p>
+                      </div>
+                    </a>
+                  );
+                })}
+              </div>
+            </section>
+          )}
+
           {/* Photo Gallery */}
           {galleryAlbums.length > 0 && (
-            <section>
+            <section id="photos" className="scroll-mt-14">
               <h2 className="font-heading text-xl font-semibold text-warm-800">
                 {t("photos")}
               </h2>
@@ -408,7 +515,7 @@ export default async function MemorialPage({ params }: Props) {
 
           {/* Eulogies */}
           {memorial.eulogies.length > 0 && (
-            <section>
+            <section id="eulogies" className="scroll-mt-14">
               <h2 className="font-heading text-xl font-semibold text-warm-800">
                 {t("eulogies")}
               </h2>
@@ -437,7 +544,7 @@ export default async function MemorialPage({ params }: Props) {
 
           {/* Memories */}
           {memorial.memories.length > 0 && (
-            <section>
+            <section id="memories" className="scroll-mt-14">
               <h2 className="font-heading text-xl font-semibold text-warm-800">
                 {t("memories")}
               </h2>
@@ -450,7 +557,7 @@ export default async function MemorialPage({ params }: Props) {
           )}
 
           {/* Share a Memory */}
-          <section>
+          <section id="share-memory" className="scroll-mt-14">
             <h2 className="font-heading text-xl font-semibold text-warm-800">
               {t("shareMemory")}
             </h2>

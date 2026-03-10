@@ -11,6 +11,7 @@ vi.mock("@/lib/prisma", () => ({
   prisma: {
     memorial: { findUnique: vi.fn() },
     memory: { findMany: vi.fn(), create: vi.fn() },
+    memorialFollow: { upsert: vi.fn() },
   },
 }));
 vi.mock("@/lib/admin", () => ({ isUserDisabled: vi.fn() }));
@@ -271,6 +272,7 @@ describe("POST /api/memorials/[id]/memories", () => {
     vi.mocked(rateLimit).mockReturnValue({ success: true, remaining: 9 });
     m(prisma.memorial.findUnique).mockResolvedValue(mockMemorial);
     m(prisma.memory.create).mockResolvedValue(mockCreatedMemory);
+    m(prisma.memorialFollow.upsert).mockResolvedValue({});
   });
 
   // --- Auth & guard ---

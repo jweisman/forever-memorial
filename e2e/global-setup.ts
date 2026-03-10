@@ -56,7 +56,7 @@ async function globalSetup() {
       checkedAt: Date.now(),
     },
     secret: process.env.AUTH_SECRET!,
-    salt: "authjs.session-token",
+    salt: "forever.authjs.session-token",
   });
 
   // Write the Playwright storageState file
@@ -67,7 +67,7 @@ async function globalSetup() {
     JSON.stringify({
       cookies: [
         {
-          name: "authjs.session-token",
+          name: "forever.authjs.session-token",
           value: token,
           domain: "localhost",
           path: "/",
