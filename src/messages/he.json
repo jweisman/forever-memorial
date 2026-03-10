@@ -279,6 +279,13 @@
     "accept": "אישור",
     "ignore": "הסתרה",
     "return": "החזרה",
+    "edit": "עריכה",
+    "save": "שמור",
+    "nameLabel": "שם",
+    "anonymous": "הצג כאנונימי/ת",
+    "relationLabel": "קשר",
+    "relationPlaceholder": "למשל חבר, עמית",
+    "memoryLabel": "זיכרון",
     "memoryPhoto": "תמונת זיכרון"
   },
   "MySubmission": {

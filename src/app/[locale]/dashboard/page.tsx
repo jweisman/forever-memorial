@@ -306,7 +306,7 @@ export default function DashboardPage() {
         </Card>
 
         {/* Pending Reviews */}
-        <Card>
+        <Card id="pending-reviews">
           <div className="flex items-center justify-between">
             <h2 className="font-heading text-lg font-semibold text-warm-800">
               {t("pendingReviews")}

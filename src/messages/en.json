@@ -279,6 +279,13 @@
     "accept": "Accept",
     "ignore": "Ignore",
     "return": "Return",
+    "edit": "Edit",
+    "save": "Save",
+    "nameLabel": "Name",
+    "anonymous": "Display as anonymous",
+    "relationLabel": "Relation",
+    "relationPlaceholder": "e.g. Friend, Colleague",
+    "memoryLabel": "Memory",
     "memoryPhoto": "Memory photo"
   },
   "MySubmission": {
