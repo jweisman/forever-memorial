@@ -12,6 +12,44 @@ import {
   uploadMemoryVideo,
 } from "@/lib/upload";
 
+function generateVideoThumbnail(file: File): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const video = document.createElement("video");
+    const objectUrl = URL.createObjectURL(file);
+    video.muted = true;
+    video.playsInline = true;
+    video.preload = "metadata";
+    video.src = objectUrl;
+
+    const cleanup = () => URL.revokeObjectURL(objectUrl);
+    const timer = setTimeout(() => { cleanup(); reject(new Error("timeout")); }, 10000);
+
+    video.addEventListener("loadedmetadata", () => {
+      video.currentTime = 0.1;
+    });
+
+    video.addEventListener("seeked", () => {
+      clearTimeout(timer);
+      try {
+        const canvas = document.createElement("canvas");
+        canvas.width = video.videoWidth || 160;
+        canvas.height = video.videoHeight || 160;
+        const ctx = canvas.getContext("2d");
+        if (!ctx) { cleanup(); reject(new Error("no ctx")); return; }
+        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+        cleanup();
+        resolve(canvas.toDataURL("image/jpeg", 0.7));
+      } catch (e) {
+        cleanup();
+        reject(e);
+      }
+    });
+
+    video.addEventListener("error", () => { clearTimeout(timer); cleanup(); reject(new Error("load error")); });
+    video.load();
+  });
+}
+
 type MemorySubmissionFormProps = {
   memorialId: string;
   onSubmitted?: () => void;
@@ -31,6 +69,7 @@ export default function MemorySubmissionForm({
   const [relation, setRelation] = useState("");
   const [text, setText] = useState("");
   const [files, setFiles] = useState<File[]>([]);
+  const [videoThumbnails, setVideoThumbnails] = useState<Map<File, string>>(new Map());
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState(false);
@@ -105,10 +144,26 @@ export default function MemorySubmissionForm({
     setError("");
     setFiles((prev) => [...prev, ...selected]);
     if (inputRef.current) inputRef.current.value = "";
+
+    for (const file of selected) {
+      if (isVideoFile(file)) {
+        generateVideoThumbnail(file)
+          .then((thumbnail) =>
+            setVideoThumbnails((prev) => new Map(prev).set(file, thumbnail))
+          )
+          .catch(() => {/* fall back to <video> element */});
+      }
+    }
   }
 
   function removeFile(index: number) {
+    const file = files[index];
     setFiles((prev) => prev.filter((_, i) => i !== index));
+    setVideoThumbnails((prev) => {
+      const next = new Map(prev);
+      next.delete(file);
+      return next;
+    });
   }
 
   if (success) {
@@ -212,12 +267,20 @@ export default function MemorySubmissionForm({
                 className="relative size-20 overflow-hidden rounded-lg bg-warm-100"
               >
                 {isVideoFile(file) ? (
-                  <video
-                    src={URL.createObjectURL(file)}
-                    className="size-full object-cover"
-                    muted
-                    preload="metadata"
-                  />
+                  videoThumbnails.has(file) ? (
+                    <img
+                      src={videoThumbnails.get(file)}
+                      alt=""
+                      className="size-full object-cover"
+                    />
+                  ) : (
+                    <video
+                      src={URL.createObjectURL(file)}
+                      className="size-full object-cover"
+                      muted
+                      preload="metadata"
+                    />
+                  )
                 ) : (
                   <img
                     src={URL.createObjectURL(file)}
