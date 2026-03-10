@@ -285,8 +285,6 @@ export default async function MemorialPage({ params }: Props) {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
-      <MemorialNav sections={navSections} />
-
       <article className="mx-auto max-w-3xl px-4 py-12 sm:px-6 lg:px-8">
         {/* Header */}
         <header className="text-center">
@@ -357,6 +355,8 @@ export default async function MemorialPage({ params }: Props) {
             </div>
           )}
         </header>
+
+        <MemorialNav sections={navSections} />
 
         <div className="mt-12 space-y-8">
           {/* Details */}
