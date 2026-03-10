@@ -3,8 +3,15 @@
 import { useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import Button from "@/components/ui/Button";
+import VideoThumbnail from "./VideoThumbnail";
 
-type MemoryImage = { id: string; thumbUrl: string; url: string; caption: string | null; mediaType: "IMAGE" | "VIDEO" };
+type MemoryImage = {
+  id: string;
+  thumbUrl: string;
+  url: string;
+  caption: string | null;
+  mediaType: "IMAGE" | "VIDEO";
+};
 
 type MemoryReviewCardProps = {
   memory: {
@@ -53,39 +60,29 @@ export default function MemoryReviewCard({
 
   // Edit form state
   const [showEditForm, setShowEditForm] = useState(false);
-  const [editName, setEditName] = useState(memory.name);
-  const [editWithholdName, setEditWithholdName] = useState(memory.withholdName);
-  const [editRelation, setEditRelation] = useState(memory.relation ?? "");
-  const [editText, setEditText] = useState(memory.text);
-  const [editImages, setEditImages] = useState<MemoryImage[]>(memory.images);
-  const [pendingRemovals, setPendingRemovals] = useState<string[]>([]);
+  const [editName, setEditName] = useState("");
+  const [editWithholdName, setEditWithholdName] = useState(false);
+  const [editRelation, setEditRelation] = useState("");
+  const [editText, setEditText] = useState("");
+  const [editImages, setEditImages] = useState<MemoryImage[]>([]);
   const [saving, setSaving] = useState(false);
 
   function openEdit() {
     setEditName(displayName);
     setEditWithholdName(displayWithholdName);
-    setEditRelation(displayRelation ?? "");
+    setEditRelation(displayRelation || "");
     setEditText(displayText);
     setEditImages(displayImages);
-    setPendingRemovals([]);
     setShowEditForm(true);
   }
 
-  function removeEditImage(imageId: string) {
-    setEditImages((prev) => prev.filter((img) => img.id !== imageId));
-    setPendingRemovals((prev) => [...prev, imageId]);
+  function removeEditImage(id: string) {
+    setEditImages((prev) => prev.filter((img) => img.id !== id));
   }
 
   async function handleSave() {
     if (!editName.trim() || !editText.trim()) return;
     setSaving(true);
-
-    for (const imageId of pendingRemovals) {
-      await fetch(
-        `/api/memorials/${memory.memorialId}/memories/${memory.id}/images/${imageId}`,
-        { method: "DELETE" }
-      );
-    }
 
     const res = await fetch(
       `/api/memorials/${memory.memorialId}/memories/${memory.id}`,
@@ -100,13 +97,13 @@ export default function MemoryReviewCard({
         }),
       }
     );
+
     if (res.ok) {
       setDisplayName(editName.trim());
       setDisplayWithholdName(editWithholdName);
       setDisplayRelation(editRelation.trim() || null);
       setDisplayText(editText.trim());
       setDisplayImages(editImages);
-      setPendingRemovals([]);
       setShowEditForm(false);
     }
     setSaving(false);
@@ -193,11 +190,9 @@ export default function MemoryReviewCard({
                     className="relative size-20 shrink-0 overflow-hidden rounded-lg bg-warm-100"
                   >
                     {img.mediaType === "VIDEO" ? (
-                      <video
+                      <VideoThumbnail
                         src={img.thumbUrl}
                         className="size-full object-cover"
-                        muted
-                        preload="metadata"
                       />
                     ) : (
                       <img
@@ -286,11 +281,9 @@ export default function MemoryReviewCard({
                   className="relative size-16 shrink-0 overflow-hidden rounded-lg bg-warm-100"
                 >
                   {img.mediaType === "VIDEO" ? (
-                    <video
+                    <VideoThumbnail
                       src={img.thumbUrl}
                       className="size-full object-cover"
-                      muted
-                      preload="metadata"
                     />
                   ) : (
                     <img

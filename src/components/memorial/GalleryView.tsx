@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Lightbox from "./Lightbox";
+import VideoThumbnail from "./VideoThumbnail";
 import ScrollableRow from "./ScrollableRow";
 
 type ImageWithUrl = {
@@ -61,11 +62,9 @@ export default function GalleryView({ albums }: GalleryViewProps) {
                   className="group relative size-36 shrink-0 overflow-hidden rounded-lg bg-warm-100"
                 >
                   {image.mediaType === "VIDEO" ? (
-                    <video
+                    <VideoThumbnail
                       src={image.thumbUrl}
                       className="size-full object-cover transition-transform group-hover:scale-105"
-                      muted
-                      preload="metadata"
                       draggable={false}
                     />
                   ) : (

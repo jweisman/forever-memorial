@@ -5,6 +5,7 @@ import { useTranslations } from "next-intl";
 import Button from "@/components/ui/Button";
 import ImageUploader from "./ImageUploader";
 import ScrollableRow from "./ScrollableRow";
+import VideoThumbnail from "./VideoThumbnail";
 
 type ImageRecord = {
   id: string;
@@ -225,11 +226,9 @@ export default function AlbumSection({
                   } ${dropIndex === index ? "ring-2 ring-accent" : ""}`}
                 >
                   {image.mediaType === "VIDEO" ? (
-                    <video
+                    <VideoThumbnail
                       src={image.thumbUrl}
                       className="size-full cursor-grab object-cover active:cursor-grabbing"
-                      muted
-                      preload="metadata"
                       draggable={false}
                     />
                   ) : (
