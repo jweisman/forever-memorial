@@ -55,6 +55,7 @@
   },
   "Memorial": {
     "notFound": "Memorial Not Found",
+    "navProjects": "Projects",
     "details": "Details",
     "born": "Born",
     "passedAway": "Passed away",
