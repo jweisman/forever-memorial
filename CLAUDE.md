@@ -140,6 +140,7 @@ src/
 - **Reorder endpoints**: include the ownership relation in the Prisma `where` clause to prevent IDOR — e.g. `where: { id: albumId, memorialId: id }` for albums, `where: { id: imageId, album: { memorialId: id } }` for images. Wrap the `$transaction` in try/catch and return 403 on error.
 - **S3 key validation in `/confirm` routes**: validate the client-supplied `s3Key` against a regex anchored to the memorial's `id` before writing it to the DB.
 - **Media uploads**: allowed MIME types are split into `ALLOWED_IMAGE_TYPES` and `ALLOWED_VIDEO_TYPES` (combined as `ALLOWED_TYPES`) in `src/lib/s3-helpers.ts`; use `isVideoType(mimeType)` to branch logic. Video uploads get a single presigned URL; image uploads get separate thumb + full presigned URLs. Update both lists if adding new formats.
+- **Rich text (Life Story)**: the `lifeStory` field stores sanitized HTML. On save in `PATCH /api/memorials/[id]`, `isomorphic-dompurify` strips everything except `p`, `br`, `strong`, `em`, `h2`, `h3`. Rendered in view mode via `RichTextContent` (`src/components/ui/RichTextContent.tsx`) with `dangerouslySetInnerHTML` (safe — content was sanitized server-side). Edited via `RichTextEditor` (`src/components/ui/RichTextEditor.tsx`) — Tiptap with Bold/Italic/H2/H3 toolbar. Legacy plain-text values are auto-detected (no `<` chars) and handled gracefully in both components.
 
 ## Error Handling & Sentry
 

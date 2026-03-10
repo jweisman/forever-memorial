@@ -4,7 +4,8 @@ A memorial website where families can create lasting tribute pages for loved one
 
 ## Features
 
-- **Memorial pages** — Create a page with a life story, burial details, memorial projects & charities, external links, photos, and eulogies
+- **Memorial pages** — Create a page with a life story (with rich text: bold, italic, H2/H3 headings), burial details, memorial projects & charities, external links, photos, and eulogies
+- **Page navigation** — Sticky section nav auto-appears on scroll with a pinned "Share a Memory" CTA; only sections with content are shown
 - **Hebrew date (Yahrzeit)** — Automatically displays the Hebrew calendar date of passing alongside the Gregorian date; supports after-sunset adjustment
 - **Yahrzeit calendar** — One-click download of the next 15 yahrzeit dates as an `.ics` calendar import (Apple Calendar, Google Calendar, Outlook) or a printable PDF
 - **QR code poster** — Download a printable A4 PDF poster with a QR code linking to the memorial page, for use at shiva or condolence visits so guests can submit their own memories

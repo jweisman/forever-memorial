@@ -21,6 +21,8 @@ import MemorySubmissionForm from "@/components/memorial/MemorySubmissionForm";
 import YahrzeitCalendar from "@/components/memorial/YahrzeitCalendar";
 import PosterDownload from "@/components/memorial/PosterDownload";
 import MemorialNav from "@/components/memorial/MemorialNav";
+import RichTextContent from "@/components/ui/RichTextContent";
+import CollapsibleRichText from "@/components/ui/CollapsibleRichText";
 
 export const dynamic = "force-dynamic";
 
@@ -408,9 +410,7 @@ export default async function MemorialPage({ params }: Props) {
               <h2 className="font-heading text-lg font-semibold text-warm-800">
                 {t("lifeStory")}
               </h2>
-              <p className="mt-3 whitespace-pre-wrap text-sm leading-relaxed text-warm-700">
-                {memorial.lifeStory}
-              </p>
+              <CollapsibleRichText html={memorial.lifeStory} className="mt-3" />
             </Card>
           )}
 

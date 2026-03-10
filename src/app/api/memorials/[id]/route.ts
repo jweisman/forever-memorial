@@ -5,6 +5,9 @@ import { buildSlug } from "@/lib/slug";
 import { generateViewUrl } from "@/lib/s3-helpers";
 import { isUserDisabled } from "@/lib/admin";
 import { withHandler } from "@/lib/api-error";
+import DOMPurify from "isomorphic-dompurify";
+
+const LIFE_STORY_ALLOWED_TAGS = ["p", "br", "strong", "em", "h2", "h3"];
 
 export const GET = withHandler(async (
   _request: Request,
@@ -114,7 +117,13 @@ export const PATCH = withHandler(async (
     data.survivedBy = body.survivedBy?.trim() || null;
   }
   if (body.lifeStory !== undefined) {
-    data.lifeStory = body.lifeStory?.trim() || null;
+    const raw = body.lifeStory?.trim() || null;
+    data.lifeStory = raw
+      ? DOMPurify.sanitize(raw, {
+          ALLOWED_TAGS: LIFE_STORY_ALLOWED_TAGS,
+          ALLOWED_ATTR: [],
+        }) || null
+      : null;
   }
   if (body.projects !== undefined) {
     data.projects = body.projects?.trim() || null;

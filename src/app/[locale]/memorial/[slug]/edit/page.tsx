@@ -8,6 +8,7 @@ import { parseIdFromSlug } from "@/lib/slug";
 import Card from "@/components/ui/Card";
 import Button from "@/components/ui/Button";
 import SectionHeading from "@/components/ui/SectionHeading";
+import RichTextEditor from "@/components/ui/RichTextEditor";
 import EulogyForm from "@/components/memorial/EulogyForm";
 import MemorialPictureUploader from "@/components/memorial/MemorialPictureUploader";
 import AlbumSection from "@/components/memorial/AlbumSection";
@@ -574,18 +575,12 @@ export default function MemorialEditPage({
             </div>
 
             <div>
-              <label
-                htmlFor="edit-life-story"
-                className="block text-sm font-medium text-warm-700"
-              >
+              <label className="block text-sm font-medium text-warm-700">
                 {t("lifeStoryLabel")}
               </label>
-              <textarea
-                id="edit-life-story"
+              <RichTextEditor
                 value={lifeStory}
-                onChange={(e) => setLifeStory(e.target.value)}
-                rows={8}
-                className={inputClass}
+                onChange={setLifeStory}
                 placeholder={t("lifeStoryPlaceholder")}
               />
             </div>
