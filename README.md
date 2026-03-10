@@ -72,7 +72,7 @@ src/
 
 ```bash
 git clone <repo-url>
-cd claude-intro
+cd forever-memorial
 npm install
 ```
 
