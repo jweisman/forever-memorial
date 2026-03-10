@@ -9,6 +9,7 @@ A memorial website where families can create lasting tribute pages for loved one
 - **Hebrew date (Yahrzeit)** — Automatically displays the Hebrew calendar date of passing alongside the Gregorian date; supports after-sunset adjustment
 - **Yahrzeit calendar** — One-click download of the next 15 yahrzeit dates as an `.ics` calendar import (Apple Calendar, Google Calendar, Outlook) or a printable PDF
 - **QR code poster** — Download a printable A4 PDF poster with a QR code linking to the memorial page, for use at shiva or condolence visits so guests can submit their own memories
+- **Follow memorials** — Logged-in users can follow any memorial page they don't own; followed memorials appear in the dashboard for easy access
 - **Memory submissions** — Anyone with an account can submit memories with photos or videos; the page owner reviews and approves them
 - **Photo & video galleries** — Organized into drag-and-drop albums with lightbox viewing; supports MP4/WebM/MOV video uploads alongside images, keyboard navigation, mobile swipe gestures, and a loading indicator
 - **Eulogies** — Add, edit, and reorder eulogies with speaker attribution; import text directly from a Word (.docx) file
@@ -47,9 +48,9 @@ src/
 │   │   └── search/            # Search results
 │   ├── api/                   # API routes
 │   │   ├── admin/             # Admin endpoints
-│   │   ├── memorials/[id]/    # Memorial CRUD, albums, images, eulogies, memories, links
+│   │   ├── memorials/[id]/    # Memorial CRUD, albums, images, eulogies, memories, links, follow
 │   │   ├── search/            # Fuzzy search
-│   │   ├── user/              # Profile, submissions, account deletion
+│   │   ├── user/              # Profile, submissions, follows, account deletion
 │   │   └── health/            # Health check
 │   ├── global-error.tsx       # Root error boundary
 │   └── globals.css            # Tailwind theme + custom utilities

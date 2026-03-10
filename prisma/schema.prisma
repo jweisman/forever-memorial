@@ -40,6 +40,7 @@ model User {
   submittedMemories Memory[]
   accounts          Account[]
   sessions          Session[]
+  follows           MemorialFollow[]
 
   @@map("users")
 }
@@ -103,11 +104,12 @@ model Memorial {
   createdAt       DateTime  @default(now())
   updatedAt       DateTime  @updatedAt
 
-  owner    User           @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  owner    User             @relation(fields: [ownerId], references: [id], onDelete: Cascade)
   albums   Album[]
   eulogies Eulogy[]
   memories Memory[]
   links    MemorialLink[]
+  followers MemorialFollow[]
 
   @@index([name])
   @@map("memorials")
@@ -188,6 +190,18 @@ model MemorialLink {
   memorial Memorial @relation(fields: [memorialId], references: [id], onDelete: Cascade)
 
   @@map("memorial_links")
+}
+
+model MemorialFollow {
+  userId     String
+  memorialId String
+  createdAt  DateTime @default(now())
+
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  memorial Memorial @relation(fields: [memorialId], references: [id], onDelete: Cascade)
+
+  @@id([userId, memorialId])
+  @@map("memorial_follows")
 }
 
 model MemoryImage {

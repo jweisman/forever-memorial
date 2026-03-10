@@ -169,15 +169,16 @@ Sentry is disabled when `SENTRY_DSN` / `NEXT_PUBLIC_SENTRY_DSN` are unset (safe 
 
 ## Database Schema Summary
 
-Models: `User`, `Account`, `Session`, `VerificationToken` (NextAuth), `Memorial`, `Album`, `Image`, `Eulogy`, `Memory`, `MemoryImage`, `MemorialLink`
+Models: `User`, `Account`, `Session`, `VerificationToken` (NextAuth), `Memorial`, `Album`, `Image`, `Eulogy`, `Memory`, `MemoryImage`, `MemorialLink`, `MemorialFollow`
 
 Key relationships:
-- `User` → owns many `Memorial`s
-- `Memorial` → has `Album[]`, `Eulogy[]`, `Memory[]`, `MemorialLink[]`
+- `User` → owns many `Memorial`s, follows many via `MemorialFollow`
+- `Memorial` → has `Album[]`, `Eulogy[]`, `Memory[]`, `MemorialLink[]`, `MemorialFollow[]`
 - `Album` → has `Image[]`
 - `Memory` → submitted by `User`, belongs to `Memorial`, has `MemoryImage[]`
 - `Memory.status`: `PENDING | ACCEPTED | IGNORED | RETURNED`
 - `MemorialLink` → belongs to `Memorial`; stores `url`, `title`, `description?`, `imageUrl?` (from OG scrape on save), `order`
+- `MemorialFollow` → composite PK `(userId, memorialId)`; cascade-deletes when either `User` or `Memorial` is deleted
 
 `MediaType` enum (`IMAGE | VIDEO`) is on both `Image` and `MemoryImage` with `@default(IMAGE)`. Storage differs by type:
 - **IMAGE**: `s3Key` is a base key; thumbnail = `thumbKeyFromBase(s3Key)`, full = `fullKeyFromBase(s3Key)`

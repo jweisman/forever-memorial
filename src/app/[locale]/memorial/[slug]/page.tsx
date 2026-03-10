@@ -21,6 +21,7 @@ import MemorySubmissionForm from "@/components/memorial/MemorySubmissionForm";
 import YahrzeitCalendar from "@/components/memorial/YahrzeitCalendar";
 import PosterDownload from "@/components/memorial/PosterDownload";
 import MemorialNav from "@/components/memorial/MemorialNav";
+import FollowButton from "@/components/memorial/FollowButton";
 import RichTextContent from "@/components/ui/RichTextContent";
 import CollapsibleRichText from "@/components/ui/CollapsibleRichText";
 
@@ -217,11 +218,22 @@ export default async function MemorialPage({ params }: Props) {
 
   const session = await auth();
   const isOwner = session?.user?.id === memorial.ownerId;
+  const isLoggedIn = !!session?.user?.id;
 
-  const links = await prisma.memorialLink.findMany({
-    where: { memorialId: memorial.id },
-    orderBy: { order: "asc" },
-  });
+  const [links, followRecord] = await Promise.all([
+    prisma.memorialLink.findMany({
+      where: { memorialId: memorial.id },
+      orderBy: { order: "asc" },
+    }),
+    isLoggedIn && !isOwner
+      ? prisma.memorialFollow.findUnique({
+          where: { userId_memorialId: { userId: session!.user!.id, memorialId: memorial.id } },
+          select: { userId: true },
+        })
+      : null,
+  ]);
+
+  const isFollowing = !!followRecord;
 
   // Prepare gallery data — only albums with images
   const galleryAlbums = memorial.albums
@@ -322,16 +334,26 @@ export default async function MemorialPage({ params }: Props) {
             </p>
           )}
 
-          {isOwner && (
+          {(isOwner || (isLoggedIn && !isOwner)) && (
             <div className="mt-6 flex items-center justify-center gap-3">
-              <Button
-                href={`/memorial/${memorial.slug}/edit`}
-                variant="secondary"
-                size="sm"
-              >
-                {t("editMemorial")}
-              </Button>
-              <PosterDownload memorialId={memorial.id} />
+              {isOwner && (
+                <>
+                  <Button
+                    href={`/memorial/${memorial.slug}/edit`}
+                    variant="secondary"
+                    size="sm"
+                  >
+                    {t("editMemorial")}
+                  </Button>
+                  <PosterDownload memorialId={memorial.id} />
+                </>
+              )}
+              {!isOwner && (
+                <FollowButton
+                  memorialId={memorial.id}
+                  initialFollowing={isFollowing}
+                />
+              )}
             </div>
           )}
         </header>
