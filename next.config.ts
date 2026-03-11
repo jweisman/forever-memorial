@@ -28,7 +28,7 @@ const CSP = [
 ].join("; ");
 
 const nextConfig: NextConfig = {
-  serverExternalPackages: ["pg", "pdfkit", "mammoth"],
+  serverExternalPackages: ["pg", "pdfkit", "mammoth", "isomorphic-dompurify"],
   async headers() {
     return [
       {
