@@ -10,7 +10,7 @@ import Button from "@/components/ui/Button";
 
 export default function SignInPage() {
   const searchParams = useSearchParams();
-  const callbackUrl = searchParams.get("callbackUrl") || "/dashboard";
+  const callbackUrl = searchParams.get("callbackUrl") || "/feed";
   const errorParam = searchParams.get("error");
   const t = useTranslations("SignIn");
   const [email, setEmail] = useState("");
