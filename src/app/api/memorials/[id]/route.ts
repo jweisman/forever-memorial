@@ -5,7 +5,7 @@ import { buildSlug } from "@/lib/slug";
 import { generateViewUrl } from "@/lib/s3-helpers";
 import { isUserDisabled } from "@/lib/admin";
 import { withHandler } from "@/lib/api-error";
-import DOMPurify from "isomorphic-dompurify";
+import sanitizeHtml from "sanitize-html";
 
 const LIFE_STORY_ALLOWED_TAGS = ["p", "br", "strong", "em", "h2", "h3"];
 
@@ -119,9 +119,9 @@ export const PATCH = withHandler(async (
   if (body.lifeStory !== undefined) {
     const raw = body.lifeStory?.trim() || null;
     data.lifeStory = raw
-      ? DOMPurify.sanitize(raw, {
-          ALLOWED_TAGS: LIFE_STORY_ALLOWED_TAGS,
-          ALLOWED_ATTR: [],
+      ? sanitizeHtml(raw, {
+          allowedTags: LIFE_STORY_ALLOWED_TAGS,
+          allowedAttributes: {},
         }) || null
       : null;
   }
