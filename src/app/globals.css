@@ -29,6 +29,7 @@
 
   /* Typography */
   --font-heading: "Playfair Display", serif;
+  --font-heading-he: "Frank Ruhl Libre", serif;
   --font-body: "Source Serif 4", serif;
   --font-ui: "Inter", sans-serif;
 }

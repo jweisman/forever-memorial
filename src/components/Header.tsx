@@ -1,11 +1,15 @@
-import { getTranslations } from "next-intl/server";
+import { getTranslations, getLocale } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
 import SearchBar from "@/components/ui/SearchBar";
 import HeaderAuth from "@/components/HeaderAuth";
 import LanguageSwitcher from "@/components/LanguageSwitcher";
+import Logo from "@/components/Logo";
 
 export default async function Header() {
-  const t = await getTranslations("Header");
+  const [t, locale] = await Promise.all([
+    getTranslations("Header"),
+    getLocale(),
+  ]);
 
   return (
     <header className="border-b border-border bg-surface" role="banner">
@@ -15,13 +19,13 @@ export default async function Header() {
       >
         <Link
           href="/"
-          className="flex items-baseline gap-2 transition-opacity hover:opacity-80"
+          className="flex items-center transition-opacity hover:opacity-80"
           aria-label={t("homeLabel")}
         >
-          <span className="font-heading text-xl font-semibold text-warm-800">
-            {t("home")}
-          </span>
-          <span className="font-heading text-lg text-gold-500">{t("homeHebrew")}</span>
+          {/* Mobile: compact wordmark + flourish only */}
+          <Logo locale={locale} compact className="sm:hidden" />
+          {/* Desktop: full logo with divider + subtitle */}
+          <Logo locale={locale} className="hidden sm:block" />
         </Link>
 
         <div className="flex items-center gap-3 sm:gap-4">
