@@ -1,6 +1,7 @@
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { redirect } from "@/i18n/navigation";
 import { auth } from "@/lib/auth";
+import Image from "next/image";
 import Button from "@/components/ui/Button";
 import SearchBar from "@/components/ui/SearchBar";
 import SectionHeading from "@/components/ui/SectionHeading";
@@ -71,10 +72,22 @@ export default async function Home({
     <>
       {/* Hero section */}
       <section
-        className="bg-surface px-4 pb-16 pt-20 sm:px-6 sm:pb-20 sm:pt-28 lg:px-8"
+        className="relative overflow-hidden px-4 pb-16 pt-20 sm:px-6 sm:pb-20 sm:pt-28 lg:px-8"
         aria-labelledby="hero-heading"
       >
-        <div className="mx-auto max-w-2xl text-center">
+        {/* Background image */}
+        <Image
+          src="/images/hero.jpg"
+          alt=""
+          fill
+          priority
+          className="object-cover object-center"
+          aria-hidden="true"
+        />
+        {/* Warm overlay — adjust opacity as needed */}
+        <div className="absolute inset-0 bg-warm-100/80" aria-hidden="true" />
+
+        <div className="relative z-10 mx-auto max-w-2xl text-center">
           <h1
             id="hero-heading"
             className="font-heading text-4xl font-semibold tracking-tight text-warm-800 sm:text-5xl"
@@ -107,6 +120,7 @@ export default async function Home({
           </div>
         </div>
       </section>
+
 
       {/* Warm divider */}
       <div className="flex justify-center py-2" aria-hidden="true">
