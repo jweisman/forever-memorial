@@ -3,23 +3,23 @@
 @theme inline {
   /* Warm & Intimate palette */
   --color-warm-50: #FAF7F4;
-  --color-warm-100: #F7F3EF;
+  --color-warm-100: #F5F2EC;
   --color-warm-200: #E6DDD4;
   --color-warm-300: #D4C8BB;
   --color-warm-400: #8A7B6B;
-  --color-warm-500: #7A6E65;
+  --color-warm-500: #6A6A6A;
   --color-warm-600: #5C524A;
   --color-warm-700: #4A3F37;
-  --color-warm-800: #3D3029;
+  --color-warm-800: #2B2B2B;
   --color-warm-900: #2A1F18;
 
   --color-gold-300: #D4BC8E;
-  --color-gold-400: #C9A96E;
+  --color-gold-400: #C6A86A;
   --color-gold-500: #B08D57;
   --color-gold-600: #8B6F4E;
 
-  --color-accent: #8B6F4E;
-  --color-accent-hover: #7A5F40;
+  --color-accent: #2F4A44;
+  --color-accent-hover: #3B5E57;
 
   --color-background: var(--color-warm-100);
   --color-foreground: var(--color-warm-800);
@@ -28,8 +28,9 @@
   --color-border: var(--color-warm-200);
 
   /* Typography */
-  --font-heading: "Lora", serif;
-  --font-body: "Source Sans 3", sans-serif;
+  --font-heading: "Playfair Display", serif;
+  --font-body: "Source Serif 4", serif;
+  --font-ui: "Inter", sans-serif;
 }
 
 /* Base styles */
@@ -37,6 +38,16 @@ body {
   background: var(--color-background);
   color: var(--color-foreground);
   font-family: var(--font-body);
+}
+
+/* UI chrome elements use Inter */
+input, select, textarea, button, label {
+  font-family: var(--font-ui);
+}
+
+/* Generous heading letter-spacing */
+.font-heading {
+  letter-spacing: 0.01em;
 }
 
 /* RTL support */

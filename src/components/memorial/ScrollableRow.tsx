@@ -68,7 +68,7 @@ export default function ScrollableRow({
             <path
               strokeLinecap="round"
               strokeLinejoin="round"
-              strokeWidth={2}
+              strokeWidth={1.5}
               d="M15 19l-7-7 7-7"
             />
           </svg>
@@ -91,7 +91,7 @@ export default function ScrollableRow({
             <path
               strokeLinecap="round"
               strokeLinejoin="round"
-              strokeWidth={2}
+              strokeWidth={1.5}
               d="M9 5l7 7-7 7"
             />
           </svg>
