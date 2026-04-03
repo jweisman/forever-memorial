@@ -624,7 +624,7 @@ export default function MemorialEditPage({
               />
             </div>
 
-            <div className="flex items-center gap-3">
+            <div className="sticky bottom-0 -mx-6 -mb-6 mt-6 flex items-center gap-3 rounded-b-xl border-t border-border bg-surface/95 px-6 py-3 backdrop-blur-sm">
               <Button
                 type="submit"
                 variant="primary"
@@ -634,7 +634,7 @@ export default function MemorialEditPage({
                 {saving ? t("saving") : t("saveChanges")}
               </Button>
               {saved && (
-                <span className="text-sm text-gold-600">{t("saved")}</span>
+                <span className="text-sm font-medium text-gold-600">{t("saved")}</span>
               )}
               {error && (
                 <span className="text-sm text-red-600">{error}</span>
@@ -919,6 +919,7 @@ export default function MemorialEditPage({
           )}
         </Card>
       </div>
+
     </div>
   );
 }
