@@ -37,7 +37,7 @@ test.describe("Review memory", () => {
     // Navigate to the memorial page and verify the accepted memory is shown
     await page.goto(`/en/memorial/${TEST_MEMORIAL_SLUG}`);
 
-    await expect(page.getByRole("heading", { name: "Memories" })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Shared Memories" })).toBeVisible();
     await expect(page.getByText(TEST_MEMORY_TEXT)).toBeVisible();
   });
 });
