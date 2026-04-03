@@ -9,7 +9,7 @@ export default async function Header() {
   const t = await getTranslations("Header");
 
   return (
-    <header className="border-b border-border bg-surface" role="banner">
+    <header className="sticky top-0 z-50 border-b border-border bg-surface" role="banner">
       <nav
         className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8"
         aria-label="Main navigation"

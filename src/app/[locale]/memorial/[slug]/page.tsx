@@ -275,33 +275,16 @@ export default async function MemorialPage({ params }: Props) {
       <article className="mx-auto max-w-3xl px-4 py-12 sm:px-6 lg:px-8">
         {/* Header */}
         <header className="flex flex-col items-center gap-8 text-center sm:flex-row sm:items-center">
-          {/* Memorial picture */}
-          <div className="aspect-[4/3] w-full shrink-0 overflow-hidden rounded-2xl bg-warm-200 sm:w-[55%]">
-            {memorial.memorialPictureUrl ? (
+          {/* Memorial picture — hidden when no image */}
+          {memorial.memorialPictureUrl && (
+            <div className="aspect-[4/3] w-full shrink-0 overflow-hidden rounded-2xl bg-warm-200 sm:w-[55%]">
               <img
                 src={memorial.memorialPictureUrl}
                 alt={memorial.name}
                 className="size-full object-cover"
               />
-            ) : (
-              <div className="flex size-full items-center justify-center">
-                <svg
-                  className="size-20 text-warm-400"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                  aria-hidden="true"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={1.5}
-                    d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z"
-                  />
-                </svg>
-              </div>
-            )}
-          </div>
+            </div>
+          )}
 
           {/* Info */}
           <div className="min-w-0">
@@ -340,7 +323,7 @@ export default async function MemorialPage({ params }: Props) {
                     >
                       {t("editMemorial")}
                     </Button>
-                    <PosterDownload memorialId={memorial.id} />
+                    <PosterDownload memorialId={memorial.id} label={t("posterLabel")} />
                   </>
                 )}
                 {!isOwner && (
@@ -358,7 +341,7 @@ export default async function MemorialPage({ params }: Props) {
 
         <div className="mt-12 space-y-8">
           {/* Details */}
-          <Card id="details" className="scroll-mt-14">
+          <Card id="details" className="scroll-mt-28">
             <h2 className="font-heading text-lg font-semibold text-warm-800">
               {t("details")}
             </h2>
@@ -402,7 +385,7 @@ export default async function MemorialPage({ params }: Props) {
 
           {/* Funeral info */}
           {memorial.funeralInfo && (
-            <Card id="funeral-info" className="scroll-mt-14">
+            <Card id="funeral-info" className="scroll-mt-28">
               <h2 className="font-heading text-lg font-semibold text-warm-800">
                 {t("funeralInfo")}
               </h2>
@@ -414,7 +397,7 @@ export default async function MemorialPage({ params }: Props) {
 
           {/* Survived by */}
           {memorial.survivedBy && (
-            <Card id="survived-by" className="scroll-mt-14">
+            <Card id="survived-by" className="scroll-mt-28">
               <h2 className="font-heading text-lg font-semibold text-warm-800">
                 {t("survivedBy")}
               </h2>
@@ -426,7 +409,7 @@ export default async function MemorialPage({ params }: Props) {
 
           {/* Life story */}
           {memorial.lifeStory && (
-            <Card id="life-story" className="scroll-mt-14">
+            <Card id="life-story" className="scroll-mt-28">
               <h2 className="font-heading text-lg font-semibold text-warm-800">
                 {t("lifeStory")}
               </h2>
@@ -436,7 +419,7 @@ export default async function MemorialPage({ params }: Props) {
 
           {/* Memorial projects & charities */}
           {memorial.projects && (
-            <Card id="projects" className="scroll-mt-14">
+            <Card id="projects" className="scroll-mt-28">
               <h2 className="font-heading text-lg font-semibold text-warm-800">
                 {t("projects")}
               </h2>
@@ -448,7 +431,7 @@ export default async function MemorialPage({ params }: Props) {
 
           {/* External links */}
           {links.length > 0 && (
-            <section id="links" className="scroll-mt-14">
+            <section id="links" className="scroll-mt-28">
               <h2 className="font-heading text-xl font-semibold text-warm-800">
                 {t("links")}
               </h2>
@@ -501,7 +484,7 @@ export default async function MemorialPage({ params }: Props) {
 
           {/* Photo Gallery */}
           {galleryAlbums.length > 0 && (
-            <section id="photos" className="scroll-mt-14">
+            <section id="photos" className="scroll-mt-28">
               <h2 className="font-heading text-xl font-semibold text-warm-800">
                 {t("photos")}
               </h2>
@@ -513,7 +496,7 @@ export default async function MemorialPage({ params }: Props) {
 
           {/* Eulogies */}
           {memorial.eulogies.length > 0 && (
-            <section id="eulogies" className="scroll-mt-14">
+            <section id="eulogies" className="scroll-mt-28">
               <h2 className="font-heading text-xl font-semibold text-warm-800">
                 {t("eulogies")}
               </h2>
@@ -542,7 +525,7 @@ export default async function MemorialPage({ params }: Props) {
 
           {/* Memories */}
           {memorial.memories.length > 0 && (
-            <section id="memories" className="scroll-mt-14">
+            <section id="memories" className="scroll-mt-28">
               <h2 className="font-heading text-xl font-semibold text-warm-800">
                 {t("memories")}
               </h2>
@@ -555,7 +538,7 @@ export default async function MemorialPage({ params }: Props) {
           )}
 
           {/* Share a Memory */}
-          <section id="share-memory" className="scroll-mt-14">
+          <section id="share-memory" className="scroll-mt-28">
             <h2 className="font-heading text-xl font-semibold text-warm-800">
               {t("shareMemory")}
             </h2>
