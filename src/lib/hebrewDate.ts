@@ -12,5 +12,6 @@ export function getHebrewDeathDate(
 ): string {
   let hd = new HDate(new Date(dateOfDeath));
   if (afterSunset) hd = hd.next();
+  if (locale === "he") return hd.renderGematriya(true);
   return hd.render(locale);
 }

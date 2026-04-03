@@ -161,19 +161,6 @@ function formatDate(date: Date | null | undefined, locale: string): string {
   });
 }
 
-function formatDateRange(
-  birthday: Date | null | undefined,
-  dateOfDeath: Date,
-  diedLabel: string
-): string {
-  const deathYear = new Date(dateOfDeath).getFullYear();
-  if (birthday) {
-    const birthYear = new Date(birthday).getFullYear();
-    return `${birthYear} – ${deathYear}`;
-  }
-  return diedLabel;
-}
-
 export default async function MemorialPage({ params }: Props) {
   const { slug, locale } = await params;
   setRequestLocale(locale);
@@ -287,9 +274,9 @@ export default async function MemorialPage({ params }: Props) {
       />
       <article className="mx-auto max-w-3xl px-4 py-12 sm:px-6 lg:px-8">
         {/* Header */}
-        <header className="text-center">
+        <header className="flex flex-col items-center gap-8 text-center sm:flex-row sm:items-center">
           {/* Memorial picture */}
-          <div className="mx-auto mb-6 flex size-40 items-center justify-center overflow-hidden rounded-full bg-warm-200">
+          <div className="aspect-[4/3] w-full shrink-0 overflow-hidden rounded-2xl bg-warm-200 sm:w-[55%]">
             {memorial.memorialPictureUrl ? (
               <img
                 src={memorial.memorialPictureUrl}
@@ -297,63 +284,74 @@ export default async function MemorialPage({ params }: Props) {
                 className="size-full object-cover"
               />
             ) : (
-              <svg
-                className="size-20 text-warm-400"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-                aria-hidden="true"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={1.5}
-                  d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z"
-                />
-              </svg>
+              <div className="flex size-full items-center justify-center">
+                <svg
+                  className="size-20 text-warm-400"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                  aria-hidden="true"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={1.5}
+                    d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z"
+                  />
+                </svg>
+              </div>
             )}
           </div>
 
-          <h1 className="font-heading text-3xl font-semibold text-warm-800 sm:text-4xl">
-            {memorial.name}
-          </h1>
+          {/* Info */}
+          <div className="min-w-0">
+            <h1 className="font-heading text-3xl font-semibold text-warm-800 sm:text-4xl">
+              {memorial.name}
+            </h1>
 
-          <p className="mt-2 text-lg text-muted">
-            {formatDateRange(
-              memorial.birthday,
-              memorial.dateOfDeath,
-              t("died", { year: new Date(memorial.dateOfDeath).getFullYear() })
+            {memorial.additionalName && (
+              <p className="mt-1 font-heading text-xl text-warm-600">
+                <span dir="rtl">{memorial.additionalName}</span>
+              </p>
             )}
-          </p>
 
-          {memorial.placeOfDeath && (
-            <p className="mt-1 text-sm text-warm-400">
-              {memorial.placeOfDeath}
+            <p className="mt-2 text-base text-muted">
+              <span className="whitespace-nowrap">{formatDate(memorial.dateOfDeath, locale)}</span>
+              {" · "}
+              <span className="whitespace-nowrap" dir="rtl">
+                {getHebrewDeathDate(memorial.dateOfDeath, memorial.deathAfterSunset, "he")}
+              </span>
             </p>
-          )}
 
-          {(isOwner || (isLoggedIn && !isOwner)) && (
-            <div className="mt-6 flex items-center justify-center gap-3">
-              {isOwner && (
-                <>
-                  <Button
-                    href={`/memorial/${memorial.slug}/edit`}
-                    variant="secondary"
-                    size="sm"
-                  >
-                    {t("editMemorial")}
-                  </Button>
-                  <PosterDownload memorialId={memorial.id} />
-                </>
-              )}
-              {!isOwner && (
-                <FollowButton
-                  memorialId={memorial.id}
-                  initialFollowing={isFollowing}
-                />
-              )}
-            </div>
-          )}
+            {memorial.placeOfDeath && (
+              <p className="mt-1 text-sm text-warm-400">
+                {memorial.placeOfDeath}
+              </p>
+            )}
+
+            {(isOwner || (isLoggedIn && !isOwner)) && (
+              <div className="mt-6 flex flex-col items-center gap-3">
+                {isOwner && (
+                  <>
+                    <Button
+                      href={`/memorial/${memorial.slug}/edit`}
+                      variant="secondary"
+                      size="sm"
+                    >
+                      {t("editMemorial")}
+                    </Button>
+                    <PosterDownload memorialId={memorial.id} />
+                  </>
+                )}
+                {!isOwner && (
+                  <FollowButton
+                    memorialId={memorial.id}
+                    initialFollowing={isFollowing}
+                  />
+                )}
+              </div>
+            )}
+          </div>
         </header>
 
         <MemorialNav sections={navSections} />

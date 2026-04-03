@@ -66,7 +66,7 @@ export default function MemorialPictureUploader({
     setUploading(true);
     setError("");
     try {
-      const blob = await cropAndResizeImage(cropSrc, croppedAreaPixels, 256, 0.8);
+      const blob = await cropAndResizeImage(cropSrc, croppedAreaPixels, 800, 600, 0.8);
       URL.revokeObjectURL(cropSrc);
       setCropSrc(null);
       const url = await uploadMemorialPictureBlob(memorialId, blob);
@@ -97,7 +97,7 @@ export default function MemorialPictureUploader({
     <>
       <div className="flex flex-col items-center gap-3">
         <div
-          className="group relative size-28 cursor-pointer overflow-hidden rounded-full bg-warm-200"
+          className="group relative aspect-[4/3] w-full max-w-xs cursor-pointer overflow-hidden rounded-xl bg-warm-200"
           onClick={() => !uploading && inputRef.current?.click()}
           role="button"
           tabIndex={0}
@@ -135,7 +135,7 @@ export default function MemorialPictureUploader({
           )}
 
           {/* Hover overlay */}
-          <div className="absolute inset-0 flex items-center justify-center rounded-full bg-black/40 opacity-0 transition-opacity group-hover:opacity-100">
+          <div className="absolute inset-0 flex items-center justify-center rounded-xl bg-black/40 opacity-0 transition-opacity group-hover:opacity-100">
             <span className="text-xs font-medium text-white">
               {uploading ? t("uploading") : t("changePhoto")}
             </span>
@@ -180,9 +180,7 @@ export default function MemorialPictureUploader({
                 image={cropSrc}
                 crop={crop}
                 zoom={zoom}
-                aspect={1}
-                cropShape="round"
-                showGrid={false}
+                aspect={4 / 3}
                 onCropChange={setCrop}
                 onZoomChange={setZoom}
                 onCropComplete={onCropComplete}

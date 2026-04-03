@@ -68,23 +68,24 @@ export async function resizeImage(
 }
 
 /**
- * Crop a region of an image (given pixel coordinates) and resize to size×size.
+ * Crop a region of an image (given pixel coordinates) and resize to outputWidth×outputHeight.
  * Used after interactive crop UI to produce the final memorial picture blob.
  */
 export async function cropAndResizeImage(
   imageSrc: string,
   crop: { x: number; y: number; width: number; height: number },
-  size: number,
+  outputWidth: number,
+  outputHeight: number,
   quality: number
 ): Promise<Blob> {
   return new Promise((resolve, reject) => {
     const img = new Image();
     img.onload = () => {
       const canvas = document.createElement("canvas");
-      canvas.width = size;
-      canvas.height = size;
+      canvas.width = outputWidth;
+      canvas.height = outputHeight;
       const ctx = canvas.getContext("2d")!;
-      ctx.drawImage(img, crop.x, crop.y, crop.width, crop.height, 0, 0, size, size);
+      ctx.drawImage(img, crop.x, crop.y, crop.width, crop.height, 0, 0, outputWidth, outputHeight);
       canvas.toBlob(
         (blob) =>
           blob ? resolve(blob) : reject(new Error("Canvas toBlob failed")),

@@ -91,6 +91,7 @@ model Memorial {
   slug            String    @unique
   ownerId         String
   name            String
+  additionalName  String?
   memorialPicture String?
   birthday        DateTime?
   dateOfDeath     DateTime

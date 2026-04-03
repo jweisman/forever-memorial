@@ -53,6 +53,7 @@ type Memorial = {
   id: string;
   slug: string;
   name: string;
+  additionalName: string | null;
   birthday: string | null;
   dateOfDeath: string;
   placeOfDeath: string | null;
@@ -93,6 +94,7 @@ export default function MemorialEditPage({
 
   // Form fields
   const [name, setName] = useState("");
+  const [additionalName, setHebrewName] = useState("");
   const [birthday, setBirthday] = useState("");
   const [dateOfDeath, setDateOfDeath] = useState("");
   const [placeOfDeath, setPlaceOfDeath] = useState("");
@@ -148,6 +150,7 @@ export default function MemorialEditPage({
     const data: Memorial = await res.json();
     setMemorial(data);
     setName(data.name);
+    setHebrewName(data.additionalName ?? "");
     setBirthday(toDateInputValue(data.birthday));
     setDateOfDeath(toDateInputValue(data.dateOfDeath));
     setPlaceOfDeath(data.placeOfDeath ?? "");
@@ -237,6 +240,7 @@ export default function MemorialEditPage({
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         name,
+        additionalName: additionalName || null,
         birthday: birthday || null,
         dateOfDeath,
         placeOfDeath,
@@ -480,6 +484,24 @@ export default function MemorialEditPage({
               />
             </div>
 
+            <div>
+              <label
+                htmlFor="edit-hebrew-name"
+                className="block text-sm font-medium text-warm-700"
+              >
+                {t("additionalNameLabel")}
+              </label>
+              <input
+                id="edit-hebrew-name"
+                type="text"
+                value={additionalName}
+                onChange={(e) => setHebrewName(e.target.value)}
+                className={inputClass}
+                placeholder={t("additionalNamePlaceholder")}
+                dir="rtl"
+              />
+            </div>
+
             <div className="grid gap-4 sm:grid-cols-2">
               <div>
                 <label
@@ -602,7 +624,7 @@ export default function MemorialEditPage({
               />
             </div>
 
-            <div className="flex items-center gap-3">
+            <div className="sticky bottom-0 -mx-6 -mb-6 mt-6 flex items-center gap-3 rounded-b-xl border-t border-border bg-surface/95 px-6 py-3 backdrop-blur-sm">
               <Button
                 type="submit"
                 variant="primary"
@@ -612,7 +634,7 @@ export default function MemorialEditPage({
                 {saving ? t("saving") : t("saveChanges")}
               </Button>
               {saved && (
-                <span className="text-sm text-gold-600">{t("saved")}</span>
+                <span className="text-sm font-medium text-gold-600">{t("saved")}</span>
               )}
               {error && (
                 <span className="text-sm text-red-600">{error}</span>
@@ -897,6 +919,7 @@ export default function MemorialEditPage({
           )}
         </Card>
       </div>
+
     </div>
   );
 }
