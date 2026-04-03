@@ -35,9 +35,10 @@ function LogoEn({
         viewBox="0 0 161 44.892677"
         fill="none"
         xmlns="http://www.w3.org/2000/svg"
-        className={`h-8 w-auto ${className}`}
+        className={`h-10 w-auto ${className}`}
         role="img"
         aria-label="LeOlam"
+        shapeRendering="geometricPrecision"
       >
         <g transform="translate(-117,-394.49997)">
           <path fill="#C6A86A" d={LOGO_EN_PATH} />
@@ -52,9 +53,10 @@ function LogoEn({
       viewBox="0 0 321 44.892677"
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
-      className={`h-11 w-auto ${className}`}
+      className={`h-14 w-auto ${className}`}
       role="img"
       aria-label="LeOlam — Forever Remembered"
+      shapeRendering="geometricPrecision"
     >
       <g transform="translate(-117,-394.49997)">
         <path fill="#C6A86A" d={LOGO_EN_PATH} />
