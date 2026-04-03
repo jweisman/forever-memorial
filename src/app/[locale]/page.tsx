@@ -1,7 +1,6 @@
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { redirect } from "@/i18n/navigation";
 import { auth } from "@/lib/auth";
-import Image from "next/image";
 import Button from "@/components/ui/Button";
 import SearchBar from "@/components/ui/SearchBar";
 import SectionHeading from "@/components/ui/SectionHeading";
@@ -75,15 +74,18 @@ export default async function Home({
         className="relative overflow-hidden px-4 pb-16 pt-20 sm:px-6 sm:pb-20 sm:pt-28 lg:px-8"
         aria-labelledby="hero-heading"
       >
-        {/* Background image */}
-        <Image
-          src="/images/hero.jpg"
-          alt=""
-          fill
-          priority
-          className="object-cover object-center"
-          aria-hidden="true"
-        />
+        {/* Background image — mobile (768w) + desktop (1920w) */}
+        <picture aria-hidden="true">
+          <source media="(max-width: 768px)" srcSet="/images/hero-mobile.jpg" />
+          <source media="(min-width: 769px)" srcSet="/images/hero-desktop.jpg" />
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src="/images/hero-desktop.jpg"
+            alt=""
+            className="absolute inset-0 h-full w-full object-cover object-center"
+            fetchPriority="high"
+          />
+        </picture>
         {/* Warm overlay — adjust opacity as needed */}
         <div className="absolute inset-0 bg-warm-100/80" aria-hidden="true" />
 
