@@ -13,8 +13,8 @@ test.describe("Feed page — authenticated", () => {
 
   test("shows both feed sections", async ({ page }) => {
     await page.goto("/en/feed");
-    await expect(page.getByRole("heading", { name: /recent activity/i })).toBeVisible();
-    await expect(page.getByRole("heading", { name: /latest legacy pages/i })).toBeVisible();
+    await expect(page.getByRole("heading", { name: /recently shared memories/i })).toBeVisible();
+    await expect(page.getByRole("heading", { name: /recent legacies/i })).toBeVisible();
   });
 
   test("shows the seeded memorial in Latest Legacy Pages", async ({ page }) => {

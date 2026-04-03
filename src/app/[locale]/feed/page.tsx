@@ -152,6 +152,7 @@ export default function FeedPage() {
             <br />
             <span className="font-[family-name:var(--font-logo-he)] text-3xl text-gold-500 sm:text-4xl" lang="he">{t("heroAccent")}</span>
           </p>
+          <p className="mt-2 text-sm text-warm-500">{t("heroSubtitle")}</p>
         </div>
       </section>
 
