@@ -3,6 +3,7 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { buildSlug } from "@/lib/slug";
 import { isUserDisabled } from "@/lib/admin";
+import { getHebrewDeathDate } from "@/lib/hebrewDate";
 import { withHandler } from "@/lib/api-error";
 
 export const GET = withHandler(async () => {
@@ -20,13 +21,19 @@ export const GET = withHandler(async () => {
       name: true,
       birthday: true,
       dateOfDeath: true,
+      deathAfterSunset: true,
       placeOfDeath: true,
       memorialPicture: true,
       createdAt: true,
     },
   });
 
-  return NextResponse.json(memorials);
+  const enriched = memorials.map((m) => ({
+    ...m,
+    hebrewDate: getHebrewDeathDate(m.dateOfDeath, m.deathAfterSunset, "he"),
+  }));
+
+  return NextResponse.json(enriched);
 });
 
 export const POST = withHandler(async (request: Request) => {

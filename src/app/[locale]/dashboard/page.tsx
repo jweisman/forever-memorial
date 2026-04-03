@@ -17,21 +17,18 @@ type Memorial = {
   name: string;
   birthday: string | null;
   dateOfDeath: string;
+  hebrewDate: string;
   placeOfDeath: string | null;
   memorialPicture: string | null;
   createdAt: string;
 };
 
-function formatDateRange(
-  birthday: string | null,
-  dateOfDeath: string
-): string {
-  const deathYear = new Date(dateOfDeath).getFullYear();
-  if (birthday) {
-    const birthYear = new Date(birthday).getFullYear();
-    return `${birthYear} – ${deathYear}`;
-  }
-  return `d. ${deathYear}`;
+function formatDeathDate(dateOfDeath: string): string {
+  return new Date(dateOfDeath).toLocaleDateString("en", {
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+  });
 }
 
 export default function DashboardPage() {
@@ -280,7 +277,7 @@ export default function DashboardPage() {
                       {memorial.name}
                     </h3>
                     <p className="text-sm text-muted">
-                      {formatDateRange(memorial.birthday, memorial.dateOfDeath)}
+                      {`${formatDeathDate(memorial.dateOfDeath)} · ${memorial.hebrewDate}`}
                       {memorial.placeOfDeath &&
                         ` · ${memorial.placeOfDeath}`}
                     </p>
@@ -355,7 +352,7 @@ export default function DashboardPage() {
                       {memorial.name}
                     </h3>
                     <p className="text-sm text-muted">
-                      {formatDateRange(memorial.birthday, memorial.dateOfDeath)}
+                      {`${formatDeathDate(memorial.dateOfDeath)} · ${memorial.hebrewDate}`}
                       {memorial.placeOfDeath && ` · ${memorial.placeOfDeath}`}
                     </p>
                   </Link>

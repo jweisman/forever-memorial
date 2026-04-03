@@ -2,6 +2,7 @@ import { Metadata } from "next";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { prisma } from "@/lib/prisma";
 import { generateViewUrl } from "@/lib/s3-helpers";
+import { getHebrewDeathDate } from "@/lib/hebrewDate";
 import MemorialCard from "@/components/ui/MemorialCard";
 import SectionHeading from "@/components/ui/SectionHeading";
 import SearchBar from "@/components/ui/SearchBar";
@@ -17,6 +18,7 @@ type MemorialRow = {
   name: string;
   placeOfDeath: string | null;
   dateOfDeath: Date;
+  deathAfterSunset: boolean;
   birthday: Date | null;
   memorialPicture: string | null;
 };
@@ -28,13 +30,14 @@ export async function generateMetadata({ searchParams }: Props): Promise<Metadat
   };
 }
 
-function formatDateRange(birthday: Date | null, dateOfDeath: Date, diedLabel: string): string {
-  const deathYear = new Date(dateOfDeath).getFullYear();
-  if (birthday) {
-    const birthYear = new Date(birthday).getFullYear();
-    return `${birthYear} – ${deathYear}`;
-  }
-  return diedLabel;
+function formatDates(dateOfDeath: Date, deathAfterSunset: boolean): string {
+  const english = new Date(dateOfDeath).toLocaleDateString("en", {
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+  });
+  const hebrew = getHebrewDeathDate(dateOfDeath, deathAfterSunset, "he");
+  return `${english} · ${hebrew}`;
 }
 
 export default async function SearchPage({ params, searchParams }: Props) {
@@ -56,7 +59,7 @@ export default async function SearchPage({ params, searchParams }: Props) {
 
   if (query.length >= 2) {
     const rows = await prisma.$queryRaw<MemorialRow[]>`
-      SELECT id, slug, name, "placeOfDeath", "dateOfDeath", birthday, "memorialPicture"
+      SELECT id, slug, name, "placeOfDeath", "dateOfDeath", "deathAfterSunset", birthday, "memorialPicture"
       FROM memorials
       WHERE disabled = false
         AND (name ILIKE ${"%" + query + "%"} OR word_similarity(${query}, name) > 0.4)
@@ -69,11 +72,7 @@ export default async function SearchPage({ params, searchParams }: Props) {
         id: row.id,
         slug: row.slug,
         name: row.name,
-        dates: formatDateRange(
-          row.birthday,
-          row.dateOfDeath,
-          t("died", { year: new Date(row.dateOfDeath).getFullYear() })
-        ),
+        dates: formatDates(row.dateOfDeath, row.deathAfterSunset),
         placeOfDeath: row.placeOfDeath,
         pictureUrl: row.memorialPicture
           ? await generateViewUrl(row.memorialPicture)
@@ -107,7 +106,7 @@ export default async function SearchPage({ params, searchParams }: Props) {
             />
 
             {results.length > 0 ? (
-              <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              <div className="mt-8 grid gap-4 sm:grid-cols-2">
                 {results.map((memorial) => (
                   <MemorialCard
                     key={memorial.id}

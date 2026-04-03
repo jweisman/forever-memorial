@@ -312,8 +312,33 @@ export default async function MemorialPage({ params }: Props) {
               </p>
             )}
 
+            {/* Leaf separator */}
+            <div className="mt-5" aria-hidden="true">
+              <svg className="mx-auto h-4 w-auto text-gold-400" viewBox="0 0 80 12" fill="none" xmlns="http://www.w3.org/2000/svg">
+                {/* Left line */}
+                <line x1="0" y1="6" x2="24" y2="6" stroke="currentColor" strokeWidth="0.5" opacity="0.3" />
+                {/* Leaf — lying on its side */}
+                <path
+                  d="M30 6 Q40 0 50 6 Q40 12 30 6z"
+                  fill="currentColor"
+                  opacity="0.3"
+                />
+                {/* Leaf midrib */}
+                <line x1="31" y1="6" x2="49" y2="6" stroke="currentColor" strokeWidth="0.4" opacity="0.25" />
+                {/* Leaf veins */}
+                <line x1="36" y1="6" x2="34" y2="3.5" stroke="currentColor" strokeWidth="0.3" opacity="0.2" />
+                <line x1="40" y1="6" x2="38" y2="2.8" stroke="currentColor" strokeWidth="0.3" opacity="0.2" />
+                <line x1="44" y1="6" x2="42.5" y2="3.2" stroke="currentColor" strokeWidth="0.3" opacity="0.2" />
+                <line x1="36" y1="6" x2="34" y2="8.5" stroke="currentColor" strokeWidth="0.3" opacity="0.2" />
+                <line x1="40" y1="6" x2="38" y2="9.2" stroke="currentColor" strokeWidth="0.3" opacity="0.2" />
+                <line x1="44" y1="6" x2="42.5" y2="8.8" stroke="currentColor" strokeWidth="0.3" opacity="0.2" />
+                {/* Right line */}
+                <line x1="56" y1="6" x2="80" y2="6" stroke="currentColor" strokeWidth="0.5" opacity="0.3" />
+              </svg>
+            </div>
+
             {(isOwner || (isLoggedIn && !isOwner)) && (
-              <div className="mt-6 flex flex-col items-center gap-3">
+              <div className="mt-4 flex flex-col items-center gap-3">
                 {isOwner && (
                   <>
                     <Button

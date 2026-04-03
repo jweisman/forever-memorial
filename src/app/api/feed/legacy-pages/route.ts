@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { generateViewUrl } from "@/lib/s3-helpers";
+import { getHebrewDeathDate } from "@/lib/hebrewDate";
 import { withHandler } from "@/lib/api-error";
 
 const DEFAULT_TAKE = 5;
@@ -23,6 +24,7 @@ export const GET = withHandler(async (request: Request) => {
         name: true,
         birthday: true,
         dateOfDeath: true,
+        deathAfterSunset: true,
         placeOfDeath: true,
         memorialPicture: true,
         updatedAt: true,
@@ -34,6 +36,7 @@ export const GET = withHandler(async (request: Request) => {
   const items = await Promise.all(
     pages.map(async (p) => ({
       ...p,
+      hebrewDate: getHebrewDeathDate(p.dateOfDeath, p.deathAfterSunset, "he"),
       pictureUrl: p.memorialPicture ? await generateViewUrl(p.memorialPicture) : null,
     }))
   );

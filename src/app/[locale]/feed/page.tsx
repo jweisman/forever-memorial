@@ -27,17 +27,18 @@ type LegacyPageItem = {
   name: string;
   birthday: string | null;
   dateOfDeath: string;
+  hebrewDate: string;
   placeOfDeath: string | null;
   pictureUrl: string | null;
   updatedAt: string;
 };
 
-function formatDateRange(birthday: string | null, dateOfDeath: string, diedLabel: string): string {
-  const deathYear = new Date(dateOfDeath).getFullYear();
-  if (birthday) {
-    return `${new Date(birthday).getFullYear()} – ${deathYear}`;
-  }
-  return diedLabel;
+function formatDeathDate(dateOfDeath: string): string {
+  return new Date(dateOfDeath).toLocaleDateString("en", {
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+  });
 }
 
 function formatRelativeDate(dateStr: string): string {
@@ -245,11 +246,7 @@ export default function FeedPage() {
                 <MemorialCard
                   key={page.id}
                   name={page.name}
-                  dates={formatDateRange(
-                    page.birthday,
-                    page.dateOfDeath,
-                    t("died", { year: new Date(page.dateOfDeath).getFullYear() })
-                  )}
+                  dates={`${formatDeathDate(page.dateOfDeath)} · ${page.hebrewDate}`}
                   placeOfDeath={page.placeOfDeath ?? undefined}
                   imageUrl={page.pictureUrl ?? undefined}
                   href={`/memorial/${page.slug}`}
