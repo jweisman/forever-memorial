@@ -363,6 +363,8 @@
     "loading": "טוען..."
   },
   "Feed": {
+    "heroTitle": "זיכרון שממשיך לחיות",
+    "heroAccent": "לדור ודור",
     "title": "הפיד שלך",
     "createLegacyPage": "יצירת דף הנצחה",
     "recentActivity": "פעילות אחרונה",

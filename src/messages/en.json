@@ -336,6 +336,8 @@
     "backHome": "Back to home"
   },
   "Feed": {
+    "heroTitle": "Memory that lives on",
+    "heroAccent": "לדור ודור",
     "title": "Your Feed",
     "createLegacyPage": "Create a Legacy Page",
     "recentActivity": "Recent Activity",
