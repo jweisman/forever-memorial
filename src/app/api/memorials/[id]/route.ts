@@ -107,6 +107,9 @@ export const PATCH = withHandler(async (
     }
   }
 
+  if (body.additionalName !== undefined) {
+    data.additionalName = body.additionalName?.trim() || null;
+  }
   if (body.placeOfDeath !== undefined) {
     data.placeOfDeath = body.placeOfDeath?.trim() || null;
   }

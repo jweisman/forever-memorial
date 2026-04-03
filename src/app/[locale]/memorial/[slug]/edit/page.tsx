@@ -53,6 +53,7 @@ type Memorial = {
   id: string;
   slug: string;
   name: string;
+  additionalName: string | null;
   birthday: string | null;
   dateOfDeath: string;
   placeOfDeath: string | null;
@@ -93,6 +94,7 @@ export default function MemorialEditPage({
 
   // Form fields
   const [name, setName] = useState("");
+  const [additionalName, setHebrewName] = useState("");
   const [birthday, setBirthday] = useState("");
   const [dateOfDeath, setDateOfDeath] = useState("");
   const [placeOfDeath, setPlaceOfDeath] = useState("");
@@ -148,6 +150,7 @@ export default function MemorialEditPage({
     const data: Memorial = await res.json();
     setMemorial(data);
     setName(data.name);
+    setHebrewName(data.additionalName ?? "");
     setBirthday(toDateInputValue(data.birthday));
     setDateOfDeath(toDateInputValue(data.dateOfDeath));
     setPlaceOfDeath(data.placeOfDeath ?? "");
@@ -237,6 +240,7 @@ export default function MemorialEditPage({
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         name,
+        additionalName: additionalName || null,
         birthday: birthday || null,
         dateOfDeath,
         placeOfDeath,
@@ -477,6 +481,24 @@ export default function MemorialEditPage({
                 onChange={(e) => setName(e.target.value)}
                 required
                 className={inputClass}
+              />
+            </div>
+
+            <div>
+              <label
+                htmlFor="edit-hebrew-name"
+                className="block text-sm font-medium text-warm-700"
+              >
+                {t("additionalNameLabel")}
+              </label>
+              <input
+                id="edit-hebrew-name"
+                type="text"
+                value={additionalName}
+                onChange={(e) => setHebrewName(e.target.value)}
+                className={inputClass}
+                placeholder={t("additionalNamePlaceholder")}
+                dir="rtl"
               />
             </div>
 

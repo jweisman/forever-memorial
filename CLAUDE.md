@@ -6,6 +6,16 @@ This file is automatically loaded by Claude Code at the start of every session.
 
 A memorial website where families create tribute pages for loved ones. Features: life story, photo galleries, eulogies, and community memory submissions (with owner moderation). Full English/Hebrew i18n with RTL layout.
 
+## Definition of Done
+
+Before considering any issue or task complete, always:
+
+1. **Tests** – Evaluate whether the changes require new or updated unit or e2e tests. If so, write them. Do not close out a task without test coverage for new behavior.
+
+2. **CLAUDE.md** – Check if the changes affect how this project should be worked on (setup steps, conventions, architecture decisions). If so, update this file.
+
+3. **README.md** – Check if the changes affect user-facing behavior, configuration, installation, or usage. If so, update the README to reflect the current state.
+
 ## Tech Stack
 
 | | |

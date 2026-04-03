@@ -82,6 +82,7 @@ export const POST = withHandler(async (request: Request) => {
       slug: `temp-${Date.now()}`,
       ownerId: session.user.id,
       name,
+      additionalName: body.additionalName?.trim() || null,
       dateOfDeath,
       birthday: birthday ?? null,
       placeOfDeath: body.placeOfDeath?.trim() || null,

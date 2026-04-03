@@ -29,13 +29,18 @@ export default function MemorialCard({
       <Card padding="sm" className="group transition-shadow hover:shadow-md">
         <div className="flex items-center gap-4">
         <div
-          className="size-16 shrink-0 rounded-lg bg-warm-200 bg-cover bg-center"
-          style={imageUrl ? { backgroundImage: `url(${imageUrl})` } : undefined}
+          className="aspect-[4/3] h-16 shrink-0 overflow-hidden rounded-lg bg-warm-200"
           role="img"
           aria-label={`Memorial photo of ${name}`}
         >
-          {!imageUrl && (
-            <div className="flex size-full items-center justify-center rounded-lg text-2xl text-warm-400">
+          {imageUrl ? (
+            <img
+              src={imageUrl}
+              alt={`Memorial photo of ${name}`}
+              className="size-full object-cover"
+            />
+          ) : (
+            <div className="flex size-full items-center justify-center text-warm-400">
               <svg
                 className="size-8"
                 fill="none"
@@ -47,7 +52,7 @@ export default function MemorialCard({
                   strokeLinecap="round"
                   strokeLinejoin="round"
                   strokeWidth={1.5}
-                  d="M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 016 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0018 18a8.967 8.967 0 00-6 2.292m0-14.25v14.25"
+                  d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z"
                 />
               </svg>
             </div>

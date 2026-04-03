@@ -14,6 +14,7 @@ export default function CreateMemorialPage() {
   const router = useRouter();
   const t = useTranslations("CreateMemorial");
   const [name, setName] = useState("");
+  const [additionalName, setHebrewName] = useState("");
   const [dateOfDeath, setDateOfDeath] = useState("");
   const [birthday, setBirthday] = useState("");
   const [placeOfDeath, setPlaceOfDeath] = useState("");
@@ -34,6 +35,7 @@ export default function CreateMemorialPage() {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         name,
+        additionalName: additionalName || undefined,
         dateOfDeath,
         birthday: birthday || undefined,
         placeOfDeath: placeOfDeath || undefined,
@@ -81,6 +83,24 @@ export default function CreateMemorialPage() {
                 required
                 className={inputClass}
                 placeholder={t("namePlaceholder")}
+              />
+            </div>
+
+            <div>
+              <label
+                htmlFor="create-hebrew-name"
+                className="block text-sm font-medium text-warm-700"
+              >
+                {t("additionalNameLabel")}
+              </label>
+              <input
+                id="create-hebrew-name"
+                type="text"
+                value={additionalName}
+                onChange={(e) => setHebrewName(e.target.value)}
+                className={inputClass}
+                placeholder={t("additionalNamePlaceholder")}
+                dir="rtl"
               />
             </div>
 
