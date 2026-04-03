@@ -96,7 +96,7 @@ export default async function Home({
           >
             {t("heroTitle")}
             <br />
-            <span className="text-gold-500">{t("heroTitleAccent")}</span>
+            <span className="font-[family-name:var(--font-logo-he)] text-gold-500" lang="he">{t("heroTitleAccent")}</span>
           </h1>
           <p className="mt-6 text-lg leading-relaxed text-muted">
             {t("heroDescription")}

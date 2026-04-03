@@ -18,9 +18,9 @@
     "copyright": "© {year} Forever Memorial"
   },
   "Home": {
-    "heroTitle": "Preserve the memories",
-    "heroTitleAccent": "that matter forever",
-    "heroDescription": "Create a lasting legacy page for your loved ones. Share stories, photos, and cherished moments with family, friends, and the wider community.",
+    "heroTitle": "Memory that lives on",
+    "heroTitleAccent": "לדור ודור",
+    "heroDescription": "Create a lasting מקום זכרון, a place of memory, where stories, photos, and remembrance live on.",
     "searchPlaceholder": "Search for a legacy page by name...",
     "searchLabel": "Search for a legacy page",
     "createMemorial": "Create a Legacy Page",
@@ -175,7 +175,7 @@
     "generalInfo": "General Information",
     "nameLabel": "Name",
     "additionalNameLabel": "Hebrew name (optional)",
-    "additionalNamePlaceholder": "Name in Hebrew, e.g. יוסף בן דוד",
+    "additionalNamePlaceholder": "יוסף בן דוד",
     "birthdayLabel": "Birthday",
     "dateOfDeathLabel": "Date of death",
     "deathAfterSunset": "Death occurred after sunset",
@@ -336,6 +336,8 @@
     "backHome": "Back to home"
   },
   "Feed": {
+    "heroTitle": "Memory that lives on",
+    "heroAccent": "לדור ודור",
     "title": "Your Feed",
     "createLegacyPage": "Create a Legacy Page",
     "recentActivity": "Recent Activity",

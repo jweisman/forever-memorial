@@ -131,6 +131,29 @@ export default function FeedPage() {
   if (status === "loading" || status === "unauthenticated") return null;
 
   return (
+    <>
+      {/* Branded hero banner */}
+      <section className="relative overflow-hidden px-4 py-10 sm:py-12">
+        <picture aria-hidden="true">
+          <source media="(max-width: 768px)" srcSet="/images/hero-mobile.jpg" />
+          <source media="(min-width: 769px)" srcSet="/images/hero-desktop.jpg" />
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src="/images/hero-desktop.jpg"
+            alt=""
+            className="absolute inset-0 h-full w-full object-cover object-center"
+          />
+        </picture>
+        <div className="absolute inset-0 bg-warm-100/80" aria-hidden="true" />
+        <div className="relative z-10 mx-auto max-w-3xl text-center">
+          <p className="font-heading text-2xl font-semibold tracking-tight text-warm-800 sm:text-3xl">
+            {t("heroTitle")}
+            <br />
+            <span className="font-[family-name:var(--font-logo-he)] text-3xl text-gold-500 sm:text-4xl" lang="he">{t("heroAccent")}</span>
+          </p>
+        </div>
+      </section>
+
     <div className="mx-auto max-w-3xl px-4 py-12 sm:px-6 lg:px-8">
       <div className="flex items-center justify-between">
         <SectionHeading title={t("title")} as="h1" align="start" />
@@ -249,5 +272,6 @@ export default function FeedPage() {
         </section>
       </div>
     </div>
+    </>
   );
 }

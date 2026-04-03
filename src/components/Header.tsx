@@ -1,4 +1,4 @@
-import { getTranslations, getLocale } from "next-intl/server";
+import { getTranslations } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
 import SearchBar from "@/components/ui/SearchBar";
 import HeaderAuth from "@/components/HeaderAuth";
@@ -6,10 +6,7 @@ import LanguageSwitcher from "@/components/LanguageSwitcher";
 import Logo from "@/components/Logo";
 
 export default async function Header() {
-  const [t, locale] = await Promise.all([
-    getTranslations("Header"),
-    getLocale(),
-  ]);
+  const t = await getTranslations("Header");
 
   return (
     <header className="border-b border-border bg-surface" role="banner">
@@ -22,10 +19,10 @@ export default async function Header() {
           className="flex items-center transition-opacity hover:opacity-80"
           aria-label={t("homeLabel")}
         >
-          {/* Mobile: compact wordmark + flourish only */}
-          <Logo locale={locale} compact className="sm:hidden" />
-          {/* Desktop: full logo with divider + subtitle */}
-          <Logo locale={locale} className="hidden sm:block" />
+          {/* Mobile: compact logo */}
+          <Logo compact className="flex sm:hidden" />
+          {/* Desktop: full logo with Hebrew */}
+          <Logo className="hidden sm:flex" />
         </Link>
 
         <div className="flex items-center gap-3 sm:gap-4">
