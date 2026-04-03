@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { getHebrewDeathDate } from "@/lib/hebrewDate";
 import { withHandler } from "@/lib/api-error";
 
 export const GET = withHandler(async () => {
@@ -20,6 +21,7 @@ export const GET = withHandler(async () => {
           name: true,
           birthday: true,
           dateOfDeath: true,
+          deathAfterSunset: true,
           placeOfDeath: true,
           memorialPicture: true,
           createdAt: true,
@@ -31,7 +33,11 @@ export const GET = withHandler(async () => {
 
   const memorials = follows
     .map((f) => f.memorial)
-    .filter((m) => !m.disabled);
+    .filter((m) => !m.disabled)
+    .map((m) => ({
+      ...m,
+      hebrewDate: getHebrewDeathDate(m.dateOfDeath, m.deathAfterSunset, "he"),
+    }));
 
   return NextResponse.json(memorials);
 });

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { generateViewUrl } from "@/lib/s3-helpers";
+import { getHebrewDeathDate } from "@/lib/hebrewDate";
 import { Prisma } from "@/generated/prisma/client";
 import { rateLimit, getClientIp } from "@/lib/rate-limit";
 import { withHandler } from "@/lib/api-error";
@@ -11,6 +12,7 @@ type MemorialRow = {
   name: string;
   placeOfDeath: string | null;
   dateOfDeath: Date;
+  deathAfterSunset: boolean;
   birthday: Date | null;
   memorialPicture: string | null;
 };
@@ -34,7 +36,7 @@ export const GET = withHandler(async (request: NextRequest) => {
   }
 
   const rows = await prisma.$queryRaw<MemorialRow[]>`
-    SELECT id, slug, name, "placeOfDeath", "dateOfDeath", birthday, "memorialPicture"
+    SELECT id, slug, name, "placeOfDeath", "dateOfDeath", "deathAfterSunset", birthday, "memorialPicture"
     FROM memorials
     WHERE disabled = false
       AND (name ILIKE ${"%" + q + "%"} OR word_similarity(${q}, name) > 0.4)
@@ -49,7 +51,7 @@ export const GET = withHandler(async (request: NextRequest) => {
       name: row.name,
       placeOfDeath: row.placeOfDeath,
       dateOfDeath: row.dateOfDeath,
-      birthday: row.birthday,
+      hebrewDate: getHebrewDeathDate(row.dateOfDeath, row.deathAfterSunset, "he"),
       pictureUrl: row.memorialPicture
         ? await generateViewUrl(row.memorialPicture)
         : null,

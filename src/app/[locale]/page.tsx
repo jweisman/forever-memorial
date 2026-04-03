@@ -7,18 +7,16 @@ import SectionHeading from "@/components/ui/SectionHeading";
 import MemorialCard from "@/components/ui/MemorialCard";
 import { prisma } from "@/lib/prisma";
 import { generateViewUrl } from "@/lib/s3-helpers";
+import { getHebrewDeathDate } from "@/lib/hebrewDate";
 
-function formatDateRange(
-  birthday: Date | null,
-  dateOfDeath: Date,
-  diedLabel: string
-): string {
-  const deathYear = new Date(dateOfDeath).getFullYear();
-  if (birthday) {
-    const birthYear = new Date(birthday).getFullYear();
-    return `${birthYear} – ${deathYear}`;
-  }
-  return diedLabel;
+function formatDates(dateOfDeath: Date, deathAfterSunset: boolean): string {
+  const english = new Date(dateOfDeath).toLocaleDateString("en", {
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+  });
+  const hebrew = getHebrewDeathDate(dateOfDeath, deathAfterSunset, "he");
+  return `${english} · ${hebrew}`;
 }
 
 export default async function Home({
@@ -47,6 +45,7 @@ export default async function Home({
       name: true,
       birthday: true,
       dateOfDeath: true,
+      deathAfterSunset: true,
       placeOfDeath: true,
       memorialPicture: true,
     },
@@ -169,17 +168,13 @@ export default async function Home({
             title={t("recentTitle")}
             subtitle={t("recentSubtitle")}
           />
-          <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="mt-10 grid gap-4 sm:grid-cols-2">
             {recentMemorials.length > 0 ? (
               recentMemorials.map((memorial) => (
                 <MemorialCard
                   key={memorial.id}
                   name={memorial.name}
-                  dates={formatDateRange(
-                    memorial.birthday,
-                    memorial.dateOfDeath,
-                    t("died", { year: new Date(memorial.dateOfDeath).getFullYear() })
-                  )}
+                  dates={formatDates(memorial.dateOfDeath, memorial.deathAfterSunset)}
                   placeOfDeath={memorial.placeOfDeath ?? undefined}
                   imageUrl={memorial.pictureUrl ?? undefined}
                   href={`/memorial/${memorial.slug}`}

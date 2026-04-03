@@ -10,7 +10,7 @@ type Suggestion = {
   name: string;
   placeOfDeath: string | null;
   dateOfDeath: string;
-  birthday: string | null;
+  hebrewDate: string;
   pictureUrl: string | null;
 };
 
@@ -29,17 +29,12 @@ const iconSizeClasses = {
   lg: "start-3.5 size-5",
 };
 
-function formatYear(date: string | null): string | null {
-  if (!date) return null;
-  return new Date(date).getFullYear().toString();
-}
-
-function formatDateRange(birthday: string | null, dateOfDeath: string): string {
-  const deathYear = formatYear(dateOfDeath);
-  const birthYear = formatYear(birthday);
-  if (birthYear && deathYear) return `${birthYear}–${deathYear}`;
-  if (deathYear) return `d. ${deathYear}`;
-  return "";
+function formatDeathDate(dateOfDeath: string): string {
+  return new Date(dateOfDeath).toLocaleDateString("en", {
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+  });
 }
 
 export default function SearchBar({
@@ -200,22 +195,16 @@ export default function SearchBar({
                 navigateToResult(s.slug);
               }}
             >
-              {/* Thumbnail */}
-              <div className="size-8 shrink-0 overflow-hidden rounded bg-warm-200">
-                {s.pictureUrl ? (
+              {/* Thumbnail — hidden when no image */}
+              {s.pictureUrl && (
+                <div className="size-8 shrink-0 overflow-hidden rounded bg-warm-200">
                   <img
                     src={s.pictureUrl}
                     alt=""
                     className="size-full object-cover"
                   />
-                ) : (
-                  <div className="flex size-full items-center justify-center text-warm-400">
-                    <svg className="size-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 016 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0018 18a8.967 8.967 0 00-6 2.292m0-14.25v14.25" />
-                    </svg>
-                  </div>
-                )}
-              </div>
+                </div>
+              )}
 
               {/* Text */}
               <div className="min-w-0 flex-1">
@@ -223,7 +212,7 @@ export default function SearchBar({
                   {s.name}
                 </p>
                 <p className="truncate text-xs text-muted">
-                  {[formatDateRange(s.birthday, s.dateOfDeath), s.placeOfDeath]
+                  {[`${formatDeathDate(s.dateOfDeath)} · ${s.hebrewDate}`, s.placeOfDeath]
                     .filter(Boolean)
                     .join(" · ")}
                 </p>
