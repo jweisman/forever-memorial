@@ -1,8 +1,8 @@
 {
   "Header": {
-    "home": "Forever",
+    "home": "LeOlam",
     "homeHebrew": "לעולם",
-    "homeLabel": "Forever — Home",
+    "homeLabel": "LeOlam — Home",
     "searchPlaceholder": "Search legacy pages...",
     "searchLabel": "Search legacy pages"
   },
@@ -12,10 +12,10 @@
     "signOut": "Sign out"
   },
   "Footer": {
-    "brand": "Forever",
+    "brand": "LeOlam",
     "brandHebrew": "(לעולם)",
     "tagline": "Preserving memories that matter",
-    "copyright": "© {year} Forever Memorial"
+    "copyright": "© {year} LeOlam Memorial"
   },
   "Home": {
     "heroTitle": "Memory that lives on",
@@ -97,7 +97,7 @@
     "posterLabel": "Download Poster"
   },
   "SignIn": {
-    "title": "Welcome to Forever",
+    "title": "Welcome to LeOlam",
     "subtitle": "Sign in to create legacy pages and share memories",
     "accountDisabled": "Your account has been disabled. Please contact support if you believe this is an error.",
     "oauthNotLinked": "This email is already registered. Please sign in using the magic link option below.",
