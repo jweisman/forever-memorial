@@ -27,9 +27,9 @@ const variantClasses: Record<ButtonVariant, string> = {
 };
 
 const sizeClasses: Record<ButtonSize, string> = {
-  sm: "px-3 py-1.5 text-sm",
-  md: "px-5 py-2.5 text-sm",
-  lg: "px-6 py-3 text-base",
+  sm: "px-4 py-2 text-sm",
+  md: "px-7 py-3.5 text-sm",
+  lg: "px-8 py-4 text-base",
 };
 
 export default function Button({
@@ -38,7 +38,7 @@ export default function Button({
   className = "",
   ...props
 }: ButtonProps) {
-  const classes = `inline-flex items-center justify-center gap-2 rounded-lg font-semibold transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent disabled:opacity-50 disabled:cursor-not-allowed disabled:pointer-events-none ${variantClasses[variant]} ${sizeClasses[size]} ${className}`;
+  const classes = `inline-flex items-center justify-center gap-2 rounded-[24px] font-semibold transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent disabled:opacity-50 disabled:cursor-not-allowed disabled:pointer-events-none ${variantClasses[variant]} ${sizeClasses[size]} ${className}`;
 
   if ("href" in props && props.href !== undefined) {
     const { href, ...rest } = props as ButtonAsLink;

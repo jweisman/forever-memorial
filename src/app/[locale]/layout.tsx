@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Lora, Source_Sans_3, Heebo } from "next/font/google";
+import { Playfair_Display, Source_Serif_4, Inter, Heebo, Frank_Ruhl_Libre } from "next/font/google";
 import { NextIntlClientProvider, hasLocale } from "next-intl";
 import { getMessages, setRequestLocale } from "next-intl/server";
 import { notFound } from "next/navigation";
@@ -12,15 +12,23 @@ import { ToastProvider } from "@/components/ui/Toast";
 import DisableBodyDrop from "@/components/DisableBodyDrop";
 import "../globals.css";
 
-const lora = Lora({
+const playfairDisplay = Playfair_Display({
   variable: "--font-heading",
   subsets: ["latin", "latin-ext"],
   display: "swap",
+  weight: ["400", "600", "700"],
 });
 
-const sourceSans = Source_Sans_3({
+const sourceSerif4 = Source_Serif_4({
   variable: "--font-body",
   subsets: ["latin", "latin-ext"],
+  display: "swap",
+  weight: ["400", "600"],
+});
+
+const inter = Inter({
+  variable: "--font-ui",
+  subsets: ["latin"],
   display: "swap",
 });
 
@@ -28,6 +36,13 @@ const heebo = Heebo({
   variable: "--font-body-he",
   subsets: ["hebrew", "latin"],
   display: "swap",
+});
+
+const frankRuhlLibre = Frank_Ruhl_Libre({
+  variable: "--font-heading-he",
+  subsets: ["hebrew", "latin"],
+  display: "swap",
+  weight: ["400", "700"],
 });
 
 export const metadata: Metadata = {
@@ -62,7 +77,7 @@ export default async function LocaleLayout({
   return (
     <html lang={locale} dir={dir}>
       <body
-        className={`${lora.variable} ${sourceSans.variable} ${heebo.variable} flex min-h-screen flex-col`}
+        className={`${playfairDisplay.variable} ${sourceSerif4.variable} ${inter.variable} ${heebo.variable} ${frankRuhlLibre.variable} flex min-h-screen flex-col`}
       >
         <SessionProvider session={session}>
           <NextIntlClientProvider messages={messages}>

@@ -26,13 +26,13 @@ export default function PosterDownload({ memorialId }: Props) {
         <path
           strokeLinecap="round"
           strokeLinejoin="round"
-          strokeWidth={1.75}
+          strokeWidth={1.5}
           d="M3 3h6v6H3zM15 3h6v6h-6zM3 15h6v6H3zM15 17h2m4-4h-4v2m0 4h2v2h2v-4"
         />
         <path
           strokeLinecap="round"
           strokeLinejoin="round"
-          strokeWidth={1.75}
+          strokeWidth={1.5}
           d="M7 7h.01M17 7h.01M7 17h.01"
         />
       </svg>
