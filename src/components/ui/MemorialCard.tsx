@@ -26,7 +26,7 @@ export default function MemorialCard({
 
   return (
     <Wrapper>
-      <Card padding="sm" className="group transition-shadow hover:shadow-md">
+      <Card padding="sm" className="group overflow-hidden transition-shadow hover:shadow-md">
         <div className="flex items-center gap-4">
         <div
           className="aspect-[4/3] h-16 shrink-0 overflow-hidden rounded-lg bg-warm-200"

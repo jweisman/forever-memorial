@@ -1,13 +1,11 @@
 "use client";
 
-import { useTranslations } from "next-intl";
-
 type Props = {
   memorialId: string;
+  label: string;
 };
 
-export default function PosterDownload({ memorialId }: Props) {
-  const t = useTranslations("Memorial");
+export default function PosterDownload({ memorialId, label }: Props) {
   const posterUrl = `/api/memorials/${memorialId}/poster`;
 
   return (
@@ -36,7 +34,7 @@ export default function PosterDownload({ memorialId }: Props) {
           d="M7 7h.01M17 7h.01M7 17h.01"
         />
       </svg>
-      {t("posterLabel")}
+      {label}
     </a>
   );
 }

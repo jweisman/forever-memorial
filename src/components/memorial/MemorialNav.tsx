@@ -6,13 +6,20 @@ type NavSection = { id: string; label: string; isCta?: boolean };
 
 export default function MemorialNav({ sections }: { sections: NavSection[] }) {
   const [stickyVisible, setStickyVisible] = useState(false);
+  const hasBeenVisible = useRef(false);
   const inlineRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const el = inlineRef.current;
     if (!el) return;
     const observer = new IntersectionObserver(
-      ([entry]) => setStickyVisible(!entry.isIntersecting),
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          hasBeenVisible.current = true;
+        }
+        // Only show sticky after the inline nav has been seen at least once
+        setStickyVisible(hasBeenVisible.current && !entry.isIntersecting);
+      },
       { threshold: 0 }
     );
     observer.observe(el);
@@ -71,7 +78,7 @@ export default function MemorialNav({ sections }: { sections: NavSection[] }) {
       {/* Sticky top nav — slides in when inline nav scrolls out of view */}
       <nav
         aria-label="Page sections"
-        className={`fixed inset-x-0 top-0 z-40 border-b border-border bg-surface/95 backdrop-blur-sm transition-transform duration-200 ${
+        className={`fixed inset-x-0 top-16 z-40 border-b border-border bg-surface/95 backdrop-blur-sm transition-transform duration-200 ${
           stickyVisible ? "translate-y-0" : "-translate-y-full"
         }`}
       >
