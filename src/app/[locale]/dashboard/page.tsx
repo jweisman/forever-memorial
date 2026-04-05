@@ -208,9 +208,18 @@ export default function DashboardPage() {
 
         {/* Profile Section */}
         <Card>
-          <h2 className="font-heading text-lg font-semibold text-warm-800">
-            {t("profile")}
-          </h2>
+          <div className="flex items-center justify-between">
+            <h2 className="font-heading text-lg font-semibold text-warm-800">
+              {t("profile")}
+            </h2>
+            <Button
+              variant="secondary"
+              size="sm"
+              onClick={() => signOut({ callbackUrl: "/" })}
+            >
+              {t("signOut")}
+            </Button>
+          </div>
           <form onSubmit={handleProfileSave} className="mt-4 space-y-4">
             <div>
               <label

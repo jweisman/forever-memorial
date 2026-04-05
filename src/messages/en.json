@@ -8,6 +8,7 @@
   },
   "HeaderAuth": {
     "dashboard": "Dashboard",
+    "dashboardLabel": "Go to dashboard",
     "signIn": "Sign in",
     "signOut": "Sign out"
   },
@@ -145,7 +146,8 @@
     "deleting": "Deleting...",
     "adminPanel": "Admin Panel",
     "adminPanelDesc": "Manage all legacies and users",
-    "openAdmin": "Open Admin"
+    "openAdmin": "Open Admin",
+    "signOut": "Sign out"
   },
   "CreateMemorial": {
     "title": "Create a Legacy",

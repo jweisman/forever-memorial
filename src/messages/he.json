@@ -8,6 +8,7 @@
   },
   "HeaderAuth": {
     "dashboard": "לוח בקרה",
+    "dashboardLabel": "מעבר ללוח בקרה",
     "signIn": "התחברות",
     "signOut": "התנתקות"
   },
@@ -145,7 +146,8 @@
     "deleting": "מוחק...",
     "adminPanel": "לוח ניהול",
     "adminPanelDesc": "ניהול כל האנדרטאות והמשתמשים",
-    "openAdmin": "פתח ניהול"
+    "openAdmin": "פתח ניהול",
+    "signOut": "התנתקות"
   },
   "CreateMemorial": {
     "title": "יצירת דף הנצחה",
