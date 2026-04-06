@@ -47,6 +47,7 @@ export const GET = withHandler(async (request: Request) => {
         birthday: true,
         dateOfDeath: true,
         deathAfterSunset: true,
+        placeOfBirth: true,
         placeOfDeath: true,
         memorialPicture: true,
         updatedAt: true,

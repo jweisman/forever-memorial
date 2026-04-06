@@ -10,6 +10,7 @@ type MemorialRow = {
   id: string;
   slug: string;
   name: string;
+  placeOfBirth: string | null;
   placeOfDeath: string | null;
   dateOfDeath: Date;
   deathAfterSunset: boolean;
@@ -36,7 +37,7 @@ export const GET = withHandler(async (request: NextRequest) => {
   }
 
   const rows = await prisma.$queryRaw<MemorialRow[]>`
-    SELECT id, slug, name, "placeOfDeath", "dateOfDeath", "deathAfterSunset", birthday, "memorialPicture"
+    SELECT id, slug, name, "placeOfBirth", "placeOfDeath", "dateOfDeath", "deathAfterSunset", birthday, "memorialPicture"
     FROM memorials
     WHERE disabled = false
       AND (name ILIKE ${"%" + q + "%"} OR word_similarity(${q}, name) > 0.4)
@@ -49,7 +50,7 @@ export const GET = withHandler(async (request: NextRequest) => {
       id: row.id,
       slug: row.slug,
       name: row.name,
-      placeOfDeath: row.placeOfDeath,
+      location: row.placeOfDeath ?? row.placeOfBirth,
       dateOfDeath: row.dateOfDeath,
       hebrewDate: getHebrewDeathDate(row.dateOfDeath, row.deathAfterSunset, "he"),
       pictureUrl: row.memorialPicture

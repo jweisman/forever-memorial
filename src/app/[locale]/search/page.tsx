@@ -16,6 +16,7 @@ type MemorialRow = {
   id: string;
   slug: string;
   name: string;
+  placeOfBirth: string | null;
   placeOfDeath: string | null;
   dateOfDeath: Date;
   deathAfterSunset: boolean;
@@ -53,13 +54,13 @@ export default async function SearchPage({ params, searchParams }: Props) {
     slug: string;
     name: string;
     dates: string;
-    placeOfDeath: string | null;
+    location: string | null;
     pictureUrl: string | null;
   }[] = [];
 
   if (query.length >= 2) {
     const rows = await prisma.$queryRaw<MemorialRow[]>`
-      SELECT id, slug, name, "placeOfDeath", "dateOfDeath", "deathAfterSunset", birthday, "memorialPicture"
+      SELECT id, slug, name, "placeOfBirth", "placeOfDeath", "dateOfDeath", "deathAfterSunset", birthday, "memorialPicture"
       FROM memorials
       WHERE disabled = false
         AND (name ILIKE ${"%" + query + "%"} OR word_similarity(${query}, name) > 0.4)
@@ -73,7 +74,7 @@ export default async function SearchPage({ params, searchParams }: Props) {
         slug: row.slug,
         name: row.name,
         dates: formatDates(row.dateOfDeath, row.deathAfterSunset),
-        placeOfDeath: row.placeOfDeath,
+        location: row.placeOfDeath ?? row.placeOfBirth,
         pictureUrl: row.memorialPicture
           ? await generateViewUrl(thumbKeyFromBase(row.memorialPicture))
           : null,
@@ -112,7 +113,7 @@ export default async function SearchPage({ params, searchParams }: Props) {
                     key={memorial.id}
                     name={memorial.name}
                     dates={memorial.dates}
-                    placeOfDeath={memorial.placeOfDeath ?? undefined}
+                    location={memorial.location ?? undefined}
                     imageUrl={memorial.pictureUrl ?? undefined}
                     href={`/memorial/${memorial.slug}`}
                   />

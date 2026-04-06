@@ -304,26 +304,12 @@ export default async function MemorialPage({ params }: Props) {
               </p>
             )}
 
-            {memorial.birthday && (
-              <p className="mt-2 text-sm text-muted">
-                <span className="font-medium">{t("born")}</span>{" "}
-                {formatDate(memorial.birthday, locale)}
-                {memorial.placeOfBirth && (
-                  <span className="text-warm-400"> ({memorial.placeOfBirth})</span>
-                )}
-              </p>
-            )}
-
-            <p className="mt-1 text-base text-muted">
-              <span className="font-medium">{t("passedAway")}</span>{" "}
+            <p className="mt-2 text-base text-muted">
               <span className="whitespace-nowrap">{formatDate(memorial.dateOfDeath, locale)}</span>
               {" · "}
               <span className="whitespace-nowrap" dir="rtl">
                 {getHebrewDeathDate(memorial.dateOfDeath, memorial.deathAfterSunset, "he")}
               </span>
-              {memorial.placeOfDeath && (
-                <span className="text-warm-400"> ({memorial.placeOfDeath})</span>
-              )}
             </p>
 
             {/* Leaf separator */}

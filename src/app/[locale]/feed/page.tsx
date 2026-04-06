@@ -28,6 +28,7 @@ type LegacyPageItem = {
   birthday: string | null;
   dateOfDeath: string;
   hebrewDate: string;
+  placeOfBirth: string | null;
   placeOfDeath: string | null;
   pictureUrl: string | null;
   updatedAt: string;
@@ -286,7 +287,7 @@ export default function FeedPage() {
                     key={page.id}
                     name={page.name}
                     dates={`${formatDeathDate(page.dateOfDeath)} · ${page.hebrewDate}`}
-                    placeOfDeath={page.placeOfDeath ?? undefined}
+                    location={page.placeOfDeath ?? page.placeOfBirth ?? undefined}
                     imageUrl={page.pictureUrl ?? undefined}
                     href={`/memorial/${page.slug}`}
                   />
@@ -319,7 +320,7 @@ export default function FeedPage() {
                     key={page.id}
                     name={page.name}
                     dates={`${formatDeathDate(page.dateOfDeath)} · ${page.hebrewDate}`}
-                    placeOfDeath={page.placeOfDeath ?? undefined}
+                    location={page.placeOfDeath ?? page.placeOfBirth ?? undefined}
                     imageUrl={page.pictureUrl ?? undefined}
                     href={`/memorial/${page.slug}`}
                   />
