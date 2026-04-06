@@ -175,7 +175,7 @@ The app is designed for Vercel with a managed PostgreSQL provider (Neon, Supabas
 
 ## License
 
-This app is covered by the MIT license. Homepage hero image licensed from [Tanakorn @ Adobe](https://stock.adobe.com/il/contributor/211655892/tanakorn?load_type=author&prev_url=detail)
+This app is covered by the MIT license. Homepage hero image licensed from [suchetpong @ Adobe](https://stock.adobe.com/il/contributor/212217662/suchetpong?load_type=author&prev_url=detail)
 
 ## Coding
 

@@ -94,6 +94,7 @@ src/
 │   │   ├── feed/               # Feed page — authenticated home; redirected from `/` for logged-in users
 │   │   ├── memorial/[slug]/    # Public memorial page
 │   │   │   └── edit/           # Edit memorial (owner only)
+│   │   ├── about/              # About page + contact form
 │   │   ├── search/             # Search results
 │   │   ├── error.tsx           # Locale-scoped error boundary
 │   │   └── not-found.tsx       # 404 page
@@ -104,6 +105,7 @@ src/
 │   │   │   ├── activity/       # GET — recent ACCEPTED memories from owned/followed pages (auth required)
 │   │   │   └── legacy-pages/   # GET — owned/followed legacy pages sorted by updatedAt (auth required)
 │   │   ├── memorials/[id]/     # Memorial CRUD + albums/images/eulogies/memories/yahrzeit/links/follow
+│   │   ├── contact/            # POST — contact form (rate-limited, Turnstile CAPTCHA + honeypot)
 │   │   ├── search/             # Fuzzy search (pg_trgm, word_similarity)
 │   │   ├── user/               # Profile update, submissions, follows, account delete
 │   │   └── health/             # GET /api/health → DB ping
@@ -225,6 +227,9 @@ See `.env.example` for full docs. Required in production:
 | `S3_ACCESS_KEY/SECRET` | AWS or MinIO credentials |
 | `S3_REGION` | e.g. `us-east-1` |
 | `S3_ENDPOINT` | Omit for real S3; set to MinIO URL locally |
+| `CONTACT_EMAIL` | Receives contact form submissions (default: `leolamforever@gmail.com`) |
+| `NEXT_PUBLIC_TURNSTILE_SITE_KEY` | Optional Cloudflare Turnstile site key (contact form CAPTCHA) |
+| `TURNSTILE_SECRET_KEY` | Optional Cloudflare Turnstile secret key |
 
 ## Testing
 

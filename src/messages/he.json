@@ -16,7 +16,8 @@
     "brand": "Forever",
     "brandHebrew": "(לעולם)",
     "tagline": "שומרים על הזיכרונות שחשובים",
-    "copyright": "© {year} Forever Memorial"
+    "copyright": "© {year} Forever Memorial",
+    "about": "אודות"
   },
   "Home": {
     "heroTitle": "זיכרונות שממשיכים לחיות",
@@ -369,7 +370,7 @@
   },
   "Feed": {
     "heroTitle": "זוכרים יחד",
-    "heroAccent": "לדור ודור",
+    "heroAccent": "מדור לדור",
     "heroSubtitle": "סיפורים וזיכרונות חדשים מהדפים שאתם עוקבים אחריהם",
     "title": "דפי הנצחה חיים",
     "createLegacyPage": "יצירת דף הנצחה",
@@ -384,5 +385,25 @@
     "emptyDescription": "עקבו אחרי דף הנצחה או צרו אחד כדי לראות עדכונים כאן.",
     "searchLegacies": "חיפוש דפי הנצחה",
     "died": "נ. {year}"
+  },
+  "About": {
+    "title": "אודות",
+    "description": "לעולם היא פלטפורמה חינמית ליצירה ושיתוף של דפי הנצחה — מקום לכבד חיים, לשמר זיכרונות ולחבר משפחות לאורך הדורות.",
+    "nonprofit": "לעולם הוא פרויקט של יאיר לעולם, עמותה אמריקאית (EIN 71-1024619) ועמותה ישראלית (ע.ר. 580473734).",
+    "contactTitle": "צרו קשר",
+    "contactSubtitle": "יש לכם שאלה או צריכים עזרה? שלחו לנו הודעה.",
+    "nameLabel": "שם",
+    "namePlaceholder": "השם שלכם",
+    "emailLabel": "אימייל",
+    "emailPlaceholder": "you@example.com",
+    "subjectLabel": "נושא",
+    "subjectPlaceholder": "איך נוכל לעזור?",
+    "messageLabel": "הודעה",
+    "messagePlaceholder": "ספרו לנו עוד...",
+    "send": "שליחת הודעה",
+    "sending": "שולח...",
+    "sendError": "שליחת ההודעה נכשלה. אנא נסו שוב.",
+    "sentTitle": "ההודעה נשלחה!",
+    "sentDescription": "תודה שפניתם אלינו. נחזור אליכם בהקדם האפשרי."
   }
 }

@@ -15,12 +15,13 @@
   "Footer": {
     "brand": "LeOlam",
     "brandHebrew": "(לעולם)",
-    "tagline": "Preserving memories that matter",
-    "copyright": "© {year} LeOlam Memorial"
+    "tagline": "Preserving legacies that matter",
+    "copyright": "© {year} LeOlam Memorial",
+    "about": "About"
   },
   "Home": {
     "heroTitle": "Legacies that live on from generation to generation",
-    "heroTitleAccent": "לדור ודור",
+    "heroTitleAccent": "מדור לדור",
     "heroDescription": "A place of memory, a מקום זיכרון, to remember, to share, and to carry forward a life. May their memory be a blessing — יהי זכרם ברוך.",
     "searchPlaceholder": "Search for a legacy by name...",
     "searchLabel": "Search for a legacy",
@@ -342,7 +343,7 @@
   },
   "Feed": {
     "heroTitle": "Remembering Together",
-    "heroAccent": "לדור ודור",
+    "heroAccent": "מדור לדור",
     "heroSubtitle": "New stories and memories from the legacies you follow",
     "title": "Legacy Feed",
     "createLegacyPage": "Create a New Legacy",
@@ -384,5 +385,25 @@
     "noMemories": "No accepted memories.",
     "accessDenied": "Access denied",
     "loading": "Loading..."
+  },
+  "About": {
+    "title": "About Us",
+    "description": "LeOlam (לעולם) is a free platform for creating and sharing legacy pages — a place to honor a life, preserve memories, and connect families across generations.",
+    "nonprofit": "LeOlam is a project of Yair LeOlam, an American non-profit (EIN 71-1024619) and Israeli non-profit (R.A. 580473734).",
+    "contactTitle": "Contact Us",
+    "contactSubtitle": "Have a question or need help? Send us a message.",
+    "nameLabel": "Name",
+    "namePlaceholder": "Your name",
+    "emailLabel": "Email",
+    "emailPlaceholder": "you@example.com",
+    "subjectLabel": "Subject",
+    "subjectPlaceholder": "How can we help?",
+    "messageLabel": "Message",
+    "messagePlaceholder": "Tell us more...",
+    "send": "Send Message",
+    "sending": "Sending...",
+    "sendError": "Failed to send message. Please try again.",
+    "sentTitle": "Message sent!",
+    "sentDescription": "Thank you for reaching out. We'll get back to you as soon as we can."
   }
 }
