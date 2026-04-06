@@ -11,10 +11,9 @@ test.describe("Feed page — authenticated", () => {
     await expect(page).toHaveURL(/\/en\/feed/);
   });
 
-  test("shows both feed sections", async ({ page }) => {
+  test("shows the legacies I follow section", async ({ page }) => {
     await page.goto("/en/feed");
-    await expect(page.getByRole("heading", { name: /recently shared memories/i })).toBeVisible();
-    await expect(page.getByRole("heading", { name: /recent legacies/i })).toBeVisible();
+    await expect(page.getByRole("heading", { name: /legacies i follow/i })).toBeVisible();
   });
 
   test("shows the seeded memorial in Latest Legacy Pages", async ({ page }) => {

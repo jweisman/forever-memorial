@@ -102,7 +102,7 @@ src/
 │   │   ├── eulogies/extract-text/ # POST — extract text from .docx upload (mammoth)
 │   │   ├── feed/
 │   │   │   ├── activity/       # GET — recent ACCEPTED memories from owned/followed pages (auth required)
-│   │   │   └── legacy-pages/   # GET — latest non-disabled legacy pages sorted by updatedAt (public)
+│   │   │   └── legacy-pages/   # GET — owned/followed legacy pages sorted by updatedAt (auth required)
 │   │   ├── memorials/[id]/     # Memorial CRUD + albums/images/eulogies/memories/yahrzeit/links/follow
 │   │   ├── search/             # Fuzzy search (pg_trgm, word_similarity)
 │   │   ├── user/               # Profile update, submissions, follows, account delete
@@ -332,3 +332,4 @@ npm run dev
 12. **pdfkit: NotoSansHebrew-Bold has no Latin glyphs** — It is a Hebrew-only font. Never pass mixed Hebrew+Latin strings to it. Split bilingual text into separate `doc.text()` calls: one with `NotoHebrew` for the Hebrew portion, one with `Helvetica` for the Latin portion.
 13. **`sendNotification` must be wrapped in `after()`** — On Vercel (and any serverless platform), a bare `sendNotification(...)` call after the response is returned will be silently dropped because the function freezes immediately. Always use `after(() => sendNotification(...))` imported from `next/server`. `after()` is stable since Next.js 15.1.
 14. **`vi.mocked(auth).mockResolvedValue(null as never)` in tests** — `auth` from next-auth v5 is overloaded; TypeScript resolves the `NextMiddleware` overload and rejects `null`. Use `as never` for both `null` and session objects: `mockResolvedValue(null as never)` / `mockResolvedValue(makeSession(id) as never)`.
+15. **`overflow-x-clip` not `overflow-x-hidden` on `<main>`** — The layout uses `overflow-x-clip` to prevent horizontal scroll on mobile. Do **not** change this to `overflow-x-hidden` — `hidden` creates a new scroll container which breaks `sticky` positioning (e.g. the sticky save button on the edit memorial page).
