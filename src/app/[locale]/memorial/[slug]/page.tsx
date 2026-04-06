@@ -274,7 +274,7 @@ export default async function MemorialPage({ params }: Props) {
       />
       <article className="mx-auto max-w-3xl px-4 py-12 sm:px-6 lg:px-8">
         {/* Header */}
-        <header className={`flex flex-col items-center gap-8 text-center${memorial.memorialPictureUrl ? " sm:flex-row sm:items-center sm:text-start" : ""}`}>
+        <header className="flex flex-col items-center gap-8 text-center sm:flex-row sm:items-center">
           {/* Memorial picture — hidden when no image */}
           {memorial.memorialPictureUrl && (
             <div className="aspect-[4/3] w-full shrink-0 overflow-hidden rounded-2xl bg-warm-200 sm:w-[55%]">
