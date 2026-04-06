@@ -20,13 +20,19 @@ export const GET = withHandler(async (request: Request) => {
   const skip = Math.max(0, parseInt(url.searchParams.get("skip") ?? "0", 10) || 0);
   const take = Math.min(MAX_TAKE, Math.max(1, parseInt(url.searchParams.get("take") ?? String(DEFAULT_TAKE), 10) || DEFAULT_TAKE));
 
-  const where = {
-    disabled: false,
-    OR: [
-      { ownerId: userId },
-      { followers: { some: { userId } } },
-    ],
-  };
+  const filter = url.searchParams.get("filter"); // "owned" | "followed" | null (both)
+  const where =
+    filter === "owned"
+      ? { disabled: false, ownerId: userId }
+      : filter === "followed"
+        ? { disabled: false, followers: { some: { userId } } }
+        : {
+            disabled: false,
+            OR: [
+              { ownerId: userId },
+              { followers: { some: { userId } } },
+            ],
+          };
 
   const [pages, total] = await Promise.all([
     prisma.memorial.findMany({

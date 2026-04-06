@@ -98,7 +98,7 @@ describe("GET /api/feed/legacy-pages", () => {
     expect(body.take).toBe(20);
   });
 
-  it("filters by owned or followed pages only", async () => {
+  it("filters by owned or followed pages by default", async () => {
     await GET(makeRequest());
     expect(m(prisma.memorial.findMany)).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -110,6 +110,24 @@ describe("GET /api/feed/legacy-pages", () => {
           ],
         },
         orderBy: { updatedAt: "desc" },
+      })
+    );
+  });
+
+  it("filters by owned pages when filter=owned", async () => {
+    await GET(makeRequest({ filter: "owned" }));
+    expect(m(prisma.memorial.findMany)).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: { disabled: false, ownerId: USER_ID },
+      })
+    );
+  });
+
+  it("filters by followed pages when filter=followed", async () => {
+    await GET(makeRequest({ filter: "followed" }));
+    expect(m(prisma.memorial.findMany)).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: { disabled: false, followers: { some: { userId: USER_ID } } },
       })
     );
   });
