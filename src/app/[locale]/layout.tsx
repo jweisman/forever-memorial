@@ -94,7 +94,7 @@ export default async function LocaleLayout({
               </a>
               <DisableBodyDrop />
               <Header />
-              <main id="main-content" className="flex-1 overflow-x-hidden">
+              <main id="main-content" className="flex-1 overflow-x-clip">
                 {children}
               </main>
               <Footer />
