@@ -8,6 +8,7 @@
   },
   "HeaderAuth": {
     "dashboard": "לוח בקרה",
+    "dashboardLabel": "מעבר ללוח בקרה",
     "signIn": "התחברות",
     "signOut": "התנתקות"
   },
@@ -18,8 +19,8 @@
     "copyright": "© {year} Forever Memorial"
   },
   "Home": {
-    "heroTitle": "זיכרון שממשיך לחיות",
-    "heroTitleAccent": "לדור ודור",
+    "heroTitle": "זיכרונות שממשיכים לחיות",
+    "heroTitleAccent": "מדור לדור",
     "heroDescription": "צרו מקום זיכרון שנשאר לעד — מקום בו סיפורים, תמונות וזיכרונות ממשיכים לחיות.",
     "searchPlaceholder": "חיפוש אנדרטה לפי שם...",
     "searchLabel": "חיפוש אנדרטה",
@@ -62,7 +63,7 @@
     "details": "אודות",
     "born": "נולד/ה",
     "passedAway": "תאריך פטירה",
-    "placeOfDeath": "מקום הפטירה",
+    "placeOfDeath": "מקומות משמעותיים",
     "funeralInfo": "מקום המנוחה",
     "survivedBy": "הותיר/ה אחריו/ה",
     "lifeStory": "סיפור חיים",
@@ -145,7 +146,8 @@
     "deleting": "מוחק...",
     "adminPanel": "לוח ניהול",
     "adminPanelDesc": "ניהול כל האנדרטאות והמשתמשים",
-    "openAdmin": "פתח ניהול"
+    "openAdmin": "פתח ניהול",
+    "signOut": "התנתקות"
   },
   "CreateMemorial": {
     "title": "יצירת דף הנצחה",
@@ -157,7 +159,7 @@
     "birthdayLabel": "תאריך לידה",
     "dateOfDeathLabel": "תאריך פטירה",
     "deathAfterSunset": "הפטירה הייתה לאחר השקיעה",
-    "placeOfDeathLabel": "מקום הפטירה",
+    "placeOfDeathLabel": "מקומות משמעותיים",
     "placeOfDeathPlaceholder": "למשל ירושלים, ישראל",
     "funeralInfoLabel": "פרטי הקבורה",
     "funeralInfoPlaceholder": "פרטים על סידורי הקבורה...",
@@ -179,7 +181,7 @@
     "birthdayLabel": "תאריך לידה",
     "dateOfDeathLabel": "תאריך פטירה",
     "deathAfterSunset": "הפטירה הייתה לאחר השקיעה",
-    "placeOfDeathLabel": "מקום הפטירה",
+    "placeOfDeathLabel": "מקומות משמעותיים",
     "placeOfDeathPlaceholder": "למשל ירושלים, ישראל",
     "funeralInfoLabel": "פרטי הקבורה",
     "funeralInfoPlaceholder": "פרטים על סידורי הקבורה...",
@@ -369,12 +371,15 @@
     "title": "דפי הנצחה חיים",
     "createLegacyPage": "יצירת דף הנצחה",
     "recentActivity": "זיכרונות שנשתפו לאחרונה",
-    "noActivity": "עדיין לא שותפו זיכרונות כאן. עקבו אחרי דף או שתפו סיפור כדי להתחיל.",
+    "noActivity": "עדיין לא שותפו זיכרונות על דפי ההנצחה שאתם עוקבים אחריהם.",
     "loadMore": "טען עוד",
     "sharedMemory": "שיתף/ה זיכרון על",
     "anonymous": "מישהו",
-    "latestLegacyPages": "דפי הנצחה אחרונים",
-    "noLegacyPages": "עדיין לא נוצרו דפי הנצחה.",
+    "latestLegacyPages": "דפי הנצחה שאני עוקב/ת",
+    "noLegacyPages": "אינכם עוקבים אחרי דפי הנצחה עדיין.",
+    "emptyTitle": "הפיד שלכם ריק",
+    "emptyDescription": "עקבו אחרי דף הנצחה או צרו אחד כדי לראות עדכונים כאן.",
+    "searchLegacies": "חיפוש דפי הנצחה",
     "died": "נ. {year}"
   }
 }

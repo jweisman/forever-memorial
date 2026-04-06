@@ -157,118 +157,134 @@ export default function FeedPage() {
       </section>
 
     <div className="mx-auto max-w-3xl px-4 py-12 sm:px-6 lg:px-8">
-      <div className="flex items-center justify-between">
-        <SectionHeading title={t("title")} as="h1" align="start" />
-        <Button href="/dashboard/create" variant="primary" size="sm">
-          {t("createLegacyPage")}
-        </Button>
-      </div>
+      <SectionHeading title={t("title")} as="h1" align="start" />
 
-      <div className="mt-10 space-y-10">
-        {/* Recent Activity */}
-        <section>
-          <h2 className="font-heading text-lg font-semibold text-warm-800">
-            {t("recentActivity")}
+      {loadingActivity || loadingPages ? (
+        <div className="mt-10 space-y-10">
+          <div className="space-y-3">
+            {Array.from({ length: 3 }).map((_, i) => (
+              <div key={i} className="h-20 animate-pulse rounded-lg bg-warm-100" />
+            ))}
+          </div>
+          <div className="space-y-3">
+            {Array.from({ length: 3 }).map((_, i) => (
+              <div key={i} className="h-24 animate-pulse rounded-lg bg-warm-100" />
+            ))}
+          </div>
+        </div>
+      ) : activity.length === 0 && legacyPages.length === 0 ? (
+        /* Unified empty state — no followed or owned legacies */
+        <div className="mt-16 text-center">
+          <h2 className="font-heading text-xl font-semibold text-warm-800">
+            {t("emptyTitle")}
           </h2>
-
-          {loadingActivity ? (
-            <div className="mt-4 space-y-3">
-              {Array.from({ length: 3 }).map((_, i) => (
-                <div key={i} className="h-20 animate-pulse rounded-lg bg-warm-100" />
-              ))}
-            </div>
-          ) : activity.length === 0 ? (
-            <p className="mt-4 text-sm text-muted">{t("noActivity")}</p>
-          ) : (
-            <div className="mt-4 space-y-3">
-              {activity.map((item) => (
-                <Card key={item.id} padding="sm">
-                  <div className="flex items-start justify-between gap-4">
-                    <div className="min-w-0">
-                      <p className="text-sm text-warm-700">
-                        <span className="font-medium text-warm-800">
-                          {item.name ?? t("anonymous")}
-                        </span>
-                        {item.relation && (
-                          <span className="text-warm-400"> · {item.relation}</span>
-                        )}
-                        {" "}
-                        {t("sharedMemory")}{" "}
-                        <Link
-                          href={`/memorial/${item.memorial.slug}#memories`}
-                          className="font-medium text-accent hover:text-accent-hover"
-                        >
-                          {item.memorial.name}
-                        </Link>
-                      </p>
-                      <p className="mt-1 line-clamp-2 text-sm text-warm-500">
-                        {item.text}
-                      </p>
+          <p className="mt-2 text-sm text-muted">
+            {t("emptyDescription")}
+          </p>
+          <div className="mt-6 flex flex-col items-center justify-center gap-3 sm:flex-row">
+            <Button href="/search" variant="secondary" size="sm">
+              {t("searchLegacies")}
+            </Button>
+            <Button href="/dashboard/create" variant="primary" size="sm">
+              {t("createLegacyPage")}
+            </Button>
+          </div>
+        </div>
+      ) : (
+        <div className="mt-10 space-y-10">
+          {/* Recently shared memories */}
+          {activity.length > 0 && (
+            <section>
+              <h2 className="font-heading text-lg font-semibold text-warm-800">
+                {t("recentActivity")}
+              </h2>
+              <div className="mt-4 space-y-3">
+                {activity.map((item) => (
+                  <Card key={item.id} padding="sm">
+                    <div className="flex items-start justify-between gap-4">
+                      <div className="min-w-0">
+                        <p className="text-sm text-warm-700">
+                          <span className="font-medium text-warm-800">
+                            {item.name ?? t("anonymous")}
+                          </span>
+                          {item.relation && (
+                            <span className="text-warm-400"> · {item.relation}</span>
+                          )}
+                          {" "}
+                          {t("sharedMemory")}{" "}
+                          <Link
+                            href={`/memorial/${item.memorial.slug}#memories`}
+                            className="font-heading font-semibold text-warm-800 hover:text-accent"
+                          >
+                            {item.memorial.name}
+                          </Link>
+                        </p>
+                        <p className="mt-1 line-clamp-2 text-sm text-warm-500">
+                          {item.text}
+                        </p>
+                      </div>
+                      <span className="shrink-0 text-xs text-warm-300">
+                        {formatRelativeDate(item.createdAt)}
+                      </span>
                     </div>
-                    <span className="shrink-0 text-xs text-warm-300">
-                      {formatRelativeDate(item.createdAt)}
-                    </span>
+                  </Card>
+                ))}
+                {activity.length < activityTotal && (
+                  <div className="pt-1">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={loadMoreActivity}
+                      disabled={loadingMoreActivity}
+                    >
+                      {t("loadMore")}
+                    </Button>
                   </div>
-                </Card>
-              ))}
-              {activity.length < activityTotal && (
-                <div className="pt-1">
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={loadMoreActivity}
-                    disabled={loadingMoreActivity}
-                  >
-                    {t("loadMore")}
-                  </Button>
-                </div>
-              )}
-            </div>
+                )}
+              </div>
+            </section>
           )}
-        </section>
 
-        {/* Latest Legacy Pages */}
-        <section>
-          <h2 className="font-heading text-lg font-semibold text-warm-800">
-            {t("latestLegacyPages")}
-          </h2>
-
-          {loadingPages ? (
-            <div className="mt-4 space-y-3">
-              {Array.from({ length: 3 }).map((_, i) => (
-                <div key={i} className="h-24 animate-pulse rounded-lg bg-warm-100" />
-              ))}
-            </div>
-          ) : legacyPages.length === 0 ? (
-            <p className="mt-4 text-sm text-muted">{t("noLegacyPages")}</p>
-          ) : (
-            <div className="mt-4 space-y-3">
-              {legacyPages.map((page) => (
-                <MemorialCard
-                  key={page.id}
-                  name={page.name}
-                  dates={`${formatDeathDate(page.dateOfDeath)} · ${page.hebrewDate}`}
-                  placeOfDeath={page.placeOfDeath ?? undefined}
-                  imageUrl={page.pictureUrl ?? undefined}
-                  href={`/memorial/${page.slug}`}
-                />
-              ))}
-              {legacyPages.length < legacyTotal && (
-                <div className="pt-1">
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={loadMorePages}
-                    disabled={loadingMorePages}
-                  >
-                    {t("loadMore")}
-                  </Button>
-                </div>
-              )}
-            </div>
+          {/* Legacies I Follow */}
+          {legacyPages.length > 0 && (
+            <section>
+              <h2 className="font-heading text-lg font-semibold text-warm-800">
+                {t("latestLegacyPages")}
+              </h2>
+              <div className="mt-4 space-y-3">
+                {legacyPages.map((page) => (
+                  <MemorialCard
+                    key={page.id}
+                    name={page.name}
+                    dates={`${formatDeathDate(page.dateOfDeath)} · ${page.hebrewDate}`}
+                    placeOfDeath={page.placeOfDeath ?? undefined}
+                    imageUrl={page.pictureUrl ?? undefined}
+                    href={`/memorial/${page.slug}`}
+                  />
+                ))}
+                {legacyPages.length < legacyTotal && (
+                  <div className="pt-1">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={loadMorePages}
+                      disabled={loadingMorePages}
+                    >
+                      {t("loadMore")}
+                    </Button>
+                  </div>
+                )}
+              </div>
+            </section>
           )}
-        </section>
-      </div>
+
+          <div className="pt-2">
+            <Button href="/dashboard/create" variant="primary" size="sm">
+              {t("createLegacyPage")}
+            </Button>
+          </div>
+        </div>
+      )}
     </div>
     </>
   );
