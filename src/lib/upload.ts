@@ -164,10 +164,13 @@ export async function uploadMemorialPicture(
   memorialId: string,
   file: File
 ): Promise<string> {
-  // 1. Resize to square thumbnail
-  const thumb = await resizeImageSquare(file, 256, 0.8);
+  // 1. Resize to thumbnail (square 256) and full (1600px width)
+  const [thumb, full] = await Promise.all([
+    resizeImageSquare(file, 256, 0.8),
+    resizeImage(file, 1600, 0.85),
+  ]);
 
-  // 2. Get presigned URL for thumb variant
+  // 2. Get presigned URLs for both variants
   const urlRes = await fetch(
     `/api/memorials/${memorialId}/memorial-picture/upload-url`,
     {
@@ -183,18 +186,21 @@ export async function uploadMemorialPicture(
     const err = await urlRes.json();
     throw new Error(err.error || "Failed to get upload URL");
   }
-  const { thumbUploadUrl, thumbS3Key } = await urlRes.json();
+  const { thumbUploadUrl, fullUploadUrl, s3Key } = await urlRes.json();
 
-  // 3. Upload to S3
-  await uploadBlobToS3(thumb, thumbUploadUrl);
+  // 3. Upload both variants to S3
+  await Promise.all([
+    uploadBlobToS3(thumb, thumbUploadUrl),
+    uploadBlobToS3(full, fullUploadUrl),
+  ]);
 
-  // 4. Confirm
+  // 4. Confirm with base key
   const confirmRes = await fetch(
     `/api/memorials/${memorialId}/memorial-picture/confirm`,
     {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ s3Key: thumbS3Key }),
+      body: JSON.stringify({ s3Key }),
     }
   );
   if (!confirmRes.ok) {
@@ -206,14 +212,21 @@ export async function uploadMemorialPicture(
 }
 
 /**
- * Upload a pre-cropped blob as the memorial picture (skips resizeImageSquare).
- * Used after the interactive crop UI.
+ * Upload a pre-cropped blob as the memorial picture.
+ * Used after the interactive crop UI. Creates both thumbnail and full variants.
  */
 export async function uploadMemorialPictureBlob(
   memorialId: string,
   blob: Blob
 ): Promise<string> {
-  // 1. Get presigned URL
+  // 1. Resize the cropped blob into thumb + full variants
+  const file = new File([blob], "memorial-picture.webp", { type: "image/webp" });
+  const [thumb, full] = await Promise.all([
+    resizeImageSquare(file, 256, 0.8),
+    resizeImage(file, 1600, 0.85),
+  ]);
+
+  // 2. Get presigned URLs for both variants
   const urlRes = await fetch(
     `/api/memorials/${memorialId}/memorial-picture/upload-url`,
     {
@@ -229,18 +242,21 @@ export async function uploadMemorialPictureBlob(
     const err = await urlRes.json();
     throw new Error(err.error || "Failed to get upload URL");
   }
-  const { thumbUploadUrl, thumbS3Key } = await urlRes.json();
+  const { thumbUploadUrl, fullUploadUrl, s3Key } = await urlRes.json();
 
-  // 2. Upload blob to S3
-  await uploadBlobToS3(blob, thumbUploadUrl);
+  // 3. Upload both variants to S3
+  await Promise.all([
+    uploadBlobToS3(thumb, thumbUploadUrl),
+    uploadBlobToS3(full, fullUploadUrl),
+  ]);
 
-  // 3. Confirm
+  // 4. Confirm with base key
   const confirmRes = await fetch(
     `/api/memorials/${memorialId}/memorial-picture/confirm`,
     {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ s3Key: thumbS3Key }),
+      body: JSON.stringify({ s3Key }),
     }
   );
   if (!confirmRes.ok) {

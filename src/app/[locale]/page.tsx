@@ -6,7 +6,7 @@ import SearchBar from "@/components/ui/SearchBar";
 import SectionHeading from "@/components/ui/SectionHeading";
 import MemorialCard from "@/components/ui/MemorialCard";
 import { prisma } from "@/lib/prisma";
-import { generateViewUrl } from "@/lib/s3-helpers";
+import { generateViewUrl, thumbKeyFromBase } from "@/lib/s3-helpers";
 import { getHebrewDeathDate } from "@/lib/hebrewDate";
 
 function formatDates(dateOfDeath: Date, deathAfterSunset: boolean): string {
@@ -55,7 +55,7 @@ export default async function Home({
     rawMemorials.map(async (m) => ({
       ...m,
       pictureUrl: m.memorialPicture
-        ? await generateViewUrl(m.memorialPicture)
+        ? await generateViewUrl(thumbKeyFromBase(m.memorialPicture))
         : null,
     }))
   );

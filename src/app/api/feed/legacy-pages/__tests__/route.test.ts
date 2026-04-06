@@ -11,6 +11,7 @@ vi.mock("@/lib/prisma", () => ({
 }));
 vi.mock("@/lib/s3-helpers", () => ({
   generateViewUrl: vi.fn(),
+  thumbKeyFromBase: vi.fn((key: string) => key.replace(/\.\w+$/, "_thumb.webp")),
 }));
 
 import { GET } from "../route";

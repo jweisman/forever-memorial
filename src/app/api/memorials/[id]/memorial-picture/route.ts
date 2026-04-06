@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { deleteS3Object } from "@/lib/s3-helpers";
+import { deleteS3Object, thumbKeyFromBase, fullKeyFromBase } from "@/lib/s3-helpers";
 import { isUserDisabled } from "@/lib/admin";
 import { withHandler } from "@/lib/api-error";
 
@@ -33,11 +33,10 @@ export const DELETE = withHandler(async (
   }
 
   if (memorial.memorialPicture) {
-    try {
-      await deleteS3Object(memorial.memorialPicture);
-    } catch {
-      // Ignore S3 deletion errors
-    }
+    await Promise.all([
+      deleteS3Object(thumbKeyFromBase(memorial.memorialPicture)).catch(() => {}),
+      deleteS3Object(fullKeyFromBase(memorial.memorialPicture)).catch(() => {}),
+    ]);
   }
 
   await prisma.memorial.update({

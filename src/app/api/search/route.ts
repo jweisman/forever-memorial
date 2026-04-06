@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { generateViewUrl } from "@/lib/s3-helpers";
+import { generateViewUrl, thumbKeyFromBase } from "@/lib/s3-helpers";
 import { getHebrewDeathDate } from "@/lib/hebrewDate";
 import { Prisma } from "@/generated/prisma/client";
 import { rateLimit, getClientIp } from "@/lib/rate-limit";
@@ -53,7 +53,7 @@ export const GET = withHandler(async (request: NextRequest) => {
       dateOfDeath: row.dateOfDeath,
       hebrewDate: getHebrewDeathDate(row.dateOfDeath, row.deathAfterSunset, "he"),
       pictureUrl: row.memorialPicture
-        ? await generateViewUrl(row.memorialPicture)
+        ? await generateViewUrl(thumbKeyFromBase(row.memorialPicture))
         : null,
     }))
   );

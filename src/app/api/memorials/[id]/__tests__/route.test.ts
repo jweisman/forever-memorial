@@ -17,6 +17,7 @@ vi.mock("@/lib/slug", () => ({
 }));
 vi.mock("@/lib/s3-helpers", () => ({
   generateViewUrl: vi.fn().mockResolvedValue("https://s3.example.com/view"),
+  thumbKeyFromBase: vi.fn((key: string) => key.replace(/\.\w+$/, "_thumb.webp")),
 }));
 
 import { GET, PATCH, DELETE } from "../route";

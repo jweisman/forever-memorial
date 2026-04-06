@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { generateViewUrl } from "@/lib/s3-helpers";
+import { generateViewUrl, thumbKeyFromBase } from "@/lib/s3-helpers";
 import { getHebrewDeathDate } from "@/lib/hebrewDate";
 import { withHandler } from "@/lib/api-error";
 
@@ -59,7 +59,7 @@ export const GET = withHandler(async (request: Request) => {
     pages.map(async (p) => ({
       ...p,
       hebrewDate: getHebrewDeathDate(p.dateOfDeath, p.deathAfterSunset, "he"),
-      pictureUrl: p.memorialPicture ? await generateViewUrl(p.memorialPicture) : null,
+      pictureUrl: p.memorialPicture ? await generateViewUrl(thumbKeyFromBase(p.memorialPicture)) : null,
     }))
   );
 

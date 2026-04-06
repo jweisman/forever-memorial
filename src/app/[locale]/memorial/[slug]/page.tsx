@@ -68,7 +68,7 @@ async function getMemorial(slug: string) {
   // Resolve presigned URLs
   let memorialPictureUrl: string | null = null;
   if (memorial.memorialPicture) {
-    memorialPictureUrl = await generateViewUrl(memorial.memorialPicture);
+    memorialPictureUrl = await generateViewUrl(fullKeyFromBase(memorial.memorialPicture));
   }
 
   const albumsWithUrls = await Promise.all(
