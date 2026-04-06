@@ -1,8 +1,81 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 
 type NavSection = { id: string; label: string; isCta?: boolean };
+
+function ScrollableNav({ items, onScrollTo }: { items: NavSection[]; onScrollTo: (id: string) => void }) {
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const [canScrollLeft, setCanScrollLeft] = useState(false);
+  const [canScrollRight, setCanScrollRight] = useState(false);
+
+  const checkScroll = useCallback(() => {
+    const el = scrollRef.current;
+    if (!el) return;
+    setCanScrollLeft(el.scrollLeft > 1);
+    setCanScrollRight(el.scrollLeft + el.clientWidth < el.scrollWidth - 1);
+  }, []);
+
+  useEffect(() => {
+    const el = scrollRef.current;
+    if (!el) return;
+    checkScroll();
+    el.addEventListener("scroll", checkScroll, { passive: true });
+    const observer = new ResizeObserver(checkScroll);
+    observer.observe(el);
+    return () => {
+      el.removeEventListener("scroll", checkScroll);
+      observer.disconnect();
+    };
+  }, [checkScroll]);
+
+  function scroll(direction: "left" | "right") {
+    const el = scrollRef.current;
+    if (!el) return;
+    el.scrollBy({ left: direction === "left" ? -150 : 150, behavior: "smooth" });
+  }
+
+  return (
+    <div className="relative flex min-w-0 flex-1 items-stretch">
+      {canScrollLeft && (
+        <button
+          onClick={() => scroll("left")}
+          className="absolute inset-y-0 start-0 z-10 hidden w-7 items-center justify-center bg-gradient-to-r from-warm-50 to-transparent text-warm-500 hover:text-warm-800 sm:flex rtl:bg-gradient-to-l"
+          aria-label="Scroll left"
+        >
+          <svg className="size-4 rtl:rotate-180" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M10 3L5 8l5 5" />
+          </svg>
+        </button>
+      )}
+      <div
+        ref={scrollRef}
+        className="flex flex-1 gap-1 overflow-x-auto py-2 scrollbar-hide"
+      >
+        {items.map((section) => (
+          <button
+            key={section.id}
+            onClick={() => onScrollTo(section.id)}
+            className="shrink-0 rounded-full px-3 py-1.5 text-xs text-warm-600 hover:bg-warm-100 hover:text-warm-800"
+          >
+            {section.label}
+          </button>
+        ))}
+      </div>
+      {canScrollRight && (
+        <button
+          onClick={() => scroll("right")}
+          className="absolute inset-y-0 end-0 z-10 hidden w-7 items-center justify-center bg-gradient-to-l from-warm-50 to-transparent text-warm-500 hover:text-warm-800 sm:flex rtl:bg-gradient-to-r"
+          aria-label="Scroll right"
+        >
+          <svg className="size-4 rtl:rotate-180" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M6 3l5 5-5 5" />
+          </svg>
+        </button>
+      )}
+    </div>
+  );
+}
 
 export default function MemorialNav({ sections }: { sections: NavSection[] }) {
   const [stickyVisible, setStickyVisible] = useState(false);
@@ -33,32 +106,15 @@ export default function MemorialNav({ sections }: { sections: NavSection[] }) {
   const ctaSection = sections.find((s) => s.isCta);
   const navItems = sections.filter((s) => !s.isCta);
 
-  const navContent = (
-    <>
-      {/* Scrollable section links */}
-      <div className="flex flex-1 gap-1 overflow-x-auto py-2 scrollbar-hide">
-        {navItems.map((section) => (
-          <button
-            key={section.id}
-            onClick={() => scrollTo(section.id)}
-            className="shrink-0 rounded-full px-3 py-1.5 text-xs text-warm-600 hover:bg-warm-100 hover:text-warm-800"
-          >
-            {section.label}
-          </button>
-        ))}
-      </div>
-      {/* Pinned CTA — always visible */}
-      {ctaSection && (
-        <div className="flex shrink-0 items-center border-s border-border py-2 ps-2">
-          <button
-            onClick={() => scrollTo(ctaSection.id)}
-            className="rounded-full bg-accent px-3 py-1.5 text-xs font-medium text-white hover:bg-accent-hover"
-          >
-            {ctaSection.label}
-          </button>
-        </div>
-      )}
-    </>
+  const cta = ctaSection && (
+    <div className="flex shrink-0 items-center border-s border-border py-2 ps-2">
+      <button
+        onClick={() => scrollTo(ctaSection.id)}
+        className="rounded-full bg-accent px-3 py-1.5 text-xs font-medium text-white hover:bg-accent-hover"
+      >
+        {ctaSection.label}
+      </button>
+    </div>
   );
 
   return (
@@ -71,7 +127,8 @@ export default function MemorialNav({ sections }: { sections: NavSection[] }) {
         className="-mx-4 mt-8 border-b border-t border-border bg-warm-50 sm:-mx-6 lg:-mx-8"
       >
         <div className="mx-auto flex max-w-3xl items-stretch px-4 sm:px-6 lg:px-8">
-          {navContent}
+          <ScrollableNav items={navItems} onScrollTo={scrollTo} />
+          {cta}
         </div>
       </div>
 
@@ -83,7 +140,8 @@ export default function MemorialNav({ sections }: { sections: NavSection[] }) {
         }`}
       >
         <div className="mx-auto flex max-w-3xl items-stretch px-4 sm:px-6 lg:px-8">
-          {navContent}
+          <ScrollableNav items={navItems} onScrollTo={scrollTo} />
+          {cta}
         </div>
       </nav>
     </>
