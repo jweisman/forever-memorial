@@ -162,13 +162,13 @@ export default async function Home({
         className="bg-surface px-4 py-16 sm:px-6 sm:py-20 lg:px-8"
         aria-labelledby="recent-heading"
       >
-        <div className="mx-auto max-w-4xl">
+        <div className="mx-auto max-w-3xl">
           <SectionHeading
             id="recent-heading"
             title={t("recentTitle")}
             subtitle={t("recentSubtitle")}
           />
-          <div className="mt-10 grid gap-4 sm:grid-cols-2">
+          <div className="mt-10 space-y-3">
             {recentMemorials.length > 0 ? (
               recentMemorials.map((memorial) => (
                 <MemorialCard
@@ -181,7 +181,7 @@ export default async function Home({
                 />
               ))
             ) : (
-              <p className="col-span-full text-center text-sm text-muted">
+              <p className="text-center text-sm text-muted">
                 {t("noMemorials")}
               </p>
             )}

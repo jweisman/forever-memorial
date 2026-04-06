@@ -83,7 +83,7 @@ export default async function SearchPage({ params, searchParams }: Props) {
 
   return (
     <section className="px-4 py-12 sm:px-6 lg:px-8">
-      <div className="mx-auto max-w-4xl">
+      <div className="mx-auto max-w-3xl">
         <div className="mb-8">
           <SearchBar
             size="lg"
@@ -106,7 +106,7 @@ export default async function SearchPage({ params, searchParams }: Props) {
             />
 
             {results.length > 0 ? (
-              <div className="mt-8 grid gap-4 sm:grid-cols-2">
+              <div className="mt-8 space-y-3">
                 {results.map((memorial) => (
                   <MemorialCard
                     key={memorial.id}
