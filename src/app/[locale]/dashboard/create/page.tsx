@@ -17,6 +17,7 @@ export default function CreateMemorialPage() {
   const [additionalName, setHebrewName] = useState("");
   const [dateOfDeath, setDateOfDeath] = useState("");
   const [birthday, setBirthday] = useState("");
+  const [placeOfBirth, setPlaceOfBirth] = useState("");
   const [placeOfDeath, setPlaceOfDeath] = useState("");
   const [funeralInfo, setFuneralInfo] = useState("");
   const [survivedBy, setSurvivedBy] = useState("");
@@ -38,6 +39,7 @@ export default function CreateMemorialPage() {
         additionalName: additionalName || undefined,
         dateOfDeath,
         birthday: birthday || undefined,
+        placeOfBirth: placeOfBirth || undefined,
         placeOfDeath: placeOfDeath || undefined,
         funeralInfo: funeralInfo || undefined,
         survivedBy: survivedBy || undefined,
@@ -122,6 +124,22 @@ export default function CreateMemorialPage() {
               </div>
               <div>
                 <label
+                  htmlFor="create-place-of-birth"
+                  className="block text-sm font-medium text-warm-700"
+                >
+                  {t("placeOfBirthLabel")}
+                </label>
+                <input
+                  id="create-place-of-birth"
+                  type="text"
+                  value={placeOfBirth}
+                  onChange={(e) => setPlaceOfBirth(e.target.value)}
+                  className={inputClass}
+                  placeholder={t("placeOfBirthPlaceholder")}
+                />
+              </div>
+              <div>
+                <label
                   htmlFor="create-date-of-death"
                   className="block text-sm font-medium text-warm-700"
                 >
@@ -145,23 +163,22 @@ export default function CreateMemorialPage() {
                   {t("deathAfterSunset")}
                 </label>
               </div>
-            </div>
-
-            <div>
-              <label
-                htmlFor="create-place-of-death"
-                className="block text-sm font-medium text-warm-700"
-              >
-                {t("placeOfDeathLabel")}
-              </label>
-              <input
-                id="create-place-of-death"
-                type="text"
-                value={placeOfDeath}
-                onChange={(e) => setPlaceOfDeath(e.target.value)}
-                className={inputClass}
-                placeholder={t("placeOfDeathPlaceholder")}
-              />
+              <div>
+                <label
+                  htmlFor="create-place-of-death"
+                  className="block text-sm font-medium text-warm-700"
+                >
+                  {t("placeOfDeathLabel")}
+                </label>
+                <input
+                  id="create-place-of-death"
+                  type="text"
+                  value={placeOfDeath}
+                  onChange={(e) => setPlaceOfDeath(e.target.value)}
+                  className={inputClass}
+                  placeholder={t("placeOfDeathPlaceholder")}
+                />
+              </div>
             </div>
 
             <div>

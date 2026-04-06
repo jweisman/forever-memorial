@@ -94,6 +94,7 @@ model Memorial {
   additionalName  String?
   memorialPicture String?
   birthday        DateTime?
+  placeOfBirth    String?
   dateOfDeath     DateTime
   placeOfDeath    String?
   funeralInfo     String?

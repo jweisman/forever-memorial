@@ -1,7 +1,7 @@
 import { Metadata } from "next";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { prisma } from "@/lib/prisma";
-import { generateViewUrl } from "@/lib/s3-helpers";
+import { generateViewUrl, thumbKeyFromBase } from "@/lib/s3-helpers";
 import { getHebrewDeathDate } from "@/lib/hebrewDate";
 import MemorialCard from "@/components/ui/MemorialCard";
 import SectionHeading from "@/components/ui/SectionHeading";
@@ -75,7 +75,7 @@ export default async function SearchPage({ params, searchParams }: Props) {
         dates: formatDates(row.dateOfDeath, row.deathAfterSunset),
         placeOfDeath: row.placeOfDeath,
         pictureUrl: row.memorialPicture
-          ? await generateViewUrl(row.memorialPicture)
+          ? await generateViewUrl(thumbKeyFromBase(row.memorialPicture))
           : null,
       }))
     );

@@ -92,6 +92,7 @@ export const POST = withHandler(async (request: Request) => {
       additionalName: body.additionalName?.trim() || null,
       dateOfDeath,
       birthday: birthday ?? null,
+      placeOfBirth: body.placeOfBirth?.trim() || null,
       placeOfDeath: body.placeOfDeath?.trim() || null,
       funeralInfo: body.funeralInfo?.trim() || null,
       survivedBy: body.survivedBy?.trim() || null,
