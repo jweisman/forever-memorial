@@ -4,7 +4,7 @@ import Card from "./Card";
 type MemorialCardProps = {
   name: string;
   dates: string;
-  placeOfDeath?: string;
+  location?: string;
   imageUrl?: string;
   href?: string;
 };
@@ -12,7 +12,7 @@ type MemorialCardProps = {
 export default function MemorialCard({
   name,
   dates,
-  placeOfDeath,
+  location,
   imageUrl,
   href,
 }: MemorialCardProps) {
@@ -46,8 +46,8 @@ export default function MemorialCard({
             {name}
           </h3>
           <p className="text-sm text-muted">{dates}</p>
-          {placeOfDeath && (
-            <p className="text-sm text-warm-400">{placeOfDeath}</p>
+          {location && (
+            <p className="text-sm text-warm-400">{location}</p>
           )}
         </div>
       </div>

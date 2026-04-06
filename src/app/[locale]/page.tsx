@@ -46,6 +46,7 @@ export default async function Home({
       birthday: true,
       dateOfDeath: true,
       deathAfterSunset: true,
+      placeOfBirth: true,
       placeOfDeath: true,
       memorialPicture: true,
     },
@@ -175,7 +176,7 @@ export default async function Home({
                   key={memorial.id}
                   name={memorial.name}
                   dates={formatDates(memorial.dateOfDeath, memorial.deathAfterSunset)}
-                  placeOfDeath={memorial.placeOfDeath ?? undefined}
+                  location={memorial.placeOfDeath ?? memorial.placeOfBirth ?? undefined}
                   imageUrl={memorial.pictureUrl ?? undefined}
                   href={`/memorial/${memorial.slug}`}
                 />
