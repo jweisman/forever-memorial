@@ -247,19 +247,24 @@ describe("uploadMemorialPicture", () => {
 
   const uploadUrlPictureResponse = {
     thumbUploadUrl: "https://s3.example.com/picture-thumb-url",
-    thumbS3Key: "memorials/mem-001/memorial-picture.webp",
+    fullUploadUrl: "https://s3.example.com/picture-full-url",
+    s3Key: "memorials/mem-001/memorial-picture.jpg",
+    thumbS3Key: "memorials/mem-001/memorial-picture_thumb.webp",
+    fullS3Key: "memorials/mem-001/memorial-picture_full.webp",
   };
 
-  it("resizes to a square and returns the confirmed URL", async () => {
+  it("resizes to thumb and full and returns the confirmed URL", async () => {
     vi.stubGlobal("fetch", makeFetch([
       { ok: true, data: uploadUrlPictureResponse },
-      { ok: true, data: {} },
+      { ok: true, data: {} }, // thumb S3 upload
+      { ok: true, data: {} }, // full S3 upload
       { ok: true, data: { url: "https://s3.example.com/picture" } },
     ]));
 
     const url = await uploadMemorialPicture(MEMORIAL_ID, makeImageFile());
     expect(url).toBe("https://s3.example.com/picture");
     expect(vi.mocked(resizeImageSquare)).toHaveBeenCalledTimes(1);
+    expect(vi.mocked(resizeImage)).toHaveBeenCalledTimes(1);
   });
 
   it("throws when the upload-url request fails", async () => {
@@ -272,16 +277,18 @@ describe("uploadMemorialPictureBlob", () => {
   beforeEach(() => vi.clearAllMocks());
   afterEach(() => vi.unstubAllGlobals());
 
-  it("skips resize and returns the confirmed URL", async () => {
+  it("resizes the cropped blob and returns the confirmed URL", async () => {
     vi.stubGlobal("fetch", makeFetch([
-      { ok: true, data: { thumbUploadUrl: "https://s3.example.com/u", thumbS3Key: "key" } },
-      { ok: true, data: {} },
+      { ok: true, data: { thumbUploadUrl: "https://s3.example.com/t", fullUploadUrl: "https://s3.example.com/f", s3Key: "key" } },
+      { ok: true, data: {} }, // thumb S3 upload
+      { ok: true, data: {} }, // full S3 upload
       { ok: true, data: { url: "https://s3.example.com/pic" } },
     ]));
 
     const url = await uploadMemorialPictureBlob(MEMORIAL_ID, new Blob(["img"]));
     expect(url).toBe("https://s3.example.com/pic");
-    expect(vi.mocked(resizeImageSquare)).not.toHaveBeenCalled();
+    expect(vi.mocked(resizeImageSquare)).toHaveBeenCalledTimes(1);
+    expect(vi.mocked(resizeImage)).toHaveBeenCalledTimes(1);
   });
 });
 

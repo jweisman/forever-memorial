@@ -68,7 +68,7 @@ async function getMemorial(slug: string) {
   // Resolve presigned URLs
   let memorialPictureUrl: string | null = null;
   if (memorial.memorialPicture) {
-    memorialPictureUrl = await generateViewUrl(memorial.memorialPicture);
+    memorialPictureUrl = await generateViewUrl(fullKeyFromBase(memorial.memorialPicture));
   }
 
   const albumsWithUrls = await Promise.all(
@@ -244,6 +244,12 @@ export default async function MemorialPage({ params }: Props) {
     ...(memorial.birthday && {
       birthDate: new Date(memorial.birthday).toISOString().split("T")[0],
     }),
+    ...(memorial.placeOfBirth && {
+      birthPlace: {
+        "@type": "Place",
+        name: memorial.placeOfBirth,
+      },
+    }),
     deathDate: new Date(memorial.dateOfDeath).toISOString().split("T")[0],
     ...(memorial.placeOfDeath && {
       deathPlace: {
@@ -298,19 +304,27 @@ export default async function MemorialPage({ params }: Props) {
               </p>
             )}
 
-            <p className="mt-2 text-base text-muted">
+            {memorial.birthday && (
+              <p className="mt-2 text-sm text-muted">
+                <span className="font-medium">{t("born")}</span>{" "}
+                {formatDate(memorial.birthday, locale)}
+                {memorial.placeOfBirth && (
+                  <span className="text-warm-400"> ({memorial.placeOfBirth})</span>
+                )}
+              </p>
+            )}
+
+            <p className="mt-1 text-base text-muted">
+              <span className="font-medium">{t("passedAway")}</span>{" "}
               <span className="whitespace-nowrap">{formatDate(memorial.dateOfDeath, locale)}</span>
               {" · "}
               <span className="whitespace-nowrap" dir="rtl">
                 {getHebrewDeathDate(memorial.dateOfDeath, memorial.deathAfterSunset, "he")}
               </span>
+              {memorial.placeOfDeath && (
+                <span className="text-warm-400"> ({memorial.placeOfDeath})</span>
+              )}
             </p>
-
-            {memorial.placeOfDeath && (
-              <p className="mt-1 text-sm text-warm-400">
-                {memorial.placeOfDeath}
-              </p>
-            )}
 
             {/* Leaf separator */}
             <div className="mt-5" aria-hidden="true">
@@ -376,6 +390,9 @@ export default async function MemorialPage({ params }: Props) {
                   <dt className="font-medium text-warm-600">{t("born")}</dt>
                   <dd className="mt-0.5 text-warm-800">
                     {formatDate(memorial.birthday, locale)}
+                    {memorial.placeOfBirth && (
+                      <span className="text-warm-500"> ({memorial.placeOfBirth})</span>
+                    )}
                   </dd>
                 </div>
               )}
@@ -383,6 +400,9 @@ export default async function MemorialPage({ params }: Props) {
                 <dt className="font-medium text-warm-600">{t("passedAway")}</dt>
                 <dd className="mt-0.5 flex items-center text-warm-800">
                   {formatDate(memorial.dateOfDeath, locale)}
+                  {memorial.placeOfDeath && (
+                    <span className="text-warm-500">&nbsp;({memorial.placeOfDeath})</span>
+                  )}
                   {" / "}
                   {getHebrewDeathDate(
                     memorial.dateOfDeath,
@@ -395,16 +415,6 @@ export default async function MemorialPage({ params }: Props) {
                   />
                 </dd>
               </div>
-              {memorial.placeOfDeath && (
-                <div>
-                  <dt className="font-medium text-warm-600">
-                    {t("placeOfDeath")}
-                  </dt>
-                  <dd className="mt-0.5 text-warm-800">
-                    {memorial.placeOfDeath}
-                  </dd>
-                </div>
-              )}
             </dl>
           </Card>
 

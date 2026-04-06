@@ -72,20 +72,28 @@ export default function FeedPage() {
   const [loadingActivity, setLoadingActivity] = useState(true);
   const [loadingMoreActivity, setLoadingMoreActivity] = useState(false);
 
-  // Legacy pages state
-  const [legacyPages, setLegacyPages] = useState<LegacyPageItem[]>([]);
-  const [legacyTotal, setLegacyTotal] = useState(0);
-  const [legacySkip, setLegacySkip] = useState(0);
-  const [loadingPages, setLoadingPages] = useState(true);
-  const [loadingMorePages, setLoadingMorePages] = useState(false);
+  // Followed legacy pages state
+  const [followedPages, setFollowedPages] = useState<LegacyPageItem[]>([]);
+  const [followedTotal, setFollowedTotal] = useState(0);
+  const [followedSkip, setFollowedSkip] = useState(0);
+  const [loadingFollowed, setLoadingFollowed] = useState(true);
+  const [loadingMoreFollowed, setLoadingMoreFollowed] = useState(false);
+
+  // Owned legacy pages state
+  const [ownedPages, setOwnedPages] = useState<LegacyPageItem[]>([]);
+  const [ownedTotal, setOwnedTotal] = useState(0);
+  const [ownedSkip, setOwnedSkip] = useState(0);
+  const [loadingOwned, setLoadingOwned] = useState(true);
+  const [loadingMoreOwned, setLoadingMoreOwned] = useState(false);
 
   useEffect(() => {
     if (status !== "authenticated") return;
 
     async function fetchInitial() {
-      const [actRes, pagesRes] = await Promise.all([
+      const [actRes, followedRes, ownedRes] = await Promise.all([
         fetch(`/api/feed/activity?skip=0&take=${TAKE}`),
-        fetch(`/api/feed/legacy-pages?skip=0&take=${TAKE}`),
+        fetch(`/api/feed/legacy-pages?filter=followed&skip=0&take=${TAKE}`),
+        fetch(`/api/feed/legacy-pages?filter=owned&skip=0&take=${TAKE}`),
       ]);
       if (actRes.ok) {
         const data = await actRes.json();
@@ -95,13 +103,21 @@ export default function FeedPage() {
       }
       setLoadingActivity(false);
 
-      if (pagesRes.ok) {
-        const data = await pagesRes.json();
-        setLegacyPages(data.items);
-        setLegacyTotal(data.total);
-        setLegacySkip(data.items.length);
+      if (followedRes.ok) {
+        const data = await followedRes.json();
+        setFollowedPages(data.items);
+        setFollowedTotal(data.total);
+        setFollowedSkip(data.items.length);
       }
-      setLoadingPages(false);
+      setLoadingFollowed(false);
+
+      if (ownedRes.ok) {
+        const data = await ownedRes.json();
+        setOwnedPages(data.items);
+        setOwnedTotal(data.total);
+        setOwnedSkip(data.items.length);
+      }
+      setLoadingOwned(false);
     }
 
     fetchInitial();
@@ -118,16 +134,29 @@ export default function FeedPage() {
     setLoadingMoreActivity(false);
   }
 
-  async function loadMorePages() {
-    setLoadingMorePages(true);
-    const res = await fetch(`/api/feed/legacy-pages?skip=${legacySkip}&take=${TAKE}`);
+  async function loadMoreFollowed() {
+    setLoadingMoreFollowed(true);
+    const res = await fetch(`/api/feed/legacy-pages?filter=followed&skip=${followedSkip}&take=${TAKE}`);
     if (res.ok) {
       const data = await res.json();
-      setLegacyPages((prev) => [...prev, ...data.items]);
-      setLegacySkip((prev) => prev + data.items.length);
+      setFollowedPages((prev) => [...prev, ...data.items]);
+      setFollowedSkip((prev) => prev + data.items.length);
     }
-    setLoadingMorePages(false);
+    setLoadingMoreFollowed(false);
   }
+
+  async function loadMoreOwned() {
+    setLoadingMoreOwned(true);
+    const res = await fetch(`/api/feed/legacy-pages?filter=owned&skip=${ownedSkip}&take=${TAKE}`);
+    if (res.ok) {
+      const data = await res.json();
+      setOwnedPages((prev) => [...prev, ...data.items]);
+      setOwnedSkip((prev) => prev + data.items.length);
+    }
+    setLoadingMoreOwned(false);
+  }
+
+  const loading = loadingActivity || loadingFollowed || loadingOwned;
 
   if (status === "loading" || status === "unauthenticated") return null;
 
@@ -159,7 +188,7 @@ export default function FeedPage() {
     <div className="mx-auto max-w-3xl px-4 py-12 sm:px-6 lg:px-8">
       <SectionHeading title={t("title")} as="h1" align="start" />
 
-      {loadingActivity || loadingPages ? (
+      {loading ? (
         <div className="mt-10 space-y-10">
           <div className="space-y-3">
             {Array.from({ length: 3 }).map((_, i) => (
@@ -172,7 +201,7 @@ export default function FeedPage() {
             ))}
           </div>
         </div>
-      ) : activity.length === 0 && legacyPages.length === 0 ? (
+      ) : activity.length === 0 && followedPages.length === 0 && ownedPages.length === 0 ? (
         /* Unified empty state — no followed or owned legacies */
         <div className="mt-16 text-center">
           <h2 className="font-heading text-xl font-semibold text-warm-800">
@@ -245,14 +274,14 @@ export default function FeedPage() {
             </section>
           )}
 
-          {/* Legacies I Follow */}
-          {legacyPages.length > 0 && (
+          {/* Legacies I'm Following */}
+          {followedPages.length > 0 && (
             <section>
               <h2 className="font-heading text-lg font-semibold text-warm-800">
-                {t("latestLegacyPages")}
+                {t("followedLegacies")}
               </h2>
               <div className="mt-4 space-y-3">
-                {legacyPages.map((page) => (
+                {followedPages.map((page) => (
                   <MemorialCard
                     key={page.id}
                     name={page.name}
@@ -262,13 +291,46 @@ export default function FeedPage() {
                     href={`/memorial/${page.slug}`}
                   />
                 ))}
-                {legacyPages.length < legacyTotal && (
+                {followedPages.length < followedTotal && (
                   <div className="pt-1">
                     <Button
                       variant="ghost"
                       size="sm"
-                      onClick={loadMorePages}
-                      disabled={loadingMorePages}
+                      onClick={loadMoreFollowed}
+                      disabled={loadingMoreFollowed}
+                    >
+                      {t("loadMore")}
+                    </Button>
+                  </div>
+                )}
+              </div>
+            </section>
+          )}
+
+          {/* My Legacy Pages */}
+          {ownedPages.length > 0 && (
+            <section>
+              <h2 className="font-heading text-lg font-semibold text-warm-800">
+                {t("myLegacyPages")}
+              </h2>
+              <div className="mt-4 space-y-3">
+                {ownedPages.map((page) => (
+                  <MemorialCard
+                    key={page.id}
+                    name={page.name}
+                    dates={`${formatDeathDate(page.dateOfDeath)} · ${page.hebrewDate}`}
+                    placeOfDeath={page.placeOfDeath ?? undefined}
+                    imageUrl={page.pictureUrl ?? undefined}
+                    href={`/memorial/${page.slug}`}
+                  />
+                ))}
+                {ownedPages.length < ownedTotal && (
+                  <div className="pt-1">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={loadMoreOwned}
+                      disabled={loadingMoreOwned}
                     >
                       {t("loadMore")}
                     </Button>

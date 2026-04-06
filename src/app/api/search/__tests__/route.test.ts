@@ -9,6 +9,7 @@ vi.mock("@/lib/prisma", () => ({
 }));
 vi.mock("@/lib/s3-helpers", () => ({
   generateViewUrl: vi.fn().mockResolvedValue("https://s3.example.com/view"),
+  thumbKeyFromBase: vi.fn((key: string) => key.replace(/\.\w+$/, "_thumb.webp")),
 }));
 vi.mock("@/lib/rate-limit", () => ({
   rateLimit: vi.fn().mockReturnValue({ success: true }),
@@ -100,13 +101,13 @@ describe("GET /api/search", () => {
 
   it("resolves pictureUrl when memorialPicture is set", async () => {
     m(prisma.$queryRaw).mockResolvedValue([
-      { ...mockRow, memorialPicture: "memorials/memorial-001/picture_full.webp" },
+      { ...mockRow, memorialPicture: "memorials/memorial-001/picture.jpg" },
     ]);
     const res = await GET(makeRequest("Jane"));
     const data = await res.json();
     expect(data[0].pictureUrl).toBe("https://s3.example.com/view");
     expect(vi.mocked(generateViewUrl)).toHaveBeenCalledWith(
-      "memorials/memorial-001/picture_full.webp"
+      "memorials/memorial-001/picture_thumb.webp"
     );
   });
 

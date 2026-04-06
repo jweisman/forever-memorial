@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { buildSlug } from "@/lib/slug";
-import { generateViewUrl } from "@/lib/s3-helpers";
+import { generateViewUrl, thumbKeyFromBase } from "@/lib/s3-helpers";
 import { isUserDisabled } from "@/lib/admin";
 import { withHandler } from "@/lib/api-error";
 import sanitizeHtml from "sanitize-html";
@@ -30,7 +30,7 @@ export const GET = withHandler(async (
   // Resolve memorial picture S3 key to presigned URL
   let memorialPictureUrl: string | null = null;
   if (memorial.memorialPicture) {
-    memorialPictureUrl = await generateViewUrl(memorial.memorialPicture);
+    memorialPictureUrl = await generateViewUrl(thumbKeyFromBase(memorial.memorialPicture));
   }
 
   return NextResponse.json({
@@ -109,6 +109,9 @@ export const PATCH = withHandler(async (
 
   if (body.additionalName !== undefined) {
     data.additionalName = body.additionalName?.trim() || null;
+  }
+  if (body.placeOfBirth !== undefined) {
+    data.placeOfBirth = body.placeOfBirth?.trim() || null;
   }
   if (body.placeOfDeath !== undefined) {
     data.placeOfDeath = body.placeOfDeath?.trim() || null;

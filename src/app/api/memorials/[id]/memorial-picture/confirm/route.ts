@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { deleteS3Object, generateViewUrl } from "@/lib/s3-helpers";
+import { deleteS3Object, generateViewUrl, thumbKeyFromBase, fullKeyFromBase } from "@/lib/s3-helpers";
 import { isUserDisabled } from "@/lib/admin";
 import { withHandler } from "@/lib/api-error";
 
@@ -47,14 +47,14 @@ export const POST = withHandler(async (
     return NextResponse.json({ error: "Invalid s3Key" }, { status: 400 });
   }
 
-  // Delete old memorial picture from S3 if it exists and differs from the new key
-  // (same key means the upload already overwrote it — deleting would cause 404)
+  // Delete old memorial picture variants from S3 if key changed
   if (memorial.memorialPicture && memorial.memorialPicture !== s3Key) {
-    try {
-      await deleteS3Object(memorial.memorialPicture);
-    } catch {
-      // Ignore deletion errors for old file
-    }
+    const oldThumb = thumbKeyFromBase(memorial.memorialPicture);
+    const oldFull = fullKeyFromBase(memorial.memorialPicture);
+    await Promise.all([
+      deleteS3Object(oldThumb).catch(() => {}),
+      deleteS3Object(oldFull).catch(() => {}),
+    ]);
   }
 
   await prisma.memorial.update({
@@ -62,7 +62,7 @@ export const POST = withHandler(async (
     data: { memorialPicture: s3Key },
   });
 
-  const url = await generateViewUrl(s3Key);
+  const url = await generateViewUrl(thumbKeyFromBase(s3Key));
 
   return NextResponse.json({ url, s3Key });
 });

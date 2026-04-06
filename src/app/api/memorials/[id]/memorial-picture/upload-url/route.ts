@@ -7,6 +7,7 @@ import {
   generateUploadUrl,
   buildMemorialPictureS3Key,
   thumbKeyFromBase,
+  fullKeyFromBase,
 } from "@/lib/s3-helpers";
 import { isUserDisabled } from "@/lib/admin";
 import { withHandler } from "@/lib/api-error";
@@ -51,7 +52,11 @@ export const POST = withHandler(async (
   const ext = getExtFromFileName(fileName || "image.jpg");
   const s3Key = buildMemorialPictureS3Key(id, ext);
   const thumbS3Key = thumbKeyFromBase(s3Key);
-  const thumbUploadUrl = await generateUploadUrl(thumbS3Key, "image/webp");
+  const fullS3Key = fullKeyFromBase(s3Key);
+  const [thumbUploadUrl, fullUploadUrl] = await Promise.all([
+    generateUploadUrl(thumbS3Key, "image/webp"),
+    generateUploadUrl(fullS3Key, "image/webp"),
+  ]);
 
-  return NextResponse.json({ thumbUploadUrl, thumbS3Key });
+  return NextResponse.json({ thumbUploadUrl, fullUploadUrl, s3Key, thumbS3Key, fullS3Key });
 });

@@ -56,6 +56,7 @@ type Memorial = {
   additionalName: string | null;
   birthday: string | null;
   dateOfDeath: string;
+  placeOfBirth: string | null;
   placeOfDeath: string | null;
   funeralInfo: string | null;
   survivedBy: string | null;
@@ -97,6 +98,7 @@ export default function MemorialEditPage({
   const [additionalName, setHebrewName] = useState("");
   const [birthday, setBirthday] = useState("");
   const [dateOfDeath, setDateOfDeath] = useState("");
+  const [placeOfBirth, setPlaceOfBirth] = useState("");
   const [placeOfDeath, setPlaceOfDeath] = useState("");
   const [funeralInfo, setFuneralInfo] = useState("");
   const [survivedBy, setSurvivedBy] = useState("");
@@ -153,6 +155,7 @@ export default function MemorialEditPage({
     setHebrewName(data.additionalName ?? "");
     setBirthday(toDateInputValue(data.birthday));
     setDateOfDeath(toDateInputValue(data.dateOfDeath));
+    setPlaceOfBirth(data.placeOfBirth ?? "");
     setPlaceOfDeath(data.placeOfDeath ?? "");
     setFuneralInfo(data.funeralInfo ?? "");
     setSurvivedBy(data.survivedBy ?? "");
@@ -243,6 +246,7 @@ export default function MemorialEditPage({
         additionalName: additionalName || null,
         birthday: birthday || null,
         dateOfDeath,
+        placeOfBirth,
         placeOfDeath,
         funeralInfo,
         survivedBy,
@@ -520,6 +524,22 @@ export default function MemorialEditPage({
               </div>
               <div>
                 <label
+                  htmlFor="edit-place-of-birth"
+                  className="block text-sm font-medium text-warm-700"
+                >
+                  {t("placeOfBirthLabel")}
+                </label>
+                <input
+                  id="edit-place-of-birth"
+                  type="text"
+                  value={placeOfBirth}
+                  onChange={(e) => setPlaceOfBirth(e.target.value)}
+                  className={inputClass}
+                  placeholder={t("placeOfBirthPlaceholder")}
+                />
+              </div>
+              <div>
+                <label
                   htmlFor="edit-date-of-death"
                   className="block text-sm font-medium text-warm-700"
                 >
@@ -543,23 +563,22 @@ export default function MemorialEditPage({
                   {t("deathAfterSunset")}
                 </label>
               </div>
-            </div>
-
-            <div>
-              <label
-                htmlFor="edit-place-of-death"
-                className="block text-sm font-medium text-warm-700"
-              >
-                {t("placeOfDeathLabel")}
-              </label>
-              <input
-                id="edit-place-of-death"
-                type="text"
-                value={placeOfDeath}
-                onChange={(e) => setPlaceOfDeath(e.target.value)}
-                className={inputClass}
-                placeholder={t("placeOfDeathPlaceholder")}
-              />
+              <div>
+                <label
+                  htmlFor="edit-place-of-death"
+                  className="block text-sm font-medium text-warm-700"
+                >
+                  {t("placeOfDeathLabel")}
+                </label>
+                <input
+                  id="edit-place-of-death"
+                  type="text"
+                  value={placeOfDeath}
+                  onChange={(e) => setPlaceOfDeath(e.target.value)}
+                  className={inputClass}
+                  placeholder={t("placeOfDeathPlaceholder")}
+                />
+              </div>
             </div>
 
             <div>
