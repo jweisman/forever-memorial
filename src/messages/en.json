@@ -1,8 +1,8 @@
 {
   "Header": {
-    "home": "LeOlam",
+    "home": "Leolam",
     "homeHebrew": "לעולם",
-    "homeLabel": "LeOlam — Home",
+    "homeLabel": "Leolam — Home",
     "searchPlaceholder": "Search legacies...",
     "searchLabel": "Search legacies"
   },
@@ -13,10 +13,10 @@
     "signOut": "Sign out"
   },
   "Footer": {
-    "brand": "LeOlam",
-    "brandHebrew": "(לעולם)",
-    "tagline": "Preserving legacies that matter",
-    "copyright": "© {year} LeOlam Memorial",
+    "brand": "Leolam",
+    "brandHebrew": "לעולם",
+    "tagline": "Connecting people across generations",
+    "copyright": "© {year} Leolam Forever",
     "about": "About"
   },
   "Home": {
@@ -98,7 +98,7 @@
     "posterLabel": "Download Poster"
   },
   "SignIn": {
-    "title": "Welcome to LeOlam",
+    "title": "Welcome to Leolam",
     "subtitle": "Sign in to create legacies and share memories",
     "accountDisabled": "Your account has been disabled. Please contact support if you believe this is an error.",
     "oauthNotLinked": "This email is already registered. Please sign in using the magic link option below.",
@@ -388,8 +388,8 @@
   },
   "About": {
     "title": "About Us",
-    "description": "LeOlam (לעולם) is a free platform for creating and sharing legacy pages — a place to honor a life, preserve memories, and connect families across generations.",
-    "nonprofit": "LeOlam is a project of Yair LeOlam, an American non-profit (EIN 71-1024619) and Israeli non-profit (R.A. 580473734).",
+    "description": "Leolam - לעולם is a free platform for creating and sharing legacy pages — a place to honor a life, preserve memories, and connect people across generations.",
+    "nonprofit": "Leolam is a project of Yair Leolam, a registered non-profit in America (501C-3) EIN 71-1024619 and in Israel R.A. 580473734.",
     "contactTitle": "Contact Us",
     "contactSubtitle": "Have a question or need help? Send us a message.",
     "nameLabel": "Name",

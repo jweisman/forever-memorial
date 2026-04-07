@@ -14,7 +14,7 @@ export default async function Footer() {
                 {t("brand")}
               </span>{" "}
               <span className="text-gold-500">{t("brandHebrew")}</span>
-              {" "}&mdash; {t("tagline")}
+              {" "}- {t("tagline")}
             </p>
             <Link
               href="/about"
