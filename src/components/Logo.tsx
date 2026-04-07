@@ -34,7 +34,7 @@ export default function Logo({
         </span>
 
         <span
-          className="font-[family-name:var(--font-logo-he)] text-2xl leading-none text-gold-500"
+          className="-translate-y-[2px] font-[family-name:var(--font-logo-he)] text-2xl leading-none text-gold-500"
           lang="he"
         >
           לעולם
@@ -68,7 +68,7 @@ export default function Logo({
       </span>
 
       <span
-        className="font-[family-name:var(--font-logo-he)] text-3xl leading-none text-gold-500"
+        className="-translate-y-[2px] font-[family-name:var(--font-logo-he)] text-3xl leading-none text-gold-500"
         lang="he"
       >
         לעולם

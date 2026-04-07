@@ -85,13 +85,17 @@ export default function MemorialNav({ sections }: { sections: NavSection[] }) {
   useEffect(() => {
     const el = inlineRef.current;
     if (!el) return;
+
     const observer = new IntersectionObserver(
       ([entry]) => {
         if (entry.isIntersecting) {
           hasBeenVisible.current = true;
+          setStickyVisible(false);
+        } else if (hasBeenVisible.current) {
+          // Only show sticky if the user has scrolled DOWN past the inline nav
+          // (entry.boundingClientRect.top < 0 means it scrolled above the viewport)
+          setStickyVisible(entry.boundingClientRect.top < 0);
         }
-        // Only show sticky after the inline nav has been seen at least once
-        setStickyVisible(hasBeenVisible.current && !entry.isIntersecting);
       },
       { threshold: 0 }
     );
