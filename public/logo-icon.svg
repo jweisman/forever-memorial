@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   width="512"
+   height="512"
+   viewBox="0 0 135.46666 135.46667"
+   version="1.1"
+   id="svg1"
+   inkscape:version="1.4.3 (0d15f75, 2025-12-25)"
+   sodipodi:docname="drawing.svg"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <sodipodi:namedview
+     id="namedview1"
+     pagecolor="#ffffff"
+     bordercolor="#000000"
+     borderopacity="0.25"
+     inkscape:showpageshadow="2"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="0"
+     inkscape:deskcolor="#d1d1d1"
+     inkscape:document-units="mm"
+     inkscape:zoom="0.47795849"
+     inkscape:cx="531.4269"
+     inkscape:cy="372.41728"
+     inkscape:window-width="1509"
+     inkscape:window-height="741"
+     inkscape:window-x="0"
+     inkscape:window-y="33"
+     inkscape:window-maximized="0"
+     inkscape:current-layer="layer1" />
+  <defs
+     id="defs1">
+    <rect
+       x="230.09503"
+       y="204.28998"
+       width="230.09503"
+       height="232.24545"
+       id="rect5" />
+    <rect
+       x="111.82188"
+       y="432.23459"
+       width="215.04208"
+       height="247.2984"
+       id="rect4" />
+    <rect
+       x="1597.4319"
+       y="-561.25983"
+       width="2719.9514"
+       height="3626.6021"
+       id="rect3" />
+    <rect
+       x="1122.5197"
+       y="-1208.8674"
+       width="1424.7365"
+       height="2201.8655"
+       id="rect2" />
+    <rect
+       x="-5871.6416"
+       y="-820.30286"
+       width="7814.4639"
+       height="3540.2544"
+       id="rect1" />
+  </defs>
+  <g
+     inkscape:label="Layer 1"
+     inkscape:groupmode="layer"
+     id="layer1"
+     transform="translate(-98.135249,-39.613002)">
+    <text
+       xml:space="preserve"
+       transform="scale(0.26458333)"
+       id="text1"
+       style="writing-mode:lr-tb;direction:ltr;white-space:pre;shape-inside:url(#rect1);display:inline;fill:#c6a86a"><tspan
+         x="-5866.0859"
+         y="-809.35477"
+         id="tspan6">ל</tspan></text>
+    <text
+       xml:space="preserve"
+       transform="scale(0.26458333)"
+       id="text2"
+       style="writing-mode:lr-tb;direction:ltr;white-space:pre;shape-inside:url(#rect2);display:inline;fill:#c6a86a"><tspan
+         x="1128.0742"
+         y="-1197.9192"
+         id="tspan7">ל</tspan></text>
+    <text
+       xml:space="preserve"
+       transform="scale(0.26458333)"
+       id="text3"
+       style="writing-mode:lr-tb;direction:ltr;white-space:pre;shape-inside:url(#rect3);display:inline;fill:#c6a86a"><tspan
+         x="1614.0254"
+         y="-550.3118"
+         id="tspan8">כככ</tspan></text>
+    <text
+       xml:space="preserve"
+       transform="scale(0.26458333)"
+       id="text4"
+       style="writing-mode:lr-tb;direction:ltr;white-space:pre;shape-inside:url(#rect4);display:inline;fill:#c6a86a" />
+    <text
+       xml:space="preserve"
+       transform="scale(0.26458333)"
+       id="text5"
+       style="writing-mode:lr-tb;direction:ltr;white-space:pre;shape-inside:url(#rect5);display:inline;fill:#c6a86a" />
+    <path
+       style="font-size:70.5556px;font-family:'Suez One';-inkscape-font-specification:'Suez One, Normal';fill:#c6a86a;stroke-width:0.520832"
+       d="m 143.43804,160.26291 q -0.69444,-7.36109 -0.69444,-13.05553 0,-7.08334 0.69444,-12.2222 13.47221,-7.22224 22.22218,-12.91668 8.75002,-5.83331 11.52779,-9.16666 0.13897,-3.33333 -0.27777,-4.86109 -0.27779,-1.52778 -1.38891,-2.08334 -0.97221,-0.55556 -3.33331,-0.55556 -20.69443,0 -24.16665,-0.41667 -5.55556,-0.55555 -8.05554,-3.88887 -2.36112,-3.47222 -2.91668,-11.388884 -0.27777,-4.999989 -0.27777,-9.861104 0,-13.194426 0.69445,-21.527759 4.02777,-1.527777 9.44443,-2.638875 5.41666,-1.250017 7.91666,-1.250017 0.55556,3.333343 1.52777,15.277766 l 0.41668,5.694445 q 0.27777,3.055542 0.69442,4.305544 0.55558,1.249997 1.66668,1.666667 1.25,0.416673 4.16666,0.555551 l 5.41667,0.138976 q 3.88887,0 10.55553,0.277777 7.77779,0.416671 11.66665,5.277786 4.0278,4.861094 4.0278,13.888877 0,28.61108 -47.22219,58.74994 z"
+       id="text6"
+       aria-label="ל" />
+  </g>
+</svg>
