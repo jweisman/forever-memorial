@@ -16,12 +16,28 @@ export default async function Footer() {
               <span className="text-gold-500">{t("brandHebrew")}</span>
               {" "}- {t("tagline")}
             </p>
-            <Link
-              href="/about"
-              className="text-sm text-warm-400 transition-colors hover:text-accent"
-            >
-              {t("about")}
-            </Link>
+            <div className="flex items-center gap-3">
+              <Link
+                href="/about"
+                className="text-sm text-warm-400 transition-colors hover:text-accent"
+              >
+                {t("about")}
+              </Link>
+              <span className="text-warm-300" aria-hidden="true">·</span>
+              <Link
+                href="/terms"
+                className="text-sm text-warm-400 transition-colors hover:text-accent"
+              >
+                {t("terms")}
+              </Link>
+              <span className="text-warm-300" aria-hidden="true">·</span>
+              <Link
+                href="/privacy"
+                className="text-sm text-warm-400 transition-colors hover:text-accent"
+              >
+                {t("privacy")}
+              </Link>
+            </div>
           </div>
           <p className="text-sm text-warm-400">
             {t("copyright", { year: new Date().getFullYear() })}
