@@ -21,14 +21,51 @@ import { resizeImage, resizeImageSquare } from "@/lib/image-resize";
 
 // Node 20+ has File built-in; construct minimal File objects for testing
 function makeFile(name: string, type: string, sizeBytes: number): File {
-  // File constructor: new File(parts, name, options)
-  // Using an empty array for parts and specifying size via a Blob workaround
-  // isn't possible directly, so we create a real Blob of the right size.
   const content = new Uint8Array(sizeBytes);
   return new File([content], name, { type });
 }
 
 const MB = 1024 * 1024;
+
+// ---------------------------------------------------------------------------
+// XHR mock — uploadBlobWithProgress uses XMLHttpRequest for S3 PUTs
+// ---------------------------------------------------------------------------
+
+function createMockXHRClass() {
+  return class MockXHR {
+    status = 200;
+    readyState = 0;
+    responseHeaders: Record<string, string> = {};
+    onload: (() => void) | null = null;
+    onerror: (() => void) | null = null;
+    onabort: (() => void) | null = null;
+    upload = { onprogress: null as ((e: { lengthComputable: boolean; loaded: number; total: number }) => void) | null };
+    _method = "";
+    _url = "";
+
+    open(method: string, url: string) {
+      this._method = method;
+      this._url = url;
+    }
+    setRequestHeader() {}
+    getResponseHeader(name: string) {
+      return this.responseHeaders[name] ?? null;
+    }
+    send() {
+      // Simulate immediate success
+      this.readyState = 4;
+      this.status = 200;
+      setTimeout(() => this.onload?.(), 0);
+    }
+    abort() {
+      this.onabort?.();
+    }
+  };
+}
+
+function installXhrMock() {
+  vi.stubGlobal("XMLHttpRequest", createMockXHRClass());
+}
 
 describe("validateImageFile", () => {
   it("returns null for a valid JPEG under 15MB", () => {
@@ -66,7 +103,7 @@ describe("validateImageFile", () => {
 });
 
 describe("validateVideoFile", () => {
-  it("returns null for a valid MP4 under 50MB", () => {
+  it("returns null for a valid MP4 under 500MB", () => {
     const file = makeFile("clip.mp4", "video/mp4", 10 * MB);
     expect(validateVideoFile(file)).toBeNull();
   });
@@ -89,13 +126,13 @@ describe("validateVideoFile", () => {
     expect(validateVideoFile(file)).not.toBeNull();
   });
 
-  it("returns an error string when file exceeds 50MB", () => {
-    const file = makeFile("big.mp4", "video/mp4", 51 * MB);
-    expect(validateVideoFile(file)).toMatch(/50MB/i);
+  it("returns an error string when file exceeds 500MB", () => {
+    const file = makeFile("big.mp4", "video/mp4", 501 * MB);
+    expect(validateVideoFile(file)).toMatch(/500MB/i);
   });
 
-  it("returns null for a file exactly at the 50MB limit", () => {
-    const file = makeFile("clip.mp4", "video/mp4", 50 * MB);
+  it("returns null for a file exactly at the 500MB limit", () => {
+    const file = makeFile("clip.mp4", "video/mp4", 500 * MB);
     expect(validateVideoFile(file)).toBeNull();
   });
 });
@@ -124,7 +161,7 @@ describe("isVideoFile", () => {
 });
 
 // ---------------------------------------------------------------------------
-// Async upload functions (fetch + image-resize mocked)
+// Async upload functions (fetch + XHR mocked)
 // ---------------------------------------------------------------------------
 
 const MEMORIAL_ID = "mem-001";
@@ -165,6 +202,7 @@ describe("uploadImage", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     vi.mocked(resizeImage).mockResolvedValue(new Blob(["resized"], { type: "image/webp" }));
+    installXhrMock();
   });
 
   afterEach(() => vi.unstubAllGlobals());
@@ -172,8 +210,6 @@ describe("uploadImage", () => {
   it("resizes to thumb and full variants then returns the confirmed record", async () => {
     vi.stubGlobal("fetch", makeFetch([
       { ok: true, data: uploadUrlImageResponse },  // upload-url
-      { ok: true, data: {} },                       // S3 PUT thumb
-      { ok: true, data: {} },                       // S3 PUT full
       { ok: true, data: confirmImageResponse },     // confirm
     ]));
 
@@ -193,8 +229,6 @@ describe("uploadImage", () => {
   it("throws when the confirm request fails", async () => {
     vi.stubGlobal("fetch", makeFetch([
       { ok: true, data: uploadUrlImageResponse },
-      { ok: true, data: {} },
-      { ok: true, data: {} },
       { ok: false, data: { error: "Limit reached" } },
     ]));
     await expect(uploadImage(MEMORIAL_ID, makeImageFile())).rejects.toThrow("Limit reached");
@@ -202,7 +236,10 @@ describe("uploadImage", () => {
 });
 
 describe("uploadVideo", () => {
-  beforeEach(() => vi.clearAllMocks());
+  beforeEach(() => {
+    vi.clearAllMocks();
+    installXhrMock();
+  });
   afterEach(() => vi.unstubAllGlobals());
 
   const uploadUrlVideoResponse = {
@@ -222,10 +259,9 @@ describe("uploadVideo", () => {
     url: "https://s3.example.com/video",
   };
 
-  it("does not resize and returns the confirmed record", async () => {
+  it("does not resize and returns the confirmed record (small video, single PUT)", async () => {
     vi.stubGlobal("fetch", makeFetch([
       { ok: true, data: uploadUrlVideoResponse },
-      { ok: true, data: {} },            // S3 PUT
       { ok: true, data: confirmVideoResponse },
     ]));
 
@@ -242,7 +278,10 @@ describe("uploadVideo", () => {
 });
 
 describe("uploadMemorialPicture", () => {
-  beforeEach(() => vi.clearAllMocks());
+  beforeEach(() => {
+    vi.clearAllMocks();
+    installXhrMock();
+  });
   afterEach(() => vi.unstubAllGlobals());
 
   const uploadUrlPictureResponse = {
@@ -274,7 +313,10 @@ describe("uploadMemorialPicture", () => {
 });
 
 describe("uploadMemorialPictureBlob", () => {
-  beforeEach(() => vi.clearAllMocks());
+  beforeEach(() => {
+    vi.clearAllMocks();
+    installXhrMock();
+  });
   afterEach(() => vi.unstubAllGlobals());
 
   it("resizes the cropped blob and returns the confirmed URL", async () => {
@@ -296,14 +338,13 @@ describe("uploadMemoryImage", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     vi.mocked(resizeImage).mockResolvedValue(new Blob(["resized"], { type: "image/webp" }));
+    installXhrMock();
   });
   afterEach(() => vi.unstubAllGlobals());
 
   it("resizes to thumb and full then returns the confirmed record", async () => {
     vi.stubGlobal("fetch", makeFetch([
       { ok: true, data: { thumbUploadUrl: "https://s3/t", fullUploadUrl: "https://s3/f", s3Key: "key", imageId: "i1" } },
-      { ok: true, data: {} },
-      { ok: true, data: {} },
       { ok: true, data: { id: "i1", s3Key: "key", caption: null, mediaType: "IMAGE", url: "https://s3/full" } },
     ]));
 
@@ -319,13 +360,15 @@ describe("uploadMemoryImage", () => {
 });
 
 describe("uploadMemoryVideo", () => {
-  beforeEach(() => vi.clearAllMocks());
+  beforeEach(() => {
+    vi.clearAllMocks();
+    installXhrMock();
+  });
   afterEach(() => vi.unstubAllGlobals());
 
-  it("does not resize and returns the confirmed record", async () => {
+  it("does not resize and returns the confirmed record (small video)", async () => {
     vi.stubGlobal("fetch", makeFetch([
       { ok: true, data: { uploadUrl: "https://s3/v", s3Key: "key", imageId: "v1" } },
-      { ok: true, data: {} },
       { ok: true, data: { id: "v1", s3Key: "key", caption: null, mediaType: "VIDEO", url: "https://s3/vid" } },
     ]));
 
@@ -337,7 +380,6 @@ describe("uploadMemoryVideo", () => {
   it("throws when the confirm request fails", async () => {
     vi.stubGlobal("fetch", makeFetch([
       { ok: true, data: { uploadUrl: "https://s3/v", s3Key: "key", imageId: "v1" } },
-      { ok: true, data: {} },
       { ok: false, data: { error: "Confirm failed" } },
     ]));
     await expect(uploadMemoryVideo(MEMORIAL_ID, MEMORY_ID, makeImageFile("clip.mp4", "video/mp4"))).rejects.toThrow("Confirm failed");

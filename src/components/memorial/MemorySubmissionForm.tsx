@@ -5,6 +5,7 @@ import { useSession } from "next-auth/react";
 import { useTranslations } from "next-intl";
 import Button from "@/components/ui/Button";
 import VideoThumbnail from "./VideoThumbnail";
+import UploadProgressBar from "@/components/ui/UploadProgressBar";
 import {
   validateImageFile,
   validateVideoFile,
@@ -21,6 +22,11 @@ type MemorySubmissionFormProps = {
 const inputClass =
   "mt-1 w-full rounded-lg border border-border bg-surface px-4 py-2.5 text-sm text-warm-800 placeholder-warm-400 transition-colors focus:border-accent focus:outline-none";
 
+type FileUploadProgress = {
+  fileName: string;
+  progress: number;
+};
+
 export default function MemorySubmissionForm({
   memorialId,
   onSubmitted,
@@ -33,6 +39,7 @@ export default function MemorySubmissionForm({
   const [text, setText] = useState("");
   const [files, setFiles] = useState<File[]>([]);
   const [submitting, setSubmitting] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState<FileUploadProgress[]>([]);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -63,11 +70,40 @@ export default function MemorySubmissionForm({
 
       const memory = await res.json();
 
-      for (const file of files) {
-        if (isVideoFile(file)) {
-          await uploadMemoryVideo(memorialId, memory.id, file);
-        } else {
-          await uploadMemoryImage(memorialId, memory.id, file);
+      if (files.length > 0) {
+        setUploadProgress(
+          files.map((f) => ({ fileName: f.name, progress: 0 }))
+        );
+
+        for (let i = 0; i < files.length; i++) {
+          const file = files[i];
+          if (isVideoFile(file)) {
+            await uploadMemoryVideo(memorialId, memory.id, file, {
+              onProgress: (p) => {
+                setUploadProgress((prev) =>
+                  prev.map((u, idx) =>
+                    idx === i ? { ...u, progress: p } : u
+                  )
+                );
+              },
+            });
+          } else {
+            await uploadMemoryImage(memorialId, memory.id, file, {
+              onProgress: (p) => {
+                setUploadProgress((prev) =>
+                  prev.map((u, idx) =>
+                    idx === i ? { ...u, progress: p } : u
+                  )
+                );
+              },
+            });
+          }
+          // Mark complete
+          setUploadProgress((prev) =>
+            prev.map((u, idx) =>
+              idx === i ? { ...u, progress: 1 } : u
+            )
+          );
         }
       }
 
@@ -77,11 +113,13 @@ export default function MemorySubmissionForm({
       setRelation("");
       setText("");
       setFiles([]);
+      setUploadProgress([]);
       onSubmitted?.();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Something went wrong");
     } finally {
       setSubmitting(false);
+      setUploadProgress([]);
     }
   }
 
@@ -227,6 +265,7 @@ export default function MemorySubmissionForm({
                 <button
                   type="button"
                   onClick={() => removeFile(index)}
+                  disabled={submitting}
                   className="absolute end-0.5 top-0.5 flex size-5 items-center justify-center rounded-full bg-black/60 text-xs text-white hover:bg-black/80"
                 >
                   &times;
@@ -235,7 +274,7 @@ export default function MemorySubmissionForm({
             ))}
           </div>
         )}
-        {files.length < 5 && (
+        {files.length < 5 && !submitting && (
           <div className="mt-2">
             <input
               ref={inputRef}
@@ -256,10 +295,27 @@ export default function MemorySubmissionForm({
         )}
       </div>
 
+      {/* Upload progress */}
+      {uploadProgress.length > 0 && (
+        <div className="space-y-2">
+          {uploadProgress.map((up, i) => (
+            <UploadProgressBar
+              key={i}
+              progress={up.progress}
+              label={up.fileName}
+            />
+          ))}
+        </div>
+      )}
+
       {error && <p className="text-sm text-red-600">{error}</p>}
 
       <Button type="submit" variant="primary" size="sm" disabled={submitting}>
-        {submitting ? t("submitting") : t("submit")}
+        {submitting
+          ? uploadProgress.length > 0
+            ? t("uploadingFiles")
+            : t("submitting")
+          : t("submit")}
       </Button>
     </form>
   );

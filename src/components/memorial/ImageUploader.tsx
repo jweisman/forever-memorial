@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useRef, useCallback } from "react";
 import { useTranslations } from "next-intl";
 import {
   validateImageFile,
@@ -9,6 +9,7 @@ import {
   uploadImage,
   uploadVideo,
 } from "@/lib/upload";
+import UploadProgressBar from "@/components/ui/UploadProgressBar";
 
 type ImageRecord = {
   id: string;
@@ -27,6 +28,11 @@ type ImageUploaderProps = {
   disabled?: boolean;
 };
 
+type UploadState = {
+  fileName: string;
+  progress: number;
+};
+
 export default function ImageUploader({
   memorialId,
   albumId,
@@ -35,16 +41,28 @@ export default function ImageUploader({
 }: ImageUploaderProps) {
   const t = useTranslations("EditMemorial");
   const [uploading, setUploading] = useState(false);
+  const [uploads, setUploads] = useState<UploadState[]>([]);
   const [error, setError] = useState("");
   const [dragOver, setDragOver] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
+  const abortRef = useRef<AbortController | null>(null);
+
+  const cancelUpload = useCallback(() => {
+    abortRef.current?.abort();
+    abortRef.current = null;
+    setUploading(false);
+    setUploads([]);
+  }, []);
 
   async function handleFiles(files: FileList | null) {
     if (!files || files.length === 0) return;
     setError("");
     setUploading(true);
 
-    for (const file of Array.from(files)) {
+    const fileList = Array.from(files);
+
+    // Validate all files first
+    for (const file of fileList) {
       const validationError = isVideoFile(file)
         ? validateVideoFile(file)
         : validateImageFile(file);
@@ -53,20 +71,58 @@ export default function ImageUploader({
         setUploading(false);
         return;
       }
+    }
+
+    const controller = new AbortController();
+    abortRef.current = controller;
+
+    // Initialize upload state for all files
+    setUploads(fileList.map((f) => ({ fileName: f.name, progress: 0 })));
+
+    for (let i = 0; i < fileList.length; i++) {
+      const file = fileList[i];
 
       try {
         const image = isVideoFile(file)
-          ? await uploadVideo(memorialId, file, { albumId })
-          : await uploadImage(memorialId, file, { albumId });
+          ? await uploadVideo(memorialId, file, {
+              albumId,
+              onProgress: (p) => {
+                setUploads((prev) =>
+                  prev.map((u, idx) => (idx === i ? { ...u, progress: p } : u))
+                );
+              },
+              signal: controller.signal,
+            })
+          : await uploadImage(memorialId, file, {
+              albumId,
+              onProgress: (p) => {
+                setUploads((prev) =>
+                  prev.map((u, idx) => (idx === i ? { ...u, progress: p } : u))
+                );
+              },
+              signal: controller.signal,
+            });
         onUploadComplete(image);
+
+        // Mark this file as complete
+        setUploads((prev) =>
+          prev.map((u, idx) => (idx === i ? { ...u, progress: 1 } : u))
+        );
       } catch (err) {
+        if (err instanceof DOMException && err.name === "AbortError") {
+          // User cancelled — already handled
+          return;
+        }
         setError(err instanceof Error ? err.message : "Upload failed");
         setUploading(false);
+        setUploads([]);
         return;
       }
     }
 
+    abortRef.current = null;
     setUploading(false);
+    setUploads([]);
     if (inputRef.current) inputRef.current.value = "";
   }
 
@@ -93,9 +149,11 @@ export default function ImageUploader({
         className={`cursor-pointer rounded-lg border-2 border-dashed p-6 text-center transition-colors ${
           disabled
             ? "cursor-not-allowed border-warm-200 bg-warm-50 opacity-50"
-            : dragOver
-              ? "border-accent bg-accent/5"
-              : "border-warm-300 hover:border-accent hover:bg-warm-50"
+            : uploading
+              ? "border-accent/50 bg-accent/5"
+              : dragOver
+                ? "border-accent bg-accent/5"
+                : "border-warm-300 hover:border-accent hover:bg-warm-50"
         }`}
         role="button"
         tabIndex={0}
@@ -117,7 +175,17 @@ export default function ImageUploader({
         />
 
         {uploading ? (
-          <p className="text-sm text-muted">{t("uploadingImages")}</p>
+          <div className="space-y-3 px-2">
+            {uploads.map((upload, i) => (
+              <UploadProgressBar
+                key={i}
+                progress={upload.progress}
+                label={upload.fileName}
+                onCancel={cancelUpload}
+                cancelLabel={t("cancel")}
+              />
+            ))}
+          </div>
         ) : disabled ? (
           <p className="text-sm text-muted">{t("imageLimitReached")}</p>
         ) : (
