@@ -2,6 +2,10 @@ import {
   PutObjectCommand,
   GetObjectCommand,
   DeleteObjectCommand,
+  CreateMultipartUploadCommand,
+  UploadPartCommand,
+  CompleteMultipartUploadCommand,
+  AbortMultipartUploadCommand,
 } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import { s3, S3_BUCKET } from "./s3";
@@ -95,4 +99,74 @@ export function fullKeyFromBase(s3Key: string): string {
   const dotIdx = s3Key.lastIndexOf(".");
   if (dotIdx === -1) return `${s3Key}_full.webp`;
   return `${s3Key.slice(0, dotIdx)}_full.webp`;
+}
+
+// ---------------------------------------------------------------------------
+// Multipart upload helpers (for large videos)
+// ---------------------------------------------------------------------------
+
+export const MULTIPART_PART_SIZE = 10 * 1024 * 1024; // 10 MB
+const MULTIPART_URL_EXPIRY = 1800; // 30 minutes (large uploads take time)
+
+/** Initiate an S3 multipart upload and return the uploadId. */
+export async function createMultipartUpload(
+  s3Key: string,
+  contentType: string
+): Promise<string> {
+  const command = new CreateMultipartUploadCommand({
+    Bucket: S3_BUCKET,
+    Key: s3Key,
+    ContentType: contentType,
+  });
+  const result = await s3.send(command);
+  if (!result.UploadId) throw new Error("Failed to initiate multipart upload");
+  return result.UploadId;
+}
+
+/** Generate a presigned URL for uploading a single part. */
+export async function generatePartUploadUrl(
+  s3Key: string,
+  uploadId: string,
+  partNumber: number
+): Promise<string> {
+  const command = new UploadPartCommand({
+    Bucket: S3_BUCKET,
+    Key: s3Key,
+    UploadId: uploadId,
+    PartNumber: partNumber,
+  });
+  return getSignedUrl(s3, command, { expiresIn: MULTIPART_URL_EXPIRY });
+}
+
+/** Complete a multipart upload with the part ETags. */
+export async function completeMultipartUpload(
+  s3Key: string,
+  uploadId: string,
+  parts: { partNumber: number; etag: string }[]
+): Promise<void> {
+  const command = new CompleteMultipartUploadCommand({
+    Bucket: S3_BUCKET,
+    Key: s3Key,
+    UploadId: uploadId,
+    MultipartUpload: {
+      Parts: parts.map((p) => ({
+        PartNumber: p.partNumber,
+        ETag: p.etag,
+      })),
+    },
+  });
+  await s3.send(command);
+}
+
+/** Abort a multipart upload (cleanup). */
+export async function abortMultipartUpload(
+  s3Key: string,
+  uploadId: string
+): Promise<void> {
+  const command = new AbortMultipartUploadCommand({
+    Bucket: S3_BUCKET,
+    Key: s3Key,
+    UploadId: uploadId,
+  });
+  await s3.send(command);
 }
