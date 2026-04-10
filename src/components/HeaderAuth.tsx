@@ -30,16 +30,20 @@ export default function HeaderAuth() {
           <UserAvatarIcon name={session.user.name} />
         </Link>
 
-        {/* Desktop: name + sign out */}
-        <Link
-          href="/dashboard"
-          className="hidden text-sm font-medium text-warm-600 transition-colors hover:text-accent sm:inline"
-        >
-          {session.user.name || t("dashboard")}
-        </Link>
-        <span className="hidden sm:inline">
+        {/* Desktop: dashboard link + name + sign out */}
+        <div className="hidden items-center gap-3 sm:flex">
+          <Link
+            href="/dashboard"
+            className="text-sm font-medium text-accent transition-colors hover:text-gold-600"
+          >
+            {t("dashboard")}
+          </Link>
+          <span className="text-warm-300" aria-hidden="true">|</span>
+          <span className="text-sm text-warm-500">
+            {session.user.name}
+          </span>
           <SignOutButton />
-        </span>
+        </div>
       </>
     );
   }
