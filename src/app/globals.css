@@ -31,6 +31,7 @@
   --font-heading: "Playfair Display", serif;
   --font-heading-he: "Frank Ruhl Libre", serif;
   --font-body: "Source Serif 4", serif;
+  --font-body-he: "Fredoka", sans-serif;
   --font-ui: "Inter", sans-serif;
 }
 
@@ -54,6 +55,10 @@ input, select, textarea, button, label {
 /* RTL support */
 [dir="rtl"] {
   text-align: right;
+}
+
+[dir="rtl"] body {
+  font-family: var(--font-body-he);
 }
 
 /* Focus styles for accessibility */

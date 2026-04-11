@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Playfair_Display, Source_Serif_4, Inter, Heebo, Frank_Ruhl_Libre, Suez_One } from "next/font/google";
+import { Playfair_Display, Source_Serif_4, Inter, Fredoka, Frank_Ruhl_Libre, Suez_One } from "next/font/google";
 import { NextIntlClientProvider, hasLocale } from "next-intl";
 import { getMessages, setRequestLocale } from "next-intl/server";
 import { notFound } from "next/navigation";
@@ -32,10 +32,11 @@ const inter = Inter({
   display: "swap",
 });
 
-const heebo = Heebo({
+const fredoka = Fredoka({
   variable: "--font-body-he",
   subsets: ["hebrew", "latin"],
   display: "swap",
+  weight: ["400", "600"],
 });
 
 const frankRuhlLibre = Frank_Ruhl_Libre({
@@ -84,7 +85,7 @@ export default async function LocaleLayout({
   return (
     <html lang={locale} dir={dir}>
       <body
-        className={`${playfairDisplay.variable} ${sourceSerif4.variable} ${inter.variable} ${heebo.variable} ${frankRuhlLibre.variable} ${suezOne.variable} flex min-h-screen flex-col`}
+        className={`${playfairDisplay.variable} ${sourceSerif4.variable} ${inter.variable} ${fredoka.variable} ${frankRuhlLibre.variable} ${suezOne.variable} flex min-h-screen flex-col`}
       >
         <SessionProvider session={session}>
           <NextIntlClientProvider messages={messages}>
