@@ -24,14 +24,14 @@ export default function HeaderAuth() {
         {/* Mobile: avatar icon linking to dashboard */}
         <Link
           href="/dashboard"
-          className="sm:hidden"
+          className="md:hidden"
           aria-label={t("dashboardLabel")}
         >
           <UserAvatarIcon name={session.user.name} />
         </Link>
 
         {/* Desktop: dashboard link + name + sign out */}
-        <div className="hidden items-center gap-3 sm:flex">
+        <div className="hidden items-center gap-3 md:flex">
           <Link
             href="/dashboard"
             className="text-sm font-medium text-accent transition-colors hover:text-gold-600"

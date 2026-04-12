@@ -19,17 +19,17 @@ export default async function Header() {
           className="flex items-center transition-opacity hover:opacity-80"
           aria-label={t("homeLabel")}
         >
-          {/* Mobile: compact logo */}
-          <Logo compact className="flex sm:hidden" />
+          {/* Mobile/tablet: compact logo */}
+          <Logo compact className="flex md:hidden" />
           {/* Desktop: full logo with Hebrew */}
-          <Logo className="hidden sm:flex" />
+          <Logo className="hidden md:flex" />
         </Link>
 
         <div className="flex items-center gap-3 sm:gap-4">
           {/* Mobile search icon */}
           <Link
             href="/search"
-            className="flex size-9 items-center justify-center rounded-lg text-warm-500 transition-colors hover:bg-warm-50 hover:text-warm-700 sm:hidden"
+            className="flex size-9 items-center justify-center rounded-lg text-warm-500 transition-colors hover:bg-warm-50 hover:text-warm-700 md:hidden"
             aria-label={t("searchLabel")}
           >
             <svg
@@ -52,7 +52,7 @@ export default async function Header() {
           <SearchBar
             size="sm"
             placeholder={t("searchPlaceholder")}
-            className="hidden w-56 sm:block lg:w-64"
+            className="hidden w-56 md:block lg:w-64"
             aria-label={t("searchLabel")}
           />
 
