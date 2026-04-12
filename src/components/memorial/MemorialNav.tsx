@@ -36,11 +36,11 @@ function ScrollableNav({ items, onScrollTo }: { items: NavSection[]; onScrollTo:
   }
 
   return (
-    <div className="relative flex min-w-0 flex-1 items-stretch">
+    <div className="flex min-w-0 flex-1 items-stretch">
       {canScrollLeft && (
         <button
           onClick={() => scroll("left")}
-          className="absolute inset-y-0 start-0 z-10 hidden w-7 items-center justify-center bg-gradient-to-r from-warm-50 to-transparent text-warm-500 hover:text-warm-800 sm:flex rtl:bg-gradient-to-l"
+          className="hidden shrink-0 items-center justify-center px-1 text-warm-400 hover:text-warm-800 sm:flex"
           aria-label="Scroll left"
         >
           <svg className="size-4 rtl:rotate-180" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -50,7 +50,7 @@ function ScrollableNav({ items, onScrollTo }: { items: NavSection[]; onScrollTo:
       )}
       <div
         ref={scrollRef}
-        className="flex flex-1 gap-1 overflow-x-auto py-2 scrollbar-hide"
+        className="flex min-w-0 flex-1 gap-1 overflow-x-auto py-2 scrollbar-hide"
       >
         {items.map((section) => (
           <button
@@ -65,7 +65,7 @@ function ScrollableNav({ items, onScrollTo }: { items: NavSection[]; onScrollTo:
       {canScrollRight && (
         <button
           onClick={() => scroll("right")}
-          className="absolute inset-y-0 end-0 z-10 hidden w-7 items-center justify-center bg-gradient-to-l from-warm-50 to-transparent text-warm-500 hover:text-warm-800 sm:flex rtl:bg-gradient-to-r"
+          className="hidden shrink-0 items-center justify-center px-1 text-warm-400 hover:text-warm-800 sm:flex"
           aria-label="Scroll right"
         >
           <svg className="size-4 rtl:rotate-180" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
