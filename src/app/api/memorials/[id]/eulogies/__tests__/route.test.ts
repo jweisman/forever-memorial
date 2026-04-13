@@ -2,6 +2,7 @@ import { vi, describe, it, expect, beforeEach } from "vitest";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { isUserDisabled } from "@/lib/admin";
+import { generateViewUrl, thumbKeyFromBase, fullKeyFromBase } from "@/lib/s3-helpers";
 
 vi.mock("@/lib/auth", () => ({ auth: vi.fn() }));
 vi.mock("@/lib/prisma", () => ({
@@ -11,6 +12,11 @@ vi.mock("@/lib/prisma", () => ({
   },
 }));
 vi.mock("@/lib/admin", () => ({ isUserDisabled: vi.fn() }));
+vi.mock("@/lib/s3-helpers", () => ({
+  generateViewUrl: vi.fn(),
+  thumbKeyFromBase: vi.fn(),
+  fullKeyFromBase: vi.fn(),
+}));
 
 import { GET, POST } from "../route";
 
@@ -35,6 +41,7 @@ const mockEulogy = {
   deliveredBy: "John Smith",
   relation: "Son",
   order: 0,
+  images: [],
 };
 
 function makePostRequest(body: Record<string, unknown> = {}) {
@@ -57,6 +64,9 @@ describe("GET /api/memorials/[id]/eulogies", () => {
   beforeEach(() => {
     vi.resetAllMocks();
     m(prisma.eulogy.findMany).mockResolvedValue([mockEulogy]);
+    vi.mocked(generateViewUrl).mockResolvedValue("https://s3/signed-url");
+    vi.mocked(thumbKeyFromBase).mockImplementation((k: string) => `${k}_thumb`);
+    vi.mocked(fullKeyFromBase).mockImplementation((k: string) => `${k}_full`);
   });
 
   it("returns 200 with eulogies (no auth required)", async () => {
@@ -67,12 +77,13 @@ describe("GET /api/memorials/[id]/eulogies", () => {
     expect(data[0].id).toBe("eulogy-001");
   });
 
-  it("queries by memorialId ordered by order asc", async () => {
+  it("queries by memorialId ordered by order asc with images", async () => {
     await GET(new Request("http://localhost"), makeParams());
     expect(m(prisma.eulogy.findMany)).toHaveBeenCalledWith(
       expect.objectContaining({
         where: { memorialId: MEMORIAL_ID },
         orderBy: { order: "asc" },
+        include: { images: true },
       })
     );
   });

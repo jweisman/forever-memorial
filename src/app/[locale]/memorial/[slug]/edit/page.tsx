@@ -13,7 +13,22 @@ import EulogyForm from "@/components/memorial/EulogyForm";
 import MemorialPictureUploader from "@/components/memorial/MemorialPictureUploader";
 import AlbumSection from "@/components/memorial/AlbumSection";
 import MemoryEditCard from "@/components/memorial/MemoryEditCard";
+import MediaThumbnailGrid from "@/components/memorial/MediaThumbnailGrid";
+import VideoThumbnail from "@/components/memorial/VideoThumbnail";
+import {
+  isVideoFile,
+  uploadEulogyImage,
+  uploadEulogyVideo,
+} from "@/lib/upload";
 import { use } from "react";
+
+type EulogyImage = {
+  id: string;
+  thumbUrl: string;
+  url: string;
+  caption: string | null;
+  mediaType: "IMAGE" | "VIDEO";
+};
 
 type Eulogy = {
   id: string;
@@ -21,6 +36,7 @@ type Eulogy = {
   deliveredBy: string;
   relation: string | null;
   order: number;
+  images: EulogyImage[];
 };
 
 type ImageRecord = {
@@ -122,6 +138,9 @@ export default function MemorialEditPage({
   const [eulogies, setEulogies] = useState<Eulogy[]>([]);
   const [showEulogyForm, setShowEulogyForm] = useState(false);
   const [editingEulogyId, setEditingEulogyId] = useState<string | null>(null);
+  const [eulogyUploadProgress, setEulogyUploadProgress] = useState<
+    { fileName: string; progress: number }[]
+  >([]);
 
   // Gallery state
   const [albums, setAlbums] = useState<Album[]>([]);
@@ -163,7 +182,7 @@ export default function MemorialEditPage({
     setProjects(data.projects ?? "");
     setDeathAfterSunset(data.deathAfterSunset);
     setMemorialPictureUrl(data.memorialPicture);
-    setEulogies(data.eulogies);
+    setEulogies(data.eulogies.map((e: Eulogy) => ({ ...e, images: e.images ?? [] })));
     setLoading(false);
   }, [memorialId]);
 
@@ -271,11 +290,42 @@ export default function MemorialEditPage({
     setSaving(false);
   }
 
-  async function handleAddEulogy(data: {
-    text: string;
-    deliveredBy: string;
-    relation: string;
-  }) {
+  async function uploadEulogyFiles(eulogyId: string, files: File[]) {
+    if (files.length === 0) return [];
+    setEulogyUploadProgress(
+      files.map((f) => ({ fileName: f.name, progress: 0 }))
+    );
+
+    const uploaded: EulogyImage[] = [];
+    for (let i = 0; i < files.length; i++) {
+      const file = files[i];
+      const onProgress = (p: number) => {
+        setEulogyUploadProgress((prev) =>
+          prev.map((u, idx) => (idx === i ? { ...u, progress: p } : u))
+        );
+      };
+      const result = isVideoFile(file)
+        ? await uploadEulogyVideo(memorialId!, eulogyId, file, { onProgress })
+        : await uploadEulogyImage(memorialId!, eulogyId, file, { onProgress });
+      uploaded.push({
+        id: result.id,
+        thumbUrl: result.url,
+        url: result.url,
+        caption: result.caption,
+        mediaType: result.mediaType,
+      });
+      setEulogyUploadProgress((prev) =>
+        prev.map((u, idx) => (idx === i ? { ...u, progress: 1 } : u))
+      );
+    }
+    setEulogyUploadProgress([]);
+    return uploaded;
+  }
+
+  async function handleAddEulogy(
+    data: { text: string; deliveredBy: string; relation: string },
+    files: File[]
+  ) {
     const res = await fetch(`/api/memorials/${memorialId}/eulogies`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -283,14 +333,16 @@ export default function MemorialEditPage({
     });
     if (res.ok) {
       const eulogy = await res.json();
-      setEulogies((prev) => [...prev, eulogy]);
+      const images = await uploadEulogyFiles(eulogy.id, files);
+      setEulogies((prev) => [...prev, { ...eulogy, images }]);
       setShowEulogyForm(false);
     }
   }
 
   async function handleUpdateEulogy(
     eulogyId: string,
-    data: { text: string; deliveredBy: string; relation: string }
+    data: { text: string; deliveredBy: string; relation: string },
+    files: File[]
   ) {
     const res = await fetch(
       `/api/memorials/${memorialId}/eulogies/${eulogyId}`,
@@ -302,8 +354,14 @@ export default function MemorialEditPage({
     );
     if (res.ok) {
       const updated = await res.json();
+      const newImages = await uploadEulogyFiles(eulogyId, files);
+      const existing = eulogies.find((e) => e.id === eulogyId)?.images || [];
       setEulogies((prev) =>
-        prev.map((e) => (e.id === eulogyId ? updated : e))
+        prev.map((e) =>
+          e.id === eulogyId
+            ? { ...updated, images: [...existing, ...newImages] }
+            : e
+        )
       );
       setEditingEulogyId(null);
     }
@@ -316,6 +374,22 @@ export default function MemorialEditPage({
     );
     if (res.ok) {
       setEulogies((prev) => prev.filter((e) => e.id !== eulogyId));
+    }
+  }
+
+  async function handleDeleteEulogyImage(eulogyId: string, imageId: string) {
+    const res = await fetch(
+      `/api/memorials/${memorialId}/eulogies/${eulogyId}/images/${imageId}`,
+      { method: "DELETE" }
+    );
+    if (res.ok) {
+      setEulogies((prev) =>
+        prev.map((e) =>
+          e.id === eulogyId
+            ? { ...e, images: e.images.filter((img) => img.id !== imageId) }
+            : e
+        )
+      );
     }
   }
 
@@ -684,6 +758,7 @@ export default function MemorialEditPage({
               <EulogyForm
                 onSave={handleAddEulogy}
                 onCancel={() => setShowEulogyForm(false)}
+                uploadProgress={eulogyUploadProgress}
               />
             </div>
           )}
@@ -707,14 +782,45 @@ export default function MemorialEditPage({
                       deliveredBy: eulogy.deliveredBy,
                       relation: eulogy.relation ?? "",
                     }}
-                    onSave={(data) => handleUpdateEulogy(eulogy.id, data)}
+                    onSave={(data, files) => handleUpdateEulogy(eulogy.id, data, files)}
                     onCancel={() => setEditingEulogyId(null)}
+                    uploadProgress={eulogyUploadProgress}
                   />
                 ) : (
                   <>
                     <p className="line-clamp-3 text-sm text-warm-700">
                       {eulogy.text}
                     </p>
+                    {eulogy.images.length > 0 && (
+                      <div className="mt-2 flex gap-2">
+                        {eulogy.images.map((img) => (
+                          <div
+                            key={img.id}
+                            className="group relative size-16 overflow-hidden rounded-lg bg-warm-100"
+                          >
+                            {img.mediaType === "VIDEO" ? (
+                              <VideoThumbnail
+                                src={img.thumbUrl}
+                                className="size-full object-cover"
+                              />
+                            ) : (
+                              <img
+                                src={img.thumbUrl}
+                                alt={img.caption || ""}
+                                className="size-full object-cover"
+                              />
+                            )}
+                            <button
+                              type="button"
+                              onClick={() => handleDeleteEulogyImage(eulogy.id, img.id)}
+                              className="absolute inset-0 flex items-center justify-center bg-black/50 text-xs text-white opacity-0 transition-opacity group-hover:opacity-100"
+                            >
+                              {t("delete")}
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    )}
                     <p className="mt-2 text-sm">
                       <span className="font-medium text-warm-800">
                         {eulogy.deliveredBy}

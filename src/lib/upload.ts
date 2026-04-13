@@ -679,6 +679,173 @@ export async function uploadMemoryVideo(
   return confirmRes.json();
 }
 
+// ---------------------------------------------------------------------------
+// Eulogy image/video uploads (same pattern as memory uploads)
+// ---------------------------------------------------------------------------
+
+type EulogyImageRecord = {
+  id: string;
+  s3Key: string;
+  caption: string | null;
+  mediaType: "IMAGE" | "VIDEO";
+  url: string;
+};
+
+type EulogyUploadOptions = {
+  onProgress?: UploadProgressCallback;
+  signal?: AbortSignal;
+};
+
+export async function uploadEulogyImage(
+  memorialId: string,
+  eulogyId: string,
+  file: File,
+  options?: EulogyUploadOptions
+): Promise<EulogyImageRecord> {
+  const [thumb, full] = await Promise.all([
+    resizeImage(file, 400, 0.8),
+    resizeImage(file, 1600, 0.85),
+  ]);
+
+  const urlRes = await fetch(
+    `/api/memorials/${memorialId}/eulogies/${eulogyId}/images/upload-url`,
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        fileName: file.name,
+        contentType: file.type,
+      }),
+      signal: options?.signal,
+    }
+  );
+  if (!urlRes.ok) {
+    const err = await urlRes.json();
+    throw new Error(err.error || "Failed to get upload URL");
+  }
+  const { thumbUploadUrl, fullUploadUrl, s3Key, imageId } =
+    await urlRes.json();
+
+  const thumbSize = thumb.size;
+  const fullSize = full.size;
+  const totalSize = thumbSize + fullSize;
+
+  let thumbLoaded = 0;
+  let fullLoaded = 0;
+
+  await Promise.all([
+    uploadBlobWithProgress(thumb, thumbUploadUrl, "image/webp", (p) => {
+      thumbLoaded = p * thumbSize;
+      options?.onProgress?.((thumbLoaded + fullLoaded) / totalSize);
+    }, options?.signal),
+    uploadBlobWithProgress(full, fullUploadUrl, "image/webp", (p) => {
+      fullLoaded = p * fullSize;
+      options?.onProgress?.((thumbLoaded + fullLoaded) / totalSize);
+    }, options?.signal),
+  ]);
+
+  const confirmRes = await fetch(
+    `/api/memorials/${memorialId}/eulogies/${eulogyId}/images/confirm`,
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ imageId, s3Key }),
+      signal: options?.signal,
+    }
+  );
+  if (!confirmRes.ok) {
+    const err = await confirmRes.json();
+    throw new Error(err.error || "Failed to confirm upload");
+  }
+  return confirmRes.json();
+}
+
+export async function uploadEulogyVideo(
+  memorialId: string,
+  eulogyId: string,
+  file: File,
+  options?: EulogyUploadOptions
+): Promise<EulogyImageRecord> {
+  if (file.size > MULTIPART_THRESHOLD) {
+    return uploadEulogyVideoMultipart(memorialId, eulogyId, file, options);
+  }
+
+  const urlRes = await fetch(
+    `/api/memorials/${memorialId}/eulogies/${eulogyId}/images/upload-url`,
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        fileName: file.name,
+        contentType: file.type,
+      }),
+      signal: options?.signal,
+    }
+  );
+  if (!urlRes.ok) {
+    const err = await urlRes.json();
+    throw new Error(err.error || "Failed to get upload URL");
+  }
+  const { uploadUrl, s3Key, imageId } = await urlRes.json();
+
+  await uploadBlobWithProgress(file, uploadUrl, file.type, options?.onProgress, options?.signal);
+
+  const confirmRes = await fetch(
+    `/api/memorials/${memorialId}/eulogies/${eulogyId}/images/confirm`,
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ imageId, s3Key, mediaType: "VIDEO" }),
+      signal: options?.signal,
+    }
+  );
+  if (!confirmRes.ok) {
+    const err = await confirmRes.json();
+    throw new Error(err.error || "Failed to confirm upload");
+  }
+  return confirmRes.json();
+}
+
+async function uploadEulogyVideoMultipart(
+  memorialId: string,
+  eulogyId: string,
+  file: File,
+  options?: EulogyUploadOptions
+): Promise<EulogyImageRecord> {
+  const uploaded = await uploadMultipartParts(
+    file,
+    `/api/memorials/${memorialId}/eulogies/${eulogyId}/multipart-upload`,
+    `/api/memorials/${memorialId}/eulogies/${eulogyId}/multipart-upload/abort`,
+    {
+      fileName: file.name,
+      contentType: file.type,
+      fileSize: file.size,
+    },
+    options?.onProgress,
+    options?.signal
+  );
+
+  const res = await fetch(
+    `/api/memorials/${memorialId}/eulogies/${eulogyId}/multipart-upload/complete`,
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        uploadId: uploaded.uploadId,
+        s3Key: uploaded.s3Key,
+        imageId: uploaded.imageId,
+        parts: uploaded.completedParts,
+      }),
+      signal: options?.signal,
+    }
+  );
+  if (!res.ok) {
+    const err = await res.json();
+    throw new Error(err.error || "Failed to complete upload");
+  }
+  return res.json();
+}
+
 async function uploadMemoryVideoMultipart(
   memorialId: string,
   memoryId: string,

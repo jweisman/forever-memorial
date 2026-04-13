@@ -155,6 +155,7 @@ model Eulogy {
   updatedAt   DateTime @updatedAt
 
   memorial Memorial @relation(fields: [memorialId], references: [id], onDelete: Cascade)
+  images   EulogyImage[]
 
   @@map("eulogies")
 }
@@ -217,4 +218,17 @@ model MemoryImage {
   memory Memory @relation(fields: [memoryId], references: [id], onDelete: Cascade)
 
   @@map("memory_images")
+}
+
+model EulogyImage {
+  id        String    @id @default(cuid())
+  eulogyId  String
+  s3Key     String
+  caption   String?
+  mediaType MediaType @default(IMAGE)
+  createdAt DateTime  @default(now())
+
+  eulogy Eulogy @relation(fields: [eulogyId], references: [id], onDelete: Cascade)
+
+  @@map("eulogy_images")
 }

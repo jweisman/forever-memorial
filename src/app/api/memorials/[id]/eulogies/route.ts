@@ -3,6 +3,11 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { isUserDisabled } from "@/lib/admin";
 import { withHandler } from "@/lib/api-error";
+import {
+  generateViewUrl,
+  thumbKeyFromBase,
+  fullKeyFromBase,
+} from "@/lib/s3-helpers";
 
 export const GET = withHandler(async (
   _request: Request,
@@ -13,9 +18,29 @@ export const GET = withHandler(async (
   const eulogies = await prisma.eulogy.findMany({
     where: { memorialId: id },
     orderBy: { order: "asc" },
+    include: { images: true },
   });
 
-  return NextResponse.json(eulogies);
+  const eulogiesWithUrls = await Promise.all(
+    eulogies.map(async (eulogy) => ({
+      ...eulogy,
+      images: await Promise.all(
+        eulogy.images.map(async (img) => {
+          if (img.mediaType === "VIDEO") {
+            const url = await generateViewUrl(img.s3Key);
+            return { ...img, thumbUrl: url, url };
+          }
+          return {
+            ...img,
+            thumbUrl: await generateViewUrl(thumbKeyFromBase(img.s3Key)),
+            url: await generateViewUrl(fullKeyFromBase(img.s3Key)),
+          };
+        })
+      ),
+    }))
+  );
+
+  return NextResponse.json(eulogiesWithUrls);
 });
 
 export const POST = withHandler(async (
