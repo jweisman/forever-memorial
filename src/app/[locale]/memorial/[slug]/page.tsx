@@ -17,6 +17,7 @@ import Button from "@/components/ui/Button";
 import CollapsibleText from "@/components/ui/CollapsibleText";
 import GalleryView from "@/components/memorial/GalleryView";
 import MemoryCard from "@/components/memorial/MemoryCard";
+import EulogyCard from "@/components/memorial/EulogyCard";
 import MemorySubmissionForm from "@/components/memorial/MemorySubmissionForm";
 import YahrzeitCalendar from "@/components/memorial/YahrzeitCalendar";
 import PosterDownload from "@/components/memorial/PosterDownload";
@@ -47,7 +48,7 @@ async function getMemorial(slug: string) {
   const memorial = await prisma.memorial.findUnique({
     where: { id },
     include: {
-      eulogies: { orderBy: { order: "asc" } },
+      eulogies: { orderBy: { order: "asc" }, include: { images: true } },
       albums: {
         orderBy: { order: "asc" },
         include: {
@@ -110,10 +111,30 @@ async function getMemorial(slug: string) {
     }))
   );
 
+  const eulogiesWithUrls = await Promise.all(
+    memorial.eulogies.map(async (eulogy) => ({
+      ...eulogy,
+      images: await Promise.all(
+        eulogy.images.map(async (img) => {
+          if (img.mediaType === "VIDEO") {
+            const url = await generateViewUrl(img.s3Key);
+            return { ...img, thumbUrl: url, url };
+          }
+          return {
+            ...img,
+            thumbUrl: await generateViewUrl(thumbKeyFromBase(img.s3Key)),
+            url: await generateViewUrl(fullKeyFromBase(img.s3Key)),
+          };
+        })
+      ),
+    }))
+  );
+
   return {
     ...memorial,
     memorialPictureUrl,
     albums: albumsWithUrls,
+    eulogies: eulogiesWithUrls,
     memories: memoriesWithUrls,
   };
 }
@@ -523,22 +544,7 @@ export default async function MemorialPage({ params }: Props) {
               </h2>
               <div className="mt-6 space-y-6">
                 {memorial.eulogies.map((eulogy) => (
-                  <Card key={eulogy.id}>
-                    <blockquote className="border-s-4 border-gold-400 ps-4">
-                      <CollapsibleText text={eulogy.text} maxLines={8} />
-                      <footer className="mt-4 text-sm">
-                        <span className="font-medium text-warm-800">
-                          {eulogy.deliveredBy}
-                        </span>
-                        {eulogy.relation && (
-                          <span className="text-warm-400">
-                            {" "}
-                            — {eulogy.relation}
-                          </span>
-                        )}
-                      </footer>
-                    </blockquote>
-                  </Card>
+                  <EulogyCard key={eulogy.id} eulogy={eulogy} />
                 ))}
               </div>
             </section>

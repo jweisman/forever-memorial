@@ -87,6 +87,15 @@ export function buildMemoryImageS3Key(
   return `memorials/${memorialId}/memories/${memoryId}/${imageId}.${ext}`;
 }
 
+export function buildEulogyImageS3Key(
+  memorialId: string,
+  eulogyId: string,
+  imageId: string,
+  ext: string
+): string {
+  return `memorials/${memorialId}/eulogies/${eulogyId}/${imageId}.${ext}`;
+}
+
 /** Derive the thumbnail variant key from a base s3Key. */
 export function thumbKeyFromBase(s3Key: string): string {
   const dotIdx = s3Key.lastIndexOf(".");

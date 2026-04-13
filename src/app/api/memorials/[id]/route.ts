@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { buildSlug } from "@/lib/slug";
-import { generateViewUrl, thumbKeyFromBase } from "@/lib/s3-helpers";
+import { generateViewUrl, thumbKeyFromBase, fullKeyFromBase } from "@/lib/s3-helpers";
 import { isUserDisabled } from "@/lib/admin";
 import { withHandler } from "@/lib/api-error";
 import sanitizeHtml from "sanitize-html";
@@ -18,7 +18,7 @@ export const GET = withHandler(async (
   const memorial = await prisma.memorial.findUnique({
     where: { id },
     include: {
-      eulogies: { orderBy: { order: "asc" } },
+      eulogies: { orderBy: { order: "asc" }, include: { images: true } },
       owner: { select: { id: true, name: true } },
     },
   });
@@ -33,9 +33,30 @@ export const GET = withHandler(async (
     memorialPictureUrl = await generateViewUrl(thumbKeyFromBase(memorial.memorialPicture));
   }
 
+  // Resolve eulogy image URLs
+  const eulogiesWithUrls = await Promise.all(
+    memorial.eulogies.map(async (eulogy) => ({
+      ...eulogy,
+      images: await Promise.all(
+        eulogy.images.map(async (img) => {
+          if (img.mediaType === "VIDEO") {
+            const url = await generateViewUrl(img.s3Key);
+            return { ...img, thumbUrl: url, url };
+          }
+          return {
+            ...img,
+            thumbUrl: await generateViewUrl(thumbKeyFromBase(img.s3Key)),
+            url: await generateViewUrl(fullKeyFromBase(img.s3Key)),
+          };
+        })
+      ),
+    }))
+  );
+
   return NextResponse.json({
     ...memorial,
     memorialPicture: memorialPictureUrl,
+    eulogies: eulogiesWithUrls,
   });
 });
 

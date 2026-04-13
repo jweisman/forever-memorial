@@ -270,7 +270,11 @@
     "moveDown": "הזז למטה",
     "importFromFile": "ייבוא מקובץ Word",
     "importing": "מייבא...",
-    "importError": "לא ניתן לחלץ טקסט מהקובץ"
+    "importError": "לא ניתן לחלץ טקסט מהקובץ",
+    "mediaLabel": "תמונות או סרטונים (אופציונלי, עד 5)",
+    "addMedia": "הוספת תמונות או סרטונים",
+    "maxMedia": "מקסימום 5 תמונות/סרטונים להספד",
+    "uploading": "מעלה..."
   },
   "MemorySubmission": {
     "nameLabel": "שמכם",

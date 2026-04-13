@@ -270,7 +270,11 @@
     "moveDown": "Move down",
     "importFromFile": "Import from Word file",
     "importing": "Importing...",
-    "importError": "Could not extract text from file"
+    "importError": "Could not extract text from file",
+    "mediaLabel": "Photos or videos (optional, up to 5)",
+    "addMedia": "Add photos or videos",
+    "maxMedia": "Maximum 5 photos/videos per eulogy",
+    "uploading": "Uploading..."
   },
   "MemorySubmission": {
     "nameLabel": "Your name",
