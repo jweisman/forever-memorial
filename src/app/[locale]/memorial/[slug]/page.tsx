@@ -377,28 +377,38 @@ export default async function MemorialPage({ params }: Props) {
                   <dd className="mt-0.5 text-warm-800">
                     {formatDate(memorial.birthday, locale)}
                     {memorial.placeOfBirth && (
-                      <span className="text-warm-500"> ({memorial.placeOfBirth})</span>
+                      <>
+                        <span className="hidden text-warm-500 sm:inline"> ({memorial.placeOfBirth})</span>
+                        <div className="mt-0.5 text-sm text-warm-500 sm:hidden">{memorial.placeOfBirth}</div>
+                      </>
                     )}
                   </dd>
                 </div>
               )}
               <div>
                 <dt className="font-medium text-warm-600">{t("passedAway")}</dt>
-                <dd className="mt-0.5 flex items-center text-warm-800">
-                  {formatDate(memorial.dateOfDeath, locale)}
+                <dd className="mt-0.5 text-warm-800">
+                  <div className="flex flex-wrap items-center gap-x-1">
+                    <span>{formatDate(memorial.dateOfDeath, locale)}</span>
+                    {memorial.placeOfDeath && (
+                      <span className="hidden text-warm-500 sm:inline">({memorial.placeOfDeath})</span>
+                    )}
+                    <span className="text-warm-400">/</span>
+                    <span>
+                      {getHebrewDeathDate(
+                        memorial.dateOfDeath,
+                        memorial.deathAfterSunset,
+                        locale === "he" ? "he" : "en"
+                      )}
+                    </span>
+                    <YahrzeitCalendar
+                      memorialId={memorial.id}
+                      memorialName={memorial.name}
+                    />
+                  </div>
                   {memorial.placeOfDeath && (
-                    <span className="text-warm-500">&nbsp;({memorial.placeOfDeath})</span>
+                    <div className="mt-0.5 text-sm text-warm-500 sm:hidden">{memorial.placeOfDeath}</div>
                   )}
-                  {" / "}
-                  {getHebrewDeathDate(
-                    memorial.dateOfDeath,
-                    memorial.deathAfterSunset,
-                    locale === "he" ? "he" : "en"
-                  )}
-                  <YahrzeitCalendar
-                    memorialId={memorial.id}
-                    memorialName={memorial.name}
-                  />
                 </dd>
               </div>
             </dl>
